@@ -1,0 +1,350 @@
+<template>
+  <el-menu class="navbar" mode="horizontal">
+    <hamburger class="hamburger-container" :toggleClick="toggleSideBar" :isActive="sidebar.opened"></hamburger>
+
+    <breadcrumb class="breadcrumb-container"></breadcrumb>
+
+    <div class="right-menu">
+      <!--<error-log class="errLog-container right-menu-item"></error-log>-->
+
+      <el-tooltip effect="dark" :content="$t('navbar.screenfull')" placement="bottom">
+        <screenfull class="screenfull right-menu-item"></screenfull>
+      </el-tooltip>
+
+      <span style="font-weight: 400 !important;color: #97a8be;line-height: 50px;position: relative;top: -13px;">
+          {{selectedProName}}
+        </span>
+
+
+      <!--<lang-select class="international right-menu-item"></lang-select>
+      <el-tooltip effect="dark" :content="$t('navbar.theme')" placement="bottom">
+        <theme-picker class="theme-switch right-menu-item"></theme-picker>
+      </el-tooltip>-->
+
+      <el-dropdown class="avatar-container right-menu-item" trigger="click">
+        <div class="component-item proImg">
+          <pan-thumb class="proImg" width="40px" height="40px" image="https://wpimg.wallstcn.com/577965b9-bb9e-4e02-9f0c-095b41417191">
+            项目
+          </pan-thumb>
+          <i class="el-icon-caret-bottom proIcon"></i>
+        </div>
+        <el-dropdown-menu slot="dropdown">
+          <el-select
+            @focus="onFocus"
+            v-model="selected"
+            filterable
+            remote
+            allow-create
+            default-first-option
+            placeholder="选择或创建项目"
+            @change="changePro">
+            <el-option
+              v-for="item in list"
+              :key="item.name"
+              :value="item.name">
+            </el-option>
+          </el-select>
+        </el-dropdown-menu>
+      </el-dropdown>
+
+      <el-dropdown class="avatar-container right-menu-item" trigger="click">
+        <div class="avatar-wrapper">
+          <img class="user-avatar" src="./2.jpg">
+          <i class="el-icon-caret-bottom"></i>
+        </div>
+        <el-dropdown-menu slot="dropdown">
+          <router-link to="/">
+            <el-dropdown-item>
+              {{$t('navbar.dashboard')}}
+            </el-dropdown-item>
+          </router-link>
+          <el-dropdown-item divided>
+            <span @click="logout" style="display:block;">{{$t('navbar.logOut')}}</span>
+          </el-dropdown-item>
+        </el-dropdown-menu>
+      </el-dropdown>
+      <el-dialog title="修改密码" :visible.sync="dialogFormVisible">
+        <el-form :model="form" style="width: 400px; margin-left:50px;">
+          <el-form-item label="原密码" :label-width="formLabelWidth">
+            <el-input type="password" v-model="form.passwordOld" auto-complete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="新密码" :label-width="formLabelWidth">
+            <el-input type="password" v-model="form.passwordNew" auto-complete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="再次输入密码" :label-width="formLabelWidth">
+            <el-input type="password" v-model="form.passwordNew" auto-complete="off"></el-input>
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="dialogFormVisible = false">取 消</el-button>
+          <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
+        </div>
+      </el-dialog>
+    </div>
+  </el-menu>
+</template>
+
+<script>
+  import { mapGetters, mapMutations } from 'vuex'
+  import PanThumb from '@/components/PanThumb'
+  import Breadcrumb from '@/components/Breadcrumb'
+  import Hamburger from '@/components/Hamburger'
+  import ErrorLog from '@/components/ErrorLog'
+  import Screenfull from '@/components/Screenfull'
+  import LangSelect from '@/components/LangSelect'
+  import ThemePicker from '@/components/ThemePicker'
+  import { projectList, createProject } from '@/api/project'
+  /* eslint-disable */
+  export default {
+    components: {
+      PanThumb,
+      Breadcrumb,
+      Hamburger,
+      ErrorLog,
+      Screenfull,
+      LangSelect,
+      ThemePicker
+    },
+    data() {
+      return {
+        list: null,
+        total: null,
+        listLoading: true,
+        proName: '',
+        selectedProName: '',
+        selected: '',
+        dialogFormVisible: false,
+        form: {
+          passwordOld: '',
+          passwordNew: ''
+        },
+        formLabelWidth: '100px',
+        temp: {
+          id: '',
+          name: '',
+          description: ''
+        },
+        projectLength: 0,
+        projectExist: true,
+        userData:{
+          username: '',
+          password: ''
+        }
+      }
+    },
+    created() {
+      this.userData.username = this.getCookie('username')
+      this.userData.password = this.getCookie('password')
+
+      this.selectedProName = this.getCookie('projectName')
+      this.getList()
+    },
+    computed: {
+      listenProLength() {
+        return this.$store.state.app.projectNum
+      },
+      listenProExist(){
+        console.log("哈哈哈哈哈哈哈哈-------------")
+        console.log(this.$store.state.app.projectExist);
+        return this.$store.state.app.projectExist
+
+      },
+      listenProName () {
+        return this.getCookie('projectName')
+      },
+      ...mapGetters([
+        'sidebar',
+        'name',
+        'avatar',
+        'roles'
+      ])
+    },
+    watch: {
+      listenProLength: function(a,b) {
+        this.getList()
+      },
+      listenProExist: function(a,b) {
+        this.getList()
+      },
+      listenProName: function(a,b) {
+        this.selectedProName =  this.getCookie('projectName')
+      }
+    },
+    methods: {
+      onFocus() {
+        this.getList()
+      },
+      getList() {
+        this.listLoading = true
+        projectList(this.userData).then(response => {
+          this.list = response.data.data
+          this.list.value = '';
+          this.total = response.data.total
+          this.listLoading = false
+          this.projectLength = this.list.length
+
+          let isExist = false;
+          console.log(this.selected);
+          if(this.selected != ''){
+            console.log("有选择项目");
+            for(let i=0;i<this.list.length;i++){
+              if(this.selected == this.list[i].name){   //判断显示的在现在的列表中是否存在
+                isExist = true;
+                return;
+              }
+            }
+
+            if(!isExist){       //如果不存在
+              this.selected = '';
+              this.$message({
+                message: '请重新选择项目',
+                type: 'warning'
+              });
+            }
+          }
+
+        })
+      },
+      //下拉框选择部署设计
+      changePro: function () {
+        this.proName = this.selected;
+        //alert(this.proId);
+        //不存在则创建项目
+        let isReal = false;
+        let projectId = '';
+        let projectName = ''
+        for(let i=0;i<this.list.length;i++){
+          if(this.proName == this.list[i].name){
+            isReal = true;
+            projectId = this.list[i].id;
+            projectName = this.list[i].name
+            console.log(projectId);
+            let expireDays = 30;
+            this.selectedProName = this.list[i].name
+            this.setCookie('projectId', projectId, expireDays);
+            this.setCookie('projectName',projectName)
+            this.setProjectId(projectId)
+            break;
+          }
+        }
+        console.log("是否存在");
+        console.log(isReal);
+        if(!isReal){
+          alert("hhhhh");
+          let qs = require('qs');
+          let data = {
+            'name': this.proName,
+            'description': ''
+          };
+          let proData = qs.stringify(data);
+          createProject(this.userData, proData).then(() => {
+            this.list.unshift(this.temp)
+            this.dialogFormVisible = false
+            this.$notify({
+              title: '成功',
+              message: '创建成功',
+              type: 'success',
+              duration: 2000
+            })
+            this.selected = ''
+            this.getList()
+
+            this.setProjectNum(this.projectLength);
+          })
+
+        }else {
+          console.log("下拉改变--------");
+          console.log(this.projectExist);
+          this.getList();
+          this.setProjectExist(this.projectExist);
+
+        }
+
+      },
+      toggleSideBar() {
+        this.$store.dispatch('toggleSideBar')
+      },
+      logout() {
+        this.$store.dispatch('FedLogOut').then(() => {
+          location.reload()// In order to re-instantiate the vue-router object to avoid bugs
+        })
+      },
+      ...mapMutations({
+        setroles: 'SET_ROLES',
+        setProjectNum: 'SET_PROJECTNUM',
+        setProjectExist: 'SET_PROJECTEXIST',
+        setProjectId: 'SET_PROJECTID'
+      })
+    }
+  }
+</script>
+
+<style rel="stylesheet/scss" lang="scss" scoped>
+  .proIcon {
+    position: absolute;
+    right: -20px;
+    top: 25px;
+    font-size: 12px;
+  }
+  .proImg{
+    cursor: pointer;
+  }
+  .navbar {
+    height: 50px;
+    line-height: 50px;
+    border-radius: 0px !important;
+    .hamburger-container {
+      line-height: 58px;
+      height: 50px;
+      float: left;
+      padding: 0 10px;
+    }
+    .breadcrumb-container {
+      float: left;
+    }
+    .errLog-container {
+      display: inline-block;
+      vertical-align: top;
+    }
+    .right-menu {
+      float: right;
+      height: 100%;
+      &:focus {
+        outline: none;
+      }
+      .right-menu-item {
+        display: inline-block;
+        margin: 0 8px;
+      }
+      .screenfull {
+        height: 20px;
+      }
+      .international {
+        vertical-align: top;
+      }
+      .theme-switch {
+        vertical-align: 15px;
+      }
+      .avatar-container {
+        height: 50px;
+        margin-right: 30px;
+        .avatar-wrapper {
+          cursor: pointer;
+          margin-top: 5px;
+          position: relative;
+          .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+          }
+          .el-icon-caret-bottom {
+            position: absolute;
+            right: -20px;
+            top: 25px;
+            font-size: 12px;
+          }
+        }
+      }
+    }
+  }
+</style>
