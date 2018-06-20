@@ -16,7 +16,7 @@
 /*! @source http://purl.eligrey.com/github/Blob.js/blob/master/Blob.js */
 
 (function (view) {
-    "use strict";
+    /* "use strict";*/
 
     view.URL = view.URL || view.webkitURL;
 

@@ -54,7 +54,7 @@ const user = {
       state.loginname = loginname
     }
   },
-
+  /* eslint-disable */
   actions: {
     // 用户名登录
     // 原始版本LoginByUsername
@@ -71,13 +71,20 @@ const user = {
         })
       })
     },*/
-    LoginByUsername({ commit }, userInfo) {
-      const username = userInfo.username.trim()
+    LoginByUsername({ commit }, formData) {
+      //const username = userInfo.username.trim()
+      //const qs = require('qs');
+
+      console.log(formData);
       return new Promise((resolve, reject) => {
-        loginByUsername(username, userInfo.password).then(response => {
-          const data = response.data
-          commit('SET_TOKEN', 'admin')
-          setToken('admin')
+        /*const data = {
+          'username': username,
+          'password': userInfo.password
+        }
+        const proData = qs.stringify(data);*/
+        loginByUsername(formData).then(response => {
+          // const data = response.data
+          // commit('SET_TOKEN', 'admin')
           resolve()
         }).catch(error => {
           reject(error)

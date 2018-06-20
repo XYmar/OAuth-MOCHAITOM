@@ -72,8 +72,7 @@ import { isvalidUsername } from '@/utils/validate'
 import LangSelect from '@/components/LangSelect'
 import {mapMutations} from 'vuex'
 import service from '@/utils/request'
-/*import SocialSign from './socialsignin'*/
-
+/* eslint-disable */
 export default {
   components: { LangSelect},
   name: 'login',
@@ -94,8 +93,8 @@ export default {
     }
     return {
       loginForm: {
-        username: 'admin',
-        password: 'admin',
+        username: 'rengu',
+        password: 'rengu',
         ipConfig: '192.168.0.117',
         port: 8080
       },
@@ -137,7 +136,26 @@ export default {
           this.setCookie('ip', ip, expireDays)
           this.setCookie('port', port, expireDays)
           service.defaults.baseURL = 'http://' + ip + ':' + port // 动态设置api接口
-          this.$store.dispatch('LoginByUsername', this.loginForm).then(() => {
+
+          /*let formData = new FormData();
+          formData.append('username', username);
+          formData.append('password', password);
+          formData.append('grant_type', 'password');
+          formData.append('scope', 'SCOPES');
+          formData.append('client_id', 'OAUTH_CLIENT_ID');
+          formData.append('enctype', "multipart/form-data");*/
+
+          let qs = require('qs');
+          let formData = qs.stringify({
+            "username": username,
+            'password': password,
+            'grant_type': 'password',
+            'scope': 'SCOPES',
+            'client_id': 'OAUTH_CLIENT_ID',
+            'enctype': 'OAUTH_CLIENT_ID'
+          })
+
+          this.$store.dispatch('LoginByUsername', formData).then(() => {
             this.loading = false
             this.$router.push({ path: '/' })
           }).catch(() => {
@@ -148,24 +166,6 @@ export default {
           return false
         }
       })
-    },
-    afterQRScan() {
-      // const hash = window.location.hash.slice(1)
-      // const hashObj = getQueryObject(hash)
-      // const originUrl = window.location.origin
-      // history.replaceState({}, '', originUrl)
-      // const codeMap = {
-      //   wechat: 'code',
-      //   tencent: 'code'
-      // }
-      // const codeName = hashObj[codeMap[this.auth_type]]
-      // if (!codeName) {
-      //   alert('第三方登录失败')
-      // } else {
-      //   this.$store.dispatch('LoginByThirdparty', codeName).then(() => {
-      //     this.$router.push({ path: '/' })
-      //   })
-      // }
     },
     login: function () {
       /*let username = $("input#username").val();
