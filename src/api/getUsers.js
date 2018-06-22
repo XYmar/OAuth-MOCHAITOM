@@ -1,47 +1,34 @@
 import request from '@/utils/request'
 
-export function UserList(query) {
+export function UserList() {
   return request({
-    url: 'admin/users',
-    method: 'get',
-    auth:{
-      username: 'admin',
-      password: 'admin'
-    }
+    url: '/users',
+    method: 'get'
   })
 }
-export function updateUser(data,id) {
+export function getUserId() {
   return request({
-    url: 'admin/users/'+ id + '/changepassword',
+    url: '/users/info',
+    method: 'get'
+  })
+}
+export function updateUser(data, id) {
+  return request({
+    url: '/users/' + id + '/password',
     data,
-    method: 'patch',
-    auth:{
-      username: 'admin',
-      password: 'admin'
-    }
+    method: 'patch'
   })
 }
 export function deleteUser(id) {
   return request({
-    url: 'admin/users/'+ id,
-    method: 'delete',
-    auth:{
-      username: 'admin',
-      password: 'admin'
-    }
+    url: '/users/' + id,
+    method: 'delete'
   })
 }
 export function addUser(data) {
   return request({
     url: 'users',
     method: 'post',
-    params: {  //get请求在第二个位置，post在第三个位置
-      isAdmin: false
-    },
-    auth:{
-      username: 'admin',
-      password: 'admin'
-    },
     data
   })
 }
