@@ -191,3 +191,16 @@ code {
 .multiselect--active {
   z-index: 1000 !important;
 }
+.searchContainer .el-input__inner {
+  background-color: #2d3a4b;
+  color:#fff;
+  border-color:#409Eff;
+  height: 30px;
+}
+
+.userManage-container,.project-container {
+  th {
+    background-color: #409Eff;
+    color: #fff;
+  }
+}
