@@ -137,7 +137,7 @@
       this.userData.password = this.getCookie('password')
 
       this.selectedProName = this.getCookie('projectName')
-      this.getList()
+      //this.getList()
     },
     computed: {
       listenProLength() {
