@@ -1,27 +1,28 @@
 import request from '../utils/request'
 
-export function compList(userData) {
+export function compList(proId) {
   return request({
-    url: '/components',
+    url: '/projects/' + proId + '/components',
     method: 'get',
     params: {
-      isShowHistory: false
-    },
-    auth: {
+      // isShowHistory: false,
+      deleted: true
+    }
+    /* auth: {
       username: userData.username,
       password: userData.password
-    }
+    }*/
   })
 }
 
-export function createComp(userData, data) {
+export function createComp(proId, data) {
   return request({
-    url: '/components',
+    url: '/projects/' + proId + '/components',
     method: 'post',
-    auth: {
+    /* auth: {
       username: userData.username,
       password: userData.password
-    },
+    },*/
     headers: {
       'Content-Type': 'multipart/form-data'
     },
