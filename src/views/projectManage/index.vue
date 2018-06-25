@@ -182,9 +182,11 @@
     },
     created() {
       this.role = store.getters.roles
-      this.getList()
-      this.userId = this.getCookie('uesrId')
+
+      this.userId = this.getCookie('userId')
       this.userName = this.getCookie('username')
+
+      this.getList()
       // this.getUserInfo()
     },
     methods: {
@@ -209,7 +211,7 @@
             this.listLength = response.data.data.length
           })
         } else if(this.role == 'editor') {
-          projectList_user('123').then(response => {
+          projectList_user(this.userId).then(response => {
             this.list = response.data.data
             this.total = response.data.total
             this.listLoading = false
