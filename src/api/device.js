@@ -1,49 +1,36 @@
 import request from '../utils/request'
 
-export function getDevices(proId, userData) {
+export function getDevices(proId) {
   return request({
     url: '/projects/' + proId + '/devices',
-    method: 'get',
-    auth: {
-      username: userData.username,
-      password: userData.password
-    }
+    method: 'get'
   })
 }
 
-export function saveDevices(proId, userData, data) {
+export function saveDevices(proId, data) {
   return request({
     url: '/projects/' + proId + '/devices',
     method: 'post',
-    auth: {
-      username: userData.username,
-      password: userData.password
-      /*username: 'admin',
-      password: 'admin'*/
-    },
     data
   })
 }
 
-export function deleteDevice(id, userData) {
+export function deleteDevice(id) {
   return request({
     url: '/devices/' + id,
-    method: 'delete',
-    auth: {
-      username: userData.username,
-      password: userData.password
-    }
+    method: 'delete'
   })
 }
 
-export function updateDevice(id, userData, data) {
+export function updateDevice(id, data) {
   return request({
+    method: 'PATCH',
     url: '/devices/' + id,
-    method: 'patch',
-    auth: {
-      username: userData.username,
-      password: userData.password
-    },
+    /* async: true,
+    crossDomain: true*/
+    /* headers: {
+      'content-type': 'application/json'
+    },*/
     data
   })
 }
@@ -52,10 +39,6 @@ export function copyDevices(data, id) {
   return request({
     url: '/devices/' + id + '/copy',
     method: 'post',
-    auth: {
-      username: 'admin',
-      password: 'admin'
-    },
     headers: {
       'content-type': 'application/x-www-form-urlencoded'
     },
@@ -69,12 +52,6 @@ export function getDisks(id, userData) {
     method: 'get',
     headers: {
       'content-type': 'application/x-www-form-urlencoded'
-    },
-    auth: {
-      username: userData.username,
-      password: userData.password
-     /* username: 'admin',
-      password: 'admin'*/
     }
   })
 }
@@ -85,12 +62,6 @@ export function getProcess(id, userData) {
     method: 'get',
     headers: {
       'content-type': 'application/x-www-form-urlencoded'
-    },
-    auth: {
-      username: userData.username,
-      password: userData.password
-      /* username: 'admin',
-       password: 'admin'*/
     }
   })
 }
@@ -99,12 +70,6 @@ export function reportDevices(proId, userData, data) {
   return request({
     url: '/projects/' + proId + '/devices',
     method: 'post',
-    auth: {
-      username: userData.username,
-      password: userData.password
-      /*username: 'admin',
-      password: 'admin'*/
-    },
     data
   })
 }

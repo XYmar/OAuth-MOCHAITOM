@@ -242,15 +242,7 @@
     methods: {
       getList() {
         this.listLoading = true
-        getDevices(this.proId, this.userData).then(response => {
-          /* this.list = response.data.items
-           this.total = response.data.total
-           this.listLoading = false
-           this.oldList = this.list.map(v => v.id);
-           this.newList = this.oldList.slice();
-           this.$nextTick(() => {
-             this.setSort()
-           })*/
+        getDevices(this.proId).then(response => {
           this.list = response.data.data
           this.listLoading = false
         })
@@ -293,23 +285,12 @@
       createData() {
         this.$refs['dataForm'].validate((valid) => {
           if (valid) {
-            /*  this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
-              createArticle(this.temp).then(() => {
-                this.list.unshift(this.temp)
-                this.dialogFormVisible = false
-                this.$notify({
-                  title: '成功',
-                  message: '创建成功',
-                  type: 'success',
-                  duration: 2000
-                })
-              })*/
             let formData = new FormData();
             formData.append('name', this.temp.name);
             formData.append('ip', this.temp.ip);
             formData.append('deployPath', this.temp.deployPath);
             formData.append('description', this.temp.description);
-            saveDevices(this.proId, this.userData, formData).then((res) => {
+            saveDevices(this.proId, formData).then((res) => {
               console.log(res.data, 'createDeviceSuccess')
               this.dialogFormVisible = false
               this.$notify({
@@ -336,36 +317,23 @@
       updateData() {
         this.$refs['dataForm'].validate((valid) => {
           if (valid) {
-            /*const tempData = Object.assign({}, this.temp)
-            tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
-            updateArticle(tempData).then(() => {
-              for (const v of this.list) {
-                if (v.id === this.temp.id) {
-                  const index = this.list.indexOf(v)
-                  this.list.splice(index, 1, this.temp)
-                  break
-                }
-              }
+            let data = {
+              'name': this.temp.name,
+              'ip': this.temp.ip,
+              'deployPath': this.temp.deployPath,
+              'description': this.temp.description
+            };
+            let deviceData = new FormData()
+            deviceData.append('name',this.temp.name)
+            deviceData.append('ip',this.temp.ip)
+            deviceData.append('deployPath',this.temp.deployPath)
+            deviceData.append('description',this.temp.description)
+            deviceData.append('enctype', "multipart/form-data")
+            updateDevice(this.deviceId, deviceData).then((res) => {
               this.dialogFormVisible = false
               this.$notify({
                 title: '成功',
-                message: '更新成功',
-                type: 'success',
-                duration: 2000
-              })
-            })*/
-            let qs = require('qs');
-            let tempData = qs.stringify({
-              "name": this.temp.name,
-              "ip": this.temp.ip,
-              "deployPath": this.temp.deployPath,
-              "description": this.temp.description
-            })
-            updateDevice(this.deviceId, this.userData, tempData).then((res) => {
-              this.dialogFormVisible = false
-              this.$notify({
-                title: '成功',
-                message: '创建成功',
+                message: '修改成功',
                 type: 'success',
                 duration: 2000
               })
@@ -383,7 +351,7 @@
           type: 'warning'
         }).then(() => {
           let deleteId = row.id
-          deleteDevice(deleteId, this.userData).then(() => {
+          deleteDevice(deleteId).then(() => {
             this.$message({
               type: 'success',
               message: '删除成功!'
