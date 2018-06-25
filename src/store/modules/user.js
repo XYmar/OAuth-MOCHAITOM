@@ -1,5 +1,6 @@
 import { loginByUsername, logout, getUserInfo } from '@/api/login'
 import { getToken, setToken, removeToken } from '@/utils/auth'
+const jwt = require('jsonwebtoken')
 
 const user = {
   state: {
@@ -83,8 +84,11 @@ const user = {
         }
         const proData = qs.stringify(data);*/
         loginByUsername(formData).then(response => {
-          // const data = response.data
-          // commit('SET_TOKEN', 'admin')
+          console.log(response)
+          const access_token = response.data.access_token
+          const refresh_token = response.data.refresh_token
+          commit('SET_TOKEN', access_token)
+          setToken(access_token)
           resolve()
         }).catch(error => {
           reject(error)
@@ -112,24 +116,26 @@ const user = {
     },*/
     GetUserInfo({ commit, state }) {
       return new Promise((resolve, reject) => {
-        getUserInfo(state.token).then(response => {
-          console.log('getUserInfosuccess')
-          if (!response.data) { // 由于mockjs 不支持自定义状态码只能这样hack
-            reject('error')
-            /*console.log('getUserInfoError')*/
-          }
-          const data = response.data
-          console.log(data)
-          const rolesset = data.username === 'admin' ? 'admin' : 'editor'
-          commit('SET_ROLES', rolesset)
-          commit('SET_NAME', data.username)
-          commit('SET_AVATAR', '')
-          commit('SET_INTRODUCTION', '')
-          resolve(response)
+        /*getUserInfo(state.token).then(response => {
+
         }).catch(error => {
           console.log('getuserinfoerror')
           reject(error)
-        })
+        })*/
+        if (!state.token) { // 由于mockjs 不支持自定义状态码只能这样hack
+          reject('error')
+          console.log('hasNoToken')
+        }
+        const data = state.token
+        const decodeToken = jwt.decode(data)
+        console.log(decodeToken, '22233')
+        // const rolesset = data.username === 'admin' ? 'admin' : 'editor'
+        const rolesset = decodeToken.authorities.length > 1 ? 'admin' : 'editor'
+        commit('SET_ROLES', rolesset)
+        /*commit('SET_NAME', data.username)
+        commit('SET_AVATAR', '')
+        commit('SET_INTRODUCTION', '')*/
+        resolve()
       })
     },
     // 第三方验证登录

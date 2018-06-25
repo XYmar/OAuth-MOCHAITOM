@@ -70,8 +70,9 @@
 <script>
 import { isvalidUsername } from '@/utils/validate'
 import LangSelect from '@/components/LangSelect'
-import {mapMutations} from 'vuex'
+import { mapMutations } from 'vuex'
 import service from '@/utils/request'
+import { getUserId } from '@/api/getUsers'
 /* eslint-disable */
 export default {
   components: { LangSelect},
@@ -132,7 +133,7 @@ export default {
           console.log(store.getters)*/
           this.setPort(port)
           this.setCookie('username', username, expireDays)
-          this.setCookie('password', password, expireDays)
+          // this.setCookie('password', password, expireDays)
           this.setCookie('ip', ip, expireDays)
           this.setCookie('port', port, expireDays)
           service.defaults.baseURL = 'http://' + ip + ':' + port // 动态设置api接口
@@ -157,7 +158,8 @@ export default {
 
           this.$store.dispatch('LoginByUsername', formData).then(() => {
             this.loading = false
-            this.$router.push({ path: '/' })
+            this.getUserInfo()
+            this.$router.push({ path: '/projectManage' })
           }).catch(() => {
             this.loading = false
           })
@@ -165,6 +167,11 @@ export default {
           console.log('error submit!!')
           return false
         }
+      })
+    },
+    getUserInfo () {
+      getUserId().then((res) => {
+        this.setCookie('userId', res.data.data.id)
       })
     },
     login: function () {

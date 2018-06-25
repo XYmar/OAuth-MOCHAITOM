@@ -62,7 +62,7 @@
 
 <script>
   import { isvalidUsername } from '@/utils/validate'
-  import {addUser} from "../../api/getUsers"
+  import { addUser } from '../../api/getUsers'
   /* import LangSelect from '@/components/LangSelect'*/
   /* import SocialSign from './socialsignin'*/
 
@@ -127,23 +127,23 @@
           }
         })
       },
-      registerUser: function () {
+      registerUser: function() {
         var qs = require('qs')
-        let data = {
+        const data = {
           'username': this.loginForm.username,
           'password': this.loginForm.password
         }
-        let datapost = qs.stringify(data)
+        const datapost = qs.stringify(data)
         /*  this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
           this.temp.author = 'vue-element-admin'*/
         addUser(datapost).then((res) => {
-         this.$notify({
+          this.$notify({
             title: '成功',
             message: '注册成功',
             type: 'success',
             duration: 2000
           })
-         this.$router.replace('/login')
+          this.$router.replace('/login')
           /* this.getList()*/
         })
       }
