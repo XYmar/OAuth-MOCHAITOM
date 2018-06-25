@@ -52,7 +52,7 @@
                 style="width: 100%;border-radius:8px;">
         <el-table-column min-width="150px" :label="$t('table.projectName')">
           <template slot-scope="scope">
-            <span class="link-type" @click="handleUpdate(scope.row)">{{scope.row.name}}</span>
+            <span class="link-type" @click="handleSelect(scope.row)">{{scope.row.name}}</span>
           </template>
         </el-table-column>
         <el-table-column min-width="150px" :label="$t('table.projectDesc')">
@@ -391,6 +391,11 @@
             })
           }
         })
+      },
+      handleSelect(row) {
+        this.$store.commit('SET_PROJECTID',row.id)
+        this.$store.commit('SET_PROJECTNAME',row.name)
+        this.$router.push({path:'/dashboard'})
       }
     },
     computed: {
