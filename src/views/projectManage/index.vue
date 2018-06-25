@@ -395,7 +395,7 @@
       handleSelect(row) {
         this.$store.commit('SET_PROJECTID',row.id)
         this.$store.commit('SET_PROJECTNAME',row.name)
-        this.$router.push({path:'/dashboard'})
+        this.$router.push({path:'/dashboard/dashboard'})
       }
     },
     computed: {
