@@ -15,7 +15,7 @@ function hasPermission(roles, permissionRoles) {
   return roles.some(role => permissionRoles.indexOf(role) >= 0)
 }
 const whiteList = ['/login', '/authredirect', '/register']// no redirect whitelist
-/*router.beforeEach((to, from, next) => {
+/* router.beforeEach((to, from, next) => {
 /!*  if (to.path === './login') {
     next({path: '/login'})
     return
@@ -55,28 +55,20 @@ const whiteList = ['/login', '/authredirect', '/register']// no redirect whiteli
   }
 })*/
 router.beforeEach((to, from, next) => {
- console.log('刷新了')
-  console.log(getCookies('username'),1)
   NProgress.start() // start progress bar
   if (getToken()) { // determine if there has token
-    console.log(getToken())
+    console.log(getToken(), 'token')
     console.log(to.path)
     if (to.path === '/login') {
       next({ path: '/' })
       NProgress.done() // if current page is dashboard will not trigger	afterEach hook, so manually handle it
     } else {
-      console.log(store.getters.roles.length)
-      console.log(store.getters)
       if (store.getters.roles.length === 0) { // 判断当前用户是否已拉取完user_info信息
         store.dispatch('GetUserInfo').then(res => { // 拉取user_info
-          console.log('errorrr')
-
-          console.log(store.getters.loginname)
-          let cookieName = getCookies('username')
-          const roles = cookieName === 'admin' ? ['admin'] : ['editor'] // note: roles must be a array! such as: ['editor','develop']
+          const roles = [store.getters.roles] // note: roles must be a array! such as: ['editor','develop']
           store.dispatch('GenerateRoutes', { roles }).then(() => { // 根据roles权限生成可访问的路由表
             router.addRoutes(store.getters.addRouters) // 动态添加可访问路由表
-            next({ ...to, replace: true }) // hack方法 确保addRoutes已完成 ,set the replace: true so the navigation will not leave a history record
+            next({ path: '/projectManage', replace: true }) // hack方法 确保addRoutes已完成 ,set the replace: true so the navigation will not leave a history record
           })
         }).catch(() => {
           store.dispatch('FedLogOut').then(() => {
