@@ -183,6 +183,7 @@
     },
     data() {
       return {
+        projectId: '',
         selectedId: '',
         treeInfo: [],
         fileList: [],
@@ -259,6 +260,7 @@
       }
     },
     created() {
+      this.projectId = this.$store.getters.projectId
       this.userData.username = this.getCookie('username')
       this.userData.password = this.getCookie('password')
 
@@ -269,7 +271,7 @@
     methods: {
       getList() {
         this.listLoading = true
-        compList(this.userData).then(response => {
+        compList(this.projectId).then(response => {
           this.list = response.data.data
           this.total = response.data.total
           this.listLoading = false
@@ -362,7 +364,7 @@
 
             }
 
-            createComp(this.userData, formData).then(() => {
+            createComp(this.projectId, formData).then(() => {
               createloading.close()
               this.list.unshift(this.temp)
               this.dialogFormVisible = false
