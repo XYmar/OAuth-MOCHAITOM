@@ -10,6 +10,11 @@
                  icon="el-icon-edit">{{$t('table.add')}}
       </el-button>
 
+      <router-link to="/componentTypes/index">
+        <el-button class="filter-item pull-right" style="float: right;margin-left: 10px;" type="primary"
+                   icon="el-icon-edit">组件分类
+        </el-button>
+      </router-link>
 
       <el-upload style="float: right;"
                  class="upload-demo"
@@ -41,7 +46,7 @@
       </el-table-column>
       <el-table-column min-width="100px" :label="$t('table.compSize')">
         <template slot-scope="scope">
-          <span>{{scope.row.displaySize}}</span>
+          <span>{{scope.row.size}}</span>
         </template>
       </el-table-column>
       <el-table-column min-width="100px" :label="$t('table.compPath')">
@@ -329,10 +334,10 @@
           this.$refs.uploader.uploader.files.splice(0,this.$refs.uploader.uploader.files.length);
           console.log(this.$refs.uploader.uploader.files);
 
-          this.getList()
+          // this.getList()
         })
 
-        this.getList()
+        // this.getList()
       },
       createData() {
         this.$refs['dataForm'].validate((valid) => {
@@ -345,6 +350,7 @@
             let formData = new FormData();
 
             this.fileAll = this.$refs.uploader.uploader.files;
+            console.log(this.fileAll,'所有文件')
 
             formData.append('name', this.temp.name);
             formData.append('version', this.temp.version);
@@ -356,11 +362,11 @@
             $(".uploader-file-actions").children(".uploader-file-pause").removeClass("uploader-file-pause");
             $(".uploader-file-actions").children(".uploader-file-remove").removeClass("uploader-file-remove");
 
-            formData.append('enctype', "multipart/form-data");
+            formData.append('enctype', "multipart/form-data")
 
             for (var i = 0; i < this.fileAll.length; i++) {
               //判断数组里是文件夹还是文件
-              formData.append('componentfiles', this.fileAll[i].file);
+              formData.append('componentEntityFiles', this.fileAll[i].file);
 
             }
 
@@ -394,7 +400,7 @@
           this.$refs['dataForm'].clearValidate();
 
           //树
-          compSingle(this.userData, this.selectedId).then(response => {
+          compSingle(this.selectedId).then(response => {
             this.singleComp = response.data.data;
             this.listLoading = false
 
@@ -412,7 +418,7 @@
 
               item = this.singleComp;
 
-              let path = (componentFile[m].path).split('/');
+              let path = (componentFile[m].savePath).split('/');
 
               for (let i = 1; i < path.length; i++) {
                 item = this.$options.methods.handleInfo(item, path[i]);
@@ -426,7 +432,7 @@
             let forderTemp = [];
 
             for (let i = 0; i < this.singleComp.componentDetailEntities.length; i++) {
-              let info = this.singleComp.componentDetailEntities[i].path.split('/');
+              let info = this.singleComp.componentDetailEntities[i].savePath.split('/');
               let clearId = this.singleComp.componentDetailEntities[i].id;
 
               if (info.length > 2) {
@@ -516,7 +522,7 @@
           spinner: 'el-icon-loading'
         })
 
-        copyComp(this.userData, proData, id).then(() => {
+        copyComp(proData, id).then(() => {
           this.list.unshift(this.temp)
           this.dialogFormVisible = false
           copyloading.close()
@@ -539,7 +545,7 @@
               spinner: 'el-icon-loading',
               fullscreen: true
             })
-            const id = this.selectedId;
+            let id = this.selectedId;
 
             let formData = new FormData();
 
@@ -559,11 +565,19 @@
 
             for (var i = 0; i < this.fileAll.length; i++) {
               //判断数组里是文件夹还是文件
-              formData.append('componentfiles', this.fileAll[i].file);
+              formData.append('componentEntityFiles', this.fileAll[i].file);
 
             }
-
-            updateComp(this.userData, formData,id).then(() => {
+            // patch暂时不支持修改文件
+            let data = {
+              name: this.temp.name,
+              version: this.temp.version,
+              deployPath: this.temp.deployPath,
+              description: this.temp.description
+            }
+            let qs = require('qs')
+            let newdata = qs.stringify(data)
+            updateComp(newdata,id).then(() => {
               for (const v of this.list) {
                 if (v.id === this.temp.id) {
                   const index = this.list.indexOf(v)
@@ -609,7 +623,7 @@
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          deleteComp(this.userData, id).then(() => {
+          deleteComp(id).then(() => {
             this.$notify({
               title: '成功',
               message: '删除成功',

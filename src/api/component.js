@@ -6,12 +6,8 @@ export function compList(proId) {
     method: 'get',
     params: {
       // isShowHistory: false,
-      deleted: true
+      deleted: false
     }
-    /* auth: {
-      username: userData.username,
-      password: userData.password
-    }*/
   })
 }
 
@@ -19,37 +15,26 @@ export function createComp(proId, data) {
   return request({
     url: '/projects/' + proId + '/components',
     method: 'post',
-    /* auth: {
-      username: userData.username,
-      password: userData.password
-    },*/
     headers: {
-      'Content-Type': 'multipart/form-data'
+      // 'Content-Type': 'multipart/form-data'
+      'content-type': 'application/json'
     },
     data
   })
 }
 
-export function updateComp(userData, data, id) {
+export function updateComp(data, id) {
   return request({
-    url: '/components/' + id + '/update',
-    method: 'post',
-    auth: {
-      username: userData.username,
-      password: userData.password
-    },
+    url: '/components/' + id,
+    method: 'PATCH',
     data
   })
 }
 
-export function copyComp(userData, data, id) {
+export function copyComp(data, id) {
   return request({
     url: '/components/' + id + '/copy',
     method: 'post',
-    auth: {
-      username: userData.username,
-      password: userData.password
-    },
     headers: {
       'content-type': 'application/x-www-form-urlencoded'
     },
@@ -72,27 +57,58 @@ export function importComp(userData, data) {
   })
 }
 
-export function deleteComp(userData, id) {
+export function deleteComp(id) {
   return request({
     url: '/components/' + id,
-    method: 'delete',
-    auth: {
-      username: userData.username,
-      password: userData.password
+    method: 'delete'
+  })
+}
+
+export function compSingle(id) {
+  return request({
+    url: '/components/' + id,
+    method: 'get',
+    headers: {
+      'content-type': 'application/x-www-form-urlencoded'
     }
   })
 }
 
-export function compSingle(userData, id) {
+// 组件分类
+
+// 获取组件分类
+export function getCompTypes(id) {
   return request({
-    url: '/components/' + id,
-    method: 'get',
-    auth: {
-      username: userData.username,
-      password: userData.password
-    },
+    url: '/projects/' + id + '/componenttypes',
+    method: 'get'
+  })
+}
+
+// 新建组件分类
+export function saveCompTypes(id, data) {
+  return request({
+    url: '/projects/' + id + '/componenttypes',
+    method: 'post',
     headers: {
       'content-type': 'application/x-www-form-urlencoded'
-    }
+    },
+    data
+  })
+}
+
+// 删除组件分类
+export function deleteCompType(id) {
+  return request({
+    url: '/componenttypes/' + id,
+    method: 'delete'
+  })
+}
+
+// 修改组件分类
+export function updateCompTypes(data, id) {
+  return request({
+    url: '/componenttypes/' + id,
+    method: 'PATCH',
+    data
   })
 }
