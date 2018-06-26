@@ -317,19 +317,20 @@
       updateData() {
         this.$refs['dataForm'].validate((valid) => {
           if (valid) {
-            let data = {
+            let qs = require('qs');
+            let data = qs.stringify({
               'name': this.temp.name,
               'ip': this.temp.ip,
               'deployPath': this.temp.deployPath,
               'description': this.temp.description
-            };
+            });
             let deviceData = new FormData()
             deviceData.append('name',this.temp.name)
             deviceData.append('ip',this.temp.ip)
             deviceData.append('deployPath',this.temp.deployPath)
             deviceData.append('description',this.temp.description)
             deviceData.append('enctype', "multipart/form-data")
-            updateDevice(this.deviceId, deviceData).then((res) => {
+            updateDevice(this.deviceId, data).then((res) => {
               this.dialogFormVisible = false
               this.$notify({
                 title: '成功',
