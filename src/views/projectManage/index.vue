@@ -292,9 +292,9 @@
 
             /*console.log(this.temp.name);
 
-            console.log(id);
-            let proData = qs.stringify(data);*/
-            updateProject(data, id).then(() => {
+            console.log(id);*/
+            let proData = qs.stringify(data);
+            updateProject(proData, id).then(() => {
               for (const v of this.list) {
                 if (v.id === this.temp.id) {
                   const index = this.list.indexOf(v)

@@ -6,6 +6,7 @@ export default {
     permission: '权限测试页',
     icons: '图标',
     components: '组件',
+    componentTypes: '组件分类',
     componentIndex: '介绍',
     tinymce: '富文本编辑器',
     markdown: 'Markdown',
