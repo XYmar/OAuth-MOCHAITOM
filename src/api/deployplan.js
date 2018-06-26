@@ -19,10 +19,6 @@ export function updateDeployplan(data, id) {
   return request({
     url: 'deploymentdesigns/' + id,
     method: 'patch',
-    auth: {
-      username: 'admin',
-      password: 'admin'
-    },
     data
   })
 }
@@ -30,11 +26,7 @@ export function updateDeployplan(data, id) {
 export function deleteDeployplan(id) {
   return request({
     url: 'deploymentdesigns/' + id,
-    method: 'delete',
-    auth: {
-      username: 'admin',
-      password: 'admin'
-    }
+    method: 'delete'
   })
 }
 
