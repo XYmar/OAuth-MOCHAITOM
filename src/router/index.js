@@ -270,6 +270,12 @@ export const asyncRouterMap = [
     children: [{ path: 'index', component: _import('components/index'), name: 'components', meta: { title: 'components', icon: 'components1' }}]
   },
   {
+    path: '/componentTypes',
+    component: Layout,
+    hidden: true,
+    children: [{ path: 'index', component: _import('componentTypes/index'), name: 'componentTypes', meta: { title: 'componentTypes', icon: 'components1' }}]
+  },
+  {
     path: '/device',
     component: Layout,
     children: [{ path: 'device', component: _import('device/device'), name: 'device', meta: { title: 'device', icon: 'computer' }}]
