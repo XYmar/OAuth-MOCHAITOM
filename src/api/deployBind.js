@@ -2,41 +2,29 @@ import request from '../utils/request'
 
 export function doDeployBind(deployPlanId, deviceCHId, data) {
   return request({
-    url: 'deploymentdesigns/' + deployPlanId + '/deploymentdesigndetails/devices/' + deviceCHId,
-    method: 'post',
-    auth: {
-      username: 'admin',
-      password: 'admin'
-    },
+    url: 'deploymentdesigns/' + deployPlanId + '/devices/' + deviceCHId,
+    method: 'put',
     headers: {
-      'content-type': 'application/x-www-form-urlencoded'
+      'content-type': 'application/json'
     },
-    data
+    data: ({ componentIds: data })
   })
 }
 
-export function getDeployComLists(deployPlanId, deviceId, userData) {
+export function getDeployComLists(deployPlanId, deviceId) {
   return request({
-    url: 'deploymentdesigns/' + deployPlanId + '/deploymentdesigndetails/devices/' + deviceId,
+    url: 'deploymentdesigns/' + deployPlanId + '/devices/' + deviceId + '/deploymentdesigndetails',
     method: 'get',
-    auth: {
-      username: userData.username,
-      password: userData.password
-    },
     headers: {
       'content-type': 'application/x-www-form-urlencoded'
     }
   })
 }
 
-export function deleteBind(id, userData) {
+export function deleteBind(id) {
   return request({
     url: 'deploymentdesigns/deploymentdesigndetails/' + id,
-    method: 'delete',
-    auth: {
-      username: userData.username,
-      password: userData.password
-    }
+    method: 'delete'
   })
 }
 

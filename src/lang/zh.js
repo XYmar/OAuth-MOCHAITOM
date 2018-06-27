@@ -64,7 +64,7 @@ export default {
     project: '项目管理',
     baseline: '基线',
     deployPlan: '部署设计',
-    deployPlanDetail: '绑定详情,',
+    deployPlanDetail: '绑定详情',
     deployBind: '绑定'
   },
   navbar: {

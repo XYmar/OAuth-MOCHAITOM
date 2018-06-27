@@ -171,7 +171,7 @@
     created(){
       this.userData.username = this.getCookie('username')
       this.userData.password = this.getCookie('password')
-      this.proId = this.getCookie('projectId')
+      this.proId = this.$store.getters.projectId
       this.deployPlanId = this.$route.params.id
       this.getList();
       //this.getListComp();
@@ -210,7 +210,7 @@
         this.listComp = [];
 
         //查询已绑定信息
-        getDeployComLists(this.deployPlanId, this.deviceCHId, this.userData).then(response => {
+        getDeployComLists(this.deployPlanId, this.deviceCHId).then(response => {
           this.listBind = response.data.data
           this.total = response.data.total
           this.listLoading = false
@@ -218,7 +218,7 @@
           console.log(this.listBind.length);
           console.log(this.listBind);
 
-          compList(this.userData).then(response => {
+          compList(this.proId).then(response => {
             this.listComp = response.data.data
             this.total = response.data.total
             this.listLoading = false
@@ -291,8 +291,15 @@
 
            let formData = new FormData();
            formData.append('componentIds', this.componentIds);
+           formData.append('enctype', "multipart/form-data")
 
-           doDeployBind(this.deployPlanId, this.deviceCHId, formData).then(() => {
+           let qs = require('qs');
+           console.log(this.componentIds)
+           let data = {
+             'componentIds': this.componentIds
+           };
+
+           doDeployBind(this.deployPlanId, this.deviceCHId, this.componentIds).then(() => {
              this.$notify({
                title: '成功',
                message: '绑定成功',
@@ -385,7 +392,7 @@
               }
           }
 
-          deleteBind(this.delBindId, this.userData).then(() => {
+          deleteBind(this.delBindId).then(() => {
             this.$message({
               type: 'success',
               message: '解绑成功!'
