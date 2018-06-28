@@ -4,12 +4,12 @@
     <split-pane v-on:resize="resize" split="vertical" class="splicClass">
       <template slot="paneL">
         <div class="left-container">
-          <div class="filter-container" style="margin-top:5px;">
+          <div class="filter-container" style="margin-top:8px;padding-left: 6px;">
             <el-input style="width: 200px;" class="filter-item" placeholder="设备名" v-model="searchQuery">
             </el-input>
 
           </div>
-          <div style="height: 440px;overflow-y: auto;">
+          <div style="height: 440px;overflow-y: auto;padding-left: 6px;">
             <el-table :key='tableKey' :data="listA" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row
                       style="width: 100%;">
               <!-- <el-table :data="list" row-key="id"  v-loading.body="listLoading" border fit highlight-current-row style="width: 100%">-->
@@ -70,7 +70,7 @@
                         </el-table-column>
                         <el-table-column min-width="100px" align="center" :label="$t('table.compSize')">
                           <template slot-scope="scope">
-                            <span>{{scope.row.displaySize}}</span>
+                            <span>{{scope.row.size}}</span>
                           </template>
                         </el-table-column>
                         <el-table-column label="解绑" width="80" align="center">
@@ -288,18 +288,14 @@
              return;
            }
 
-
-           let formData = new FormData();
-           formData.append('componentIds', this.componentIds);
-           formData.append('enctype', "multipart/form-data")
-
-           let qs = require('qs');
-           console.log(this.componentIds)
+           let dataBindId = (this.componentIds + '').replace(/\[|]/g,'')
+           console.log(dataBindId, '99980')
            let data = {
-             'componentIds': this.componentIds
-           };
-
-           doDeployBind(this.deployPlanId, this.deviceCHId, this.componentIds).then(() => {
+             'componentIds': dataBindId
+           }
+           let qs = require('qs')
+           let dataBind = qs.stringify(data)
+           doDeployBind(this.deployPlanId, this.deviceCHId, dataBind).then(() => {
              this.$notify({
                title: '成功',
                message: '绑定成功',
