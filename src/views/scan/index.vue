@@ -328,7 +328,7 @@
 </template>
 
 <script>
-  import { deployplanList } from '@/api/deployplan'
+  import { deployplanList, deployplanDetailsList } from '@/api/deployplan'
   import { Loading } from 'element-ui'
   /* import { compSingle } from '@/api/component'*/
   /* eslint-disable */
@@ -356,73 +356,6 @@
   let deployPlanDetailEntities;
   let deployplanZtreeId;
 
-  /*let zNodes = [
-    { id:1,pid:0,name:"大良造菜单",open:true,nocheck:false,
-      children: [
-        { id:11,pid:1,name:"当前项目"},
-        { id:12,pid:1,name:"工程管理",open:true,
-          children: [
-            { id:121,pid:12,name:"我的工程"},
-            { id:122,pid:12,name:"施工调度"},
-            { id:1211,pid:12,name:"材料竞价"}
-            ]
-        },
-        { id:13,pid:1,name:"录入管理",open:true,
-          children: [
-            { id:131,pid:13,name:"用工录入"},
-            { id:132,pid:13,name:"商家录入"},
-            { id:1314,pid:13,name:"机构列表"}
-            ]
-        },
-        { id:14,pid:1,name:"审核管理",open:true,
-          children: [
-            { id:141,pid:14,name:"用工审核"},
-            { id:142,pid:14,name:"商家审核"},
-            { id:145,pid:14,name:"机构审核"}
-            ]
-        },
-        { id:15,pid:1,name:"公司管理",open:true,
-          children: [
-            { id:1517,pid:15,name:"我的工程案例"},
-            { id:1518,pid:15,name:"联系人设置"},
-            { id:1519,pid:15,name:"广告设置"}
-            ]
-        },
-        { id:16,pid:1,name:"业务管理",open:true,
-          children: [
-            { id:164,pid:16,name:"合同范本"},
-            { id:165,pid:16,name:"合同列表"},
-            { id:166,pid:16,name:"需求调度"}
-            ]
-        },
-        { id:17,pid:1,name:"订单管理",open:true,
-          children: [
-            { id:171,pid:17,name:"商品订单"},
-            { id:172,pid:17,name:"用工订单"},
-            { id:175,pid:17,name:"供应菜单"}
-            ]
-        },
-        { id:18,pid:1,name:"我的功能",open:true,
-          children: [
-            { id:181,pid:18,name:"免费设计"},
-            { id:182,pid:18,name:"装修报价"},
-            { id:1817,pid:18,name:"项目用工"}
-            ]
-        },
-        { id:19,pid:1,name:"分润管理",open:true,
-          children: [
-            { id:191,pid:19,name:"分润列表"}
-            ]
-        },
-        { id:110,pid:1,name:"运营管理",open:true,
-          children: [
-            { id:1101,pid:110,name:"代理列表"},
-            { id:1102,pid:110,name:"代售商品"}
-            ]
-        },
-        ]
-    }
-    ]*/
   let zNodes = [];
   let setting = {
     view: {
@@ -613,7 +546,128 @@
             enable: true
           }
         };
-        this.$axios.get(this.getIP() + 'deploymentdesigns/' + deployplanZtreeId + '/deploymentdesigndetails', {
+
+        deployplanDetailsList(deployplanZtreeId).then(response => {
+          let item;
+
+          deployPlanDetailEntities = response.data.data;
+
+          for (let j = 0; j < deployPlanDetailEntities.length; j++) {
+
+            let deviceNode = {};//设备
+            let componentNode = {};//组件
+
+            deviceNode.id = deployPlanDetailEntities[j].deviceEntity.id;
+            //deviceNode.state = deployPlanDetailEntities[j].deviceEntity.online;
+            deployPlanDetailEntities[j].deviceEntity.online = false;
+
+            componentNode.id = deployPlanDetailEntities[j].componentEntity.id;
+            componentNode.name = deployPlanDetailEntities[j].componentEntity.name;
+            componentNode.deviceId = deployPlanDetailEntities[j].deviceEntity.id;
+            componentNode.componentNodeInfo = deployPlanDetailEntities[j].componentEntity.componentDetailEntities;
+            componentNode.state = "--";
+
+            //生成树，只包括设备和组件
+            if (zNodes.length > 0) {
+              let flag = true;
+              all:
+                for (let k = 0; k < zNodes.length; k++) {
+
+                  if (zNodes[k].id == deviceNode.id) {
+
+                    for (let l = 0; l < zNodes[k].children.length; l++) {
+                      if (zNodes[k].children[l].id == componentNode.id) {
+                        flag = false;
+                        break all;
+
+                      }
+                    }
+
+                    zNodes[k].children.push(componentNode);
+
+                    flag = false;
+                    break;
+                  }
+                }
+
+              if (flag) {
+
+                if (deployPlanDetailEntities[j].deviceEntity.online == false) {
+                  deployPlanDetailEntities[j].deviceEntity.online = "离线";
+                } else {
+                  deployPlanDetailEntities[j].deviceEntity.online = "在线";
+
+                }
+                deviceNode.name =
+                  deployPlanDetailEntities[j].deviceEntity.name + "(" +
+                  deployPlanDetailEntities[j].deviceEntity.ip + ")" + "" + deployPlanDetailEntities[j].deviceEntity.online;
+
+                var ary = deviceNode.name.split(")");
+                deviceNode.name = deviceNode.name.replace(')', ')           ');
+
+                deviceNode.deployPlanId = deployplanZtreeId;
+
+                deviceNode.nocheck = true;                 //去掉设备后的CheckBox
+
+                let children = [];
+                children.push(componentNode);
+                deviceNode.children = children;
+                zNodes.push(deviceNode);
+              }
+
+            } else {
+              if (deployPlanDetailEntities[j].deviceEntity.online == false) {
+                deployPlanDetailEntities[j].deviceEntity.online = "离线";
+              } else {
+                deployPlanDetailEntities[j].deviceEntity.online = "在线";
+              }
+
+              deviceNode.name =
+                deployPlanDetailEntities[j].deviceEntity.name + "(" +
+                deployPlanDetailEntities[j].deviceEntity.ip + ")" + "" + deployPlanDetailEntities[j].deviceEntity.online;
+
+              var ary = deviceNode.name.split(")");
+              deviceNode.name = deviceNode.name.replace(')', ')           ');
+              deviceNode.deployPlanId = deployplanZtreeId;
+
+              deviceNode.nocheck = true;                   //去掉设备后的CheckBox
+
+              let children = [];
+              children.push(componentNode);
+              deviceNode.children = children;
+
+              zNodes.push(deviceNode);
+
+            }
+          }
+
+          for (let j = 0; j < zNodes.length; j++) {
+            for (let l = 0; l < zNodes[j].children.length; l++) {
+              //对比时，是路径节点与根节点下的孩子节点比较
+              let componentFile = zNodes[j].children[l].componentNodeInfo;//组件
+
+              for (let m = 0; m < componentFile.length; m++) {
+                childrenInfo.push(componentFile[m]);//存放所有的文件信息
+
+                let item = zNodes[j].children[l];//组件作为判断开始的父节点
+
+                let path = (componentFile[m].savePath).split('/');
+                let idCom = componentFile[m].id;
+
+                for (let i = 1; i < path.length; i++) {
+                  let idFlag;
+                  if (i == path.length - 1) {
+                    idFlag = true;//最后一个即为单个的文件
+                  }
+                  item = this.$options.methods.handleInfo(item, path[i], idCom, idFlag);
+                }
+              }
+            }
+          }
+
+          $.fn.zTree.init($("#treeDemo"), setting, zNodes);
+        })
+        /*this.$axios.get(this.getIP() + 'deploymentdesigns/' + deployplanZtreeId + '/deploymentdesigndetails', {
           //设置头
           headers: {
             "content-type": "application/x-www-form-urlencoded"
@@ -746,7 +800,7 @@
 
         }).catch(err => {
           console.log(err);
-        });
+        });*/
 
       },
 
