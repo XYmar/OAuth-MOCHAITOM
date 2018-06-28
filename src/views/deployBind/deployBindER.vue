@@ -47,11 +47,13 @@
         centerX: 300,
         centerY: 400,
         childX: 550,
-        stepY: 200
+        stepY: 200,
+        title: '设备组件关系图'
       }
     },
     mounted() {
       this.initChart()
+      console.log(this.list)
     },
     beforeDestroy() {
       if (!this.chart) {
@@ -66,28 +68,65 @@
 
         this.chart.setOption({
           title: {
-            text: '设备组件关系图'
+            text: this.title //'设备组件关系图'
           },
-          tooltip: {},
+          tooltip: {
+            formatter: function (x) {
+              /*return x.data.info.componentEntity.deployPath;*/
+              var res
+              if(x.data.deviceInfo) {
+                res='<div><p>名称：'+x.data.deviceInfo.name+'</p></div>'
+                  + '<div><p>IP：'+x.data.deviceInfo.ip+'</p></div>'
+              } else if(x.data.info){
+                res='<div><p>名称：'+x.data.info.componentEntity.name+'</p></div>'
+                  + '<div><p>路径：'+x.data.info.componentEntity.deployPath+'</p></div>'
+                  + '<div><p>版本：'+x.data.info.componentEntity.version+'</p></div>'
+              }
+              /*for(var i=0;i<params.length;i++){
+                res+='<p>'+params[i].seriesName+':'+params[i].data+'</p>'
+              }*/
+              return res;
+            }
+          },
           animationDurationUpdate: 300,
           animationEasingUpdate: 'quinticInOut',
           series: [
             {
               type: 'graph',
-              layout: 'none',
-              symbolSize: 50,
+              layout: 'circular',
+              symbolSize: 20,
               roam: true,
               label: {
                 normal: {
-                  show: true
+                  show: true,
+                  /*formatter: function (name) {
+                    return '{name|' + name + '}';
+                  },
+                  rich: {
+                    name: {
+                      backgroundColor: './computer.png'
+                    }
+                  },*/
+                  textStyle: {
+                    fontSize: 16,
+                    fontFamily:'Arial',
+                    fontWeight: 700,
+                    textShadow: 'none',
+                    color: '#777'
+                  }
                 }
               },
+              /*itemStyle: {
+                normal: {
+                  color: '#66b1ff'
+                }
+              },*/
               edgeSymbol: ['circle', 'arrow'],
               edgeSymbolSize: [4, 10],
               edgeLabel: {
                 normal: {
                   textStyle: {
-                    fontSize: 14
+                    fontSize: 16
                   }
                 }
               },
@@ -137,8 +176,15 @@
         if(this.list[0]) {
           this.centerDevice = {
             name: this.list[0].deviceEntity.name,
-            x: this.centerX,
-            y: this.centerY
+            /*x: this.centerX,
+            y: this.centerY,*/
+            symbolSize: 40,
+            itemStyle: {
+              normal: {
+                color: '#42b983',
+              }
+            },
+            deviceInfo: this.list[0].deviceEntity
           }
         }
         else {
@@ -152,8 +198,9 @@
         for(let i=0;i<this.list.length;i++) {
           this.dataItem = {
             name: this.list[i].componentEntity.name,
-            x: this.childX,
-            y: this.stepY*i
+            /*x: this.childX,
+            y: this.stepY*i,*/
+            info: this.list[i]
           }
           this.linksItem = {
             source: this.centerDevice.name,
@@ -164,6 +211,11 @@
         }
         console.log(this.dataList,'jjjjjj')
         console.log(this.linksList, 'lllll')
+        if(this.linksList.length > 0) {
+          this.title = '设备组件关系图'
+        } else {
+          this.title = '设备组件关系图(此设备未绑定组件)'
+        }
       }
     },
     watch: {
