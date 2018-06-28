@@ -5,9 +5,9 @@ export function doDeployBind(deployPlanId, deviceCHId, data) {
     url: 'deploymentdesigns/' + deployPlanId + '/devices/' + deviceCHId,
     method: 'put',
     headers: {
-      'content-type': 'application/json'
+      'content-type': 'application/x-www-form-urlencoded'
     },
-    data: ({ componentIds: data })
+    data
   })
 }
 
@@ -23,7 +23,7 @@ export function getDeployComLists(deployPlanId, deviceId) {
 
 export function deleteBind(id) {
   return request({
-    url: 'deploymentdesigns/deploymentdesigndetails/' + id,
+    url: '/deploymentdesigndetails/' + id,
     method: 'delete'
   })
 }
