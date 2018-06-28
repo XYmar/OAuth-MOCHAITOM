@@ -303,7 +303,7 @@
                duration: 2000
              })
 
-             getDeployComLists(this.deployPlanId, this.deviceCHId, this.userData).then((res) => {
+             getDeployComLists(this.deployPlanId, this.deviceCHId).then((res) => {
                this.bindedDeviceList = res.data.data
              })
 
@@ -409,7 +409,7 @@
 
 
       getDeployComList(row) {
-        getDeployComLists(this.deployPlanId, row.id, this.userData).then((res) => {
+        getDeployComLists(this.deployPlanId, row.id).then((res) => {
           this.bindedDeviceList = res.data.data
         })
       }
