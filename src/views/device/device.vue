@@ -300,6 +300,13 @@
                 duration: 2000
               })
               this.getList()
+            }).catch(() =>{
+              this.$notify({
+                title: '失败',
+                message: '创建失败',
+                type: 'error',
+                duration: 2000
+              })
             })
           }
         })
@@ -339,6 +346,13 @@
                 duration: 2000
               })
               this.getList()
+            }).catch(() =>{
+              this.$notify({
+                title: '失败',
+                message: '修改失败',
+                type: 'error',
+                duration: 2000
+              })
             })
           }
         })
@@ -353,11 +367,20 @@
         }).then(() => {
           let deleteId = row.id
           deleteDevice(deleteId).then(() => {
-            this.$message({
+            this.$notify({
+              title: '成功',
+              message: '删除成功',
               type: 'success',
-              message: '删除成功!'
+              duration: 2000
             })
             this.getList()
+          }).catch(() =>{
+            this.$notify({
+              title: '失败',
+              message: '删除失败',
+              type: 'error',
+              duration: 2000
+            })
           })
           /*console.log(target_btn.parentNode.parentNode.parentNode)
           const target_tr = target_btn.parentNode.parentNode.parentNode
@@ -380,11 +403,20 @@
           "name": row.name
         })
         copyDevices(copyId, this.userData, copyData).then((res) => {
-          this.$message({
+          this.$notify({
+            title: '成功',
+            message: '复制成功',
             type: 'success',
-            message: '复制成功!'
+            duration: 2000
           })
           this.getList()
+        }).catch(() =>{
+          this.$notify({
+            title: '失败',
+            message: '复制失败',
+            type: 'error',
+            duration: 2000
+          })
         })
       },
       copyDevice(row) {
@@ -405,6 +437,13 @@
             duration: 2000
           })
           this.getList()
+        }).catch(() =>{
+          this.$notify({
+            title: '失败',
+            message: '复制失败',
+            type: 'error',
+            duration: 2000
+          })
         })
       },
       handleProcess(row) {
@@ -444,6 +483,13 @@
             duration: 2000
           })
           this.getList()
+        }).catch(() =>{
+          this.$notify({
+            title: '失败',
+            message: '上报失败',
+            type: 'error',
+            duration: 2000
+          })
         })
       },
       setSort() {

@@ -30,3 +30,9 @@ export function deleteDeployplan(id) {
   })
 }
 
+export function deployplanDetailsList(deploymentDesignId) {
+  return request({
+    url: '/deploymentdesigns/' + deploymentDesignId + '/deploymentdesigndetails',
+    method: 'get'
+  })
+}

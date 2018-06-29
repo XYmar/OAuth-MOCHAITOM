@@ -174,7 +174,6 @@
       this.proId = this.$store.getters.projectId
       this.deployPlanId = this.$route.params.id
       this.getList();
-      //this.getListComp();
 
       //this.ifShow = false;
     },
@@ -186,7 +185,6 @@
           this.listLoading = false
         })
       },
-
 
       showPop(){
         //this.ifShow = true;
@@ -206,7 +204,6 @@
         this.deployPlanId = this.$route.params.id;  //所选择的部署设计的id
         console.log(this.deployPlanId);
 
-        // this.getListComp();
         this.listComp = [];
 
         //查询已绑定信息
@@ -303,15 +300,11 @@
                duration: 2000
              })
 
-             getDeployComLists(this.deployPlanId, this.deviceCHId, this.userData).then((res) => {
+             getDeployComLists(this.deployPlanId, this.deviceCHId).then((res) => {
                this.bindedDeviceList = res.data.data
              })
 
-             //this.ifShow = false;
-             this.getListComp();
-
-           })
-             .catch(() =>{
+           }).catch(() =>{
              this.$notify({
                title: '失败',
                message: '绑定失败',
@@ -326,49 +319,8 @@
            })
          }
 
-
-        /* var qs = require('qs');
-        let username = this.getCookie('username');
-        let password = this.getCookie('password');
-
-        let deployPlanId = this.$route.params.id;  //所选择的部署设计的id
-        console.log("所选择的部署设计的id-----------------");
-        console.log(deployPlanId);
-
-        if (this.diveceIdPass.length != 0) {   //是否有要绑定的数据
-          let formData = new FormData();
-          formData.append('deviceIds', this.diveceIdPass);
-          formData.append('componentIds', this.compsIdPass);
-
-          this.$axios.post(this.getIP() + 'deploymentdesigns/' + deployPlanId + "/deploymentdesigndetails", formData,
-
-            {
-
-              //设置头
-              headers: {
-                'content-type': 'application/x-www-form-urlencoded'
-              },
-              auth: {
-                username: username,
-                password: password
-              }
-            }).then(res => {
-            layer.msg("保存成功");
-            this.$router.replace({path: '/deployplan'})
-          })
-            .catch(err => {
-              layer.msg("保存失败！");
-            })
-        } else {
-          layer.msg("无绑定信息");
-        }*/
-
-
       },
 
-      deleteBind: function(){
-
-      },
 
       deleteBindRelation(row) {
         this.$confirm('确认解绑吗?', '提示', {
@@ -409,7 +361,7 @@
 
 
       getDeployComList(row) {
-        getDeployComLists(this.deployPlanId, row.id, this.userData).then((res) => {
+        getDeployComLists(this.deployPlanId, row.id).then((res) => {
           this.bindedDeviceList = res.data.data
         })
       }
