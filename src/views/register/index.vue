@@ -4,6 +4,21 @@
       <div class="title-container">
         <h3 class="title">{{$t('login.register')}}</h3>
       </div>
+      <div class="ipContainer">
+        <el-form-item prop="ipConfig" class="ipform">
+          <span class="svg-container svg-container_ip">
+            <svg-icon icon-class="IP" />
+          </span>
+          <el-input name="ipConfig" type="text" v-model="loginForm.ipConfig" autoComplete="on" placeholder="IP地址" />
+        </el-form-item>
+        <span class="colon">:</span>
+        <el-form-item prop="port" class="portform">
+          <span class="svg-container">
+            <svg-icon icon-class="port" />
+          </span>
+          <el-input name="port" type="text" v-model="loginForm.port" autoComplete="on" placeholder="端口号" />
+        </el-form-item>
+      </div>
       <el-form-item prop="username">
         <span class="svg-container svg-container_login">
           <svg-icon icon-class="user" />
@@ -20,7 +35,7 @@
           <svg-icon icon-class="eye" />
         </span>
       </el-form-item>
-      <el-form-item prop="password">
+      <el-form-item prop="againPassword">
         <span class="svg-container">
           <svg-icon icon-class="password" />
         </span>
@@ -62,10 +77,13 @@
 
 <script>
   import { isvalidUsername } from '@/utils/validate'
-  import { addUser } from '../../api/getUsers'
+  // import { addUser } from '../../api/getUsers'
+  // import service from '@/utils/request'
+
   /* import LangSelect from '@/components/LangSelect'*/
   /* import SocialSign from './socialsignin'*/
 
+  /*eslint-disable*/
   export default {
     /* components: { LangSelec },*/
     name: 'login',
@@ -79,21 +97,32 @@
       }
       const validatePassword = (rule, value, callback) => {
         if (value.length < 6) {
-          callback(new Error('请输入正确的密码！'))
+          callback(new Error('请输入正确的密码,至少6位！'))
+        } else {
+          callback()
+        }
+      }
+      const validatePasswordAgain = (rule, value, callback) => {
+        if (value.length < 6) {
+          callback(new Error('请输入正确的密码,至少6位！'))
+        } else if (this.loginForm.againPassword !== this.loginForm.password) {
+          callback(new Error('两次密码输入不一致，请再次输入新密码！'))
         } else {
           callback()
         }
       }
       return {
         loginForm: {
+          ipConfig: '192.168.0.117',
+          port: '8080',
           username: '',
           password: '',
           againPassword: ''
         },
         loginRules: {
-          username: [{ required: true, trigger: 'blur', validator: validateUsername }],
-          password: [{ required: true, trigger: 'blur', validator: validatePassword }],
-          againPassword: [{ required: true, trigger: 'blur', validator: validatePassword }]
+          username: [{required: true, trigger: 'blur', validator: validateUsername}],
+          password: [{required: true, trigger: 'blur', validator: validatePassword}],
+          againPassword: [{required: true, trigger: 'blur', validator: validatePasswordAgain}]
         },
         passwordType: 'password',
         loading: false,
@@ -117,7 +146,7 @@
             this.loading = true
             this.$store.dispatch('LoginByUsername', this.loginForm).then(() => {
               this.loading = false
-              this.$router.push({ path: '/' })
+              this.$router.push({path: '/'})
             }).catch(() => {
               this.loading = false
             })
@@ -127,32 +156,35 @@
           }
         })
       },
-      registerUser: function() {
-        var qs = require('qs')
-        const data = {
-          'username': this.loginForm.username,
-          'password': this.loginForm.password
-        }
-        const datapost = qs.stringify(data)
-        /*  this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
-          this.temp.author = 'vue-element-admin'*/
-        addUser(datapost).then((res) => {
-          this.$notify({
-            title: '成功',
-            message: '注册成功',
-            type: 'success',
-            duration: 2000
-          })
-          this.$router.replace('/login')
-          /* this.getList()*/
+      registerUser: function () {
+        this.$refs['loginForm'].validate((valid) => {
+          if (valid) {
+            var qs = require('qs')
+            let data = {
+              'username': this.loginForm.username,
+              'password': this.loginForm.password
+            }
+            let datapost = qs.stringify(data)
+            let ip = this.loginForm.ipConfig
+            let port = this.loginForm.port
+            // service.defaults.baseURL = 'http://' + ip + ':' + port
+            let ipPort = 'http://' + ip + ':' + port + '/'
+            this.$axios.post(ipPort + 'users', datapost, {
+              headers: {
+                "content-type": "application/x-www-form-urlencoded"
+              }
+            }).then(() => {
+              this.$notify({
+                title: '成功',
+                message: '注册成功',
+                type: 'success',
+                duration: 2000
+              })
+              this.$router.replace('/login')
+            })
+          }
         })
       }
-    },
-    created() {
-      // window.addEventListener('hashchange', this.afterQRScan)
-    },
-    destroyed() {
-      // window.removeEventListener('hashchange', this.afterQRScan)
     }
   }
 </script>
