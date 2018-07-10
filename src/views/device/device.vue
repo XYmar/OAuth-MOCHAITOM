@@ -47,10 +47,11 @@
       </el-table-column>
       <el-table-column align="center" :label="$t('table.check')" width="180" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button type="primary" size="mini" v-if="scope.row.online && !scope.row.virtual" @click="handleProcess(scope.row)">{{$t('table.deviceProcess')}}</el-button>
+          <el-button size="mini" @click="handleDisk(scope.row)" type="success">{{$t('table.disk')}}</el-button>
+          <!--<el-button type="primary" size="mini" v-if="scope.row.online && !scope.row.virtual" @click="handleProcess(scope.row)">{{$t('table.deviceProcess')}}</el-button>
           <el-button size="mini" type="success" v-if="scope.row.online && !scope.row.virtual" @click="handleDisk(scope.row)">{{$t('table.disk')}}</el-button>
           <el-button type="primary" disabled="disabled" v-if="!scope.row.online || scope.row.virtual" size="mini">{{$t('table.deviceProcess')}}</el-button>
-          <el-button size="mini" disabled="disabled" v-if="!scope.row.online || scope.row.virtual" type="success">{{$t('table.disk')}}</el-button>
+          <el-button size="mini" disabled="disabled" v-if="!scope.row.online || scope.row.virtual" type="success">{{$t('table.disk')}}</el-button>-->
         </template>
       </el-table-column>
       <el-table-column align="center" :label="$t('table.actions')" width="280" class-name="small-padding fixed-width">
@@ -151,6 +152,8 @@
       </div>
     </el-dialog>
 
+    <p id="callback"></p>
+    <p id="onlineheartbeatmessages"></p>
   </div>
 </template>
 
@@ -158,6 +161,9 @@
   import { getDevices, saveDevices, updateDevice, deleteDevice, copyDevices, getDisks, getProcess, reportDevices } from '@/api/device'
   import waves from '@/directive/waves' // 水波纹指令
   import Sortable from 'sortablejs'
+  import service from '@/utils/request'
+  import Stomp from 'stompjs'
+  import SockJS from 'sockjs-client'
   /* eslint-disable */
   export default {
     name: 'add-device',
@@ -238,6 +244,7 @@
       this.userData.password = this.getCookie('password')
       this.proId = this.getCookie('projectId')
       this.getList()
+      this.getList2()
     },
     methods: {
       getList() {
@@ -246,6 +253,31 @@
           this.list = response.data.data
           this.listLoading = false
         })
+      },
+      getList2() {
+        let url = service.defaults.baseURL + '/OMS';
+        //alert(url);
+        let socket = new SockJS(url);
+        let stompClient = Stomp.over(socket);
+        stompClient.connect({}, function (frame) {
+          //console.log('Connected: ' + frame);
+          /*stompClient.subscribe('/topic', function (greeting) {
+            showGreeting(JSON.parse(greeting.body).content);
+          });*/
+          /*stompClient.subscribe('/topic/time', function (response) {
+            $("#callback").html(response.body);
+          });*/
+          stompClient.subscribe('/topic/onlineheartbeatmessages', function (response) {
+            console.log("测试-----------");
+            console.log(response);
+            //let body = JSON.parse(response.body);
+            let resBody = response.body;
+            let resBody2 = resBody.replace(/[\'\"\\\/\b\f\n\r\t]/g, '');
+            console.log(resBody2);
+            $("#onlineheartbeatmessages").html(resBody2[0]);
+          });
+        });
+
       },
       handleFilter() {
         this.listQuery.page = 1
@@ -454,7 +486,7 @@
       },
       handleDisk(row) {
         this.diskDialogVisible = true
-        getDisks(row.id,this.userData).then((res) => {
+        getDisks(row.id).then((res) => {
           this.disks = res.data.data.diskInfoEntities
         })
       },
