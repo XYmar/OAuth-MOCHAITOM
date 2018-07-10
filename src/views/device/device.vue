@@ -164,6 +164,8 @@
   import service from '@/utils/request'
   import Stomp from 'stompjs'
   import SockJS from 'sockjs-client'
+  import Vue from 'vue'
+
   /* eslint-disable */
   export default {
     name: 'add-device',
@@ -174,6 +176,7 @@
       return {
         tableKey: 0,
         list: [],
+        webResBody: [],
         total: null,
         listLoading: true,
         searchQuery: '',
@@ -244,7 +247,7 @@
       this.userData.password = this.getCookie('password')
       this.proId = this.getCookie('projectId')
       this.getList()
-      this.getList2()
+
     },
     methods: {
       getList() {
@@ -252,29 +255,40 @@
         getDevices(this.proId).then(response => {
           this.list = response.data.data
           this.listLoading = false
+          this.getList2()
         })
       },
       getList2() {
         let url = service.defaults.baseURL + '/OMS';
-        //alert(url);
         let socket = new SockJS(url);
         let stompClient = Stomp.over(socket);
+        let that = this;
         stompClient.connect({}, function (frame) {
-          //console.log('Connected: ' + frame);
-          /*stompClient.subscribe('/topic', function (greeting) {
-            showGreeting(JSON.parse(greeting.body).content);
-          });*/
-          /*stompClient.subscribe('/topic/time', function (response) {
-            $("#callback").html(response.body);
-          });*/
           stompClient.subscribe('/topic/onlineheartbeatmessages', function (response) {
-            console.log("测试-----------");
-            console.log(response);
-            //let body = JSON.parse(response.body);
             let resBody = response.body;
-            let resBody2 = resBody.replace(/[\'\"\\\/\b\f\n\r\t]/g, '');
-            console.log(resBody2);
-            $("#onlineheartbeatmessages").html(resBody2[0]);
+            let resBody2 = resBody.replace(/[\\]/g, '');
+            that.webResBody = JSON.parse(resBody2);
+
+            if(that.list.length > 0){
+              for(let i=0;i<that.list.length;i++){
+                that.list[i].online = false;
+                if(that.webResBody.length > 0){
+                  for(let j=0;j<that.webResBody.length;j++){
+                    console.log("判断-------");
+                    console.log(that.list[i].ip);
+                    console.log(that.webResBody[j].inetAddress);
+                    if(that.list[i].ip === that.webResBody[j].inetAddress){
+                      console.log("在线");
+                      that.list[i].online = true;
+                      break;
+                    }else {
+                      that.list[i].online = false;
+                    }
+                  }
+                }
+                Vue.set(that.list, i, that.list[i]);
+              }
+            }
           });
         });
 
