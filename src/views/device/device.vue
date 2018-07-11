@@ -12,7 +12,7 @@
               style="width: 100%">
       <!-- <el-table :data="list" row-key="id"  v-loading.body="listLoading" border fit highlight-current-row style="width: 100%">-->
 
-      <el-table-column align="center" :label="$t('table.deviceName')" width="100">
+      <el-table-column align="center" :label="$t('table.deviceName')" width="130">
         <template slot-scope="scope">
           <span>{{scope.row.name}}</span>
         </template>
@@ -268,8 +268,9 @@
             let resBody = response.body;
             let resBody2 = resBody.replace(/[\\]/g, '');
             that.webResBody = JSON.parse(resBody2);
+            $("#onlineheartbeatmessages").html(resBody);
 
-            if(that.list.length > 0){
+            /*if(that.list.length > 0){
               for(let i=0;i<that.list.length;i++){
                 that.list[i].online = false;
                 if(that.webResBody.length > 0){
@@ -286,6 +287,46 @@
                     }
                   }
                 }
+                Vue.set(that.list, i, that.list[i]);
+              }
+            }*/
+
+            if(that.list.length > 0){
+              for(let i=0;i<that.list.length;i++){
+                that.list[i].online = false;
+              }
+            }
+
+            if(that.webResBody.length > 0){
+              for(let i=0;i<that.webResBody.length;i++){
+                let listIfExist = false;
+                let tempList = [];
+                if(that.list.length > 0){
+                  for(let j=0;j<that.list.length;j++){
+                    if(that.webResBody[i].inetAddress === that.list[j].ip){
+                      that.list[j].online = true;
+                      that.list[j].cpuclock = that.webResBody[i].cpuclock;
+                      that.list[j].ramsize = that.webResBody[i].ramsize;
+                      listIfExist = true;
+                      break;
+                    }
+                  }
+                }
+
+                if(!listIfExist){
+                  console.log(that.webResBody[i].inetAddress);
+                  tempList.name = that.webResBody[i].inetAddress;
+                  tempList.ip = that.webResBody[i].inetAddress;
+                  tempList.cpuclock = that.webResBody[i].cpuclock;
+                  tempList.ramsize = that.webResBody[i].ramsize;
+                  tempList.online = true;
+                  that.list.push(tempList);
+                }
+              }
+            }
+
+            if(that.list.length > 0) {
+              for (let i = 0; i < that.list.length; i++) {
                 Vue.set(that.list, i, that.list[i]);
               }
             }
