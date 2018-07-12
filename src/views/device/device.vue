@@ -574,7 +574,7 @@
           "ip":  this.reportData.ip,
           "deployPath": this.reportData.deployPath
         })
-        reportDevices(this.proId, this.userData, RpData).then((res) => {
+        reportDevices(this.proId, RpData).then((res) => {
           this.reportData.name = ''
           this.reportData.ip = ''
           this.reportData.deployPath = ''
