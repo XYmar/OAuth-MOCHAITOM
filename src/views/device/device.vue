@@ -35,7 +35,8 @@
       </el-table-column>
       <el-table-column min-width="100px" :label="$t('table.memorySize')">
         <template slot-scope="scope">
-          <span>{{scope.row.ramsize}}</span>
+          <span v-if="!scope.row.online">--</span>
+          <span v-else>{{scope.row.ramsize}}</span>
         </template>
       </el-table-column>
       <el-table-column width="110px" align="center" :label="$t('table.deviceState')">
@@ -47,11 +48,11 @@
       </el-table-column>
       <el-table-column align="center" :label="$t('table.check')" width="180" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button size="mini" @click="handleDisk(scope.row)" type="success">{{$t('table.disk')}}</el-button>
-          <!--<el-button type="primary" size="mini" v-if="scope.row.online && !scope.row.virtual" @click="handleProcess(scope.row)">{{$t('table.deviceProcess')}}</el-button>
+          <!--<el-button size="mini" @click="handleDisk(scope.row)" type="success">{{$t('table.disk')}}</el-button>-->
+          <el-button type="primary" size="mini" v-if="scope.row.online && !scope.row.virtual" @click="handleProcess(scope.row)">{{$t('table.deviceProcess')}}</el-button>
           <el-button size="mini" type="success" v-if="scope.row.online && !scope.row.virtual" @click="handleDisk(scope.row)">{{$t('table.disk')}}</el-button>
           <el-button type="primary" disabled="disabled" v-if="!scope.row.online || scope.row.virtual" size="mini">{{$t('table.deviceProcess')}}</el-button>
-          <el-button size="mini" disabled="disabled" v-if="!scope.row.online || scope.row.virtual" type="success">{{$t('table.disk')}}</el-button>-->
+          <el-button size="mini" disabled="disabled" v-if="!scope.row.online || scope.row.virtual" type="success">{{$t('table.disk')}}</el-button>
         </template>
       </el-table-column>
       <el-table-column align="center" :label="$t('table.actions')" width="280" class-name="small-padding fixed-width">
@@ -255,6 +256,9 @@
         getDevices(this.proId).then(response => {
           this.list = response.data.data
           this.listLoading = false
+          for(let i=0;i<this.list.length;i++){
+            this.list[i].virtual = false;
+          }
           this.getList2()
         })
       },
@@ -294,6 +298,11 @@
             if(that.list.length > 0){
               for(let i=0;i<that.list.length;i++){
                 that.list[i].online = false;
+
+                if(that.list[i].online === false && that.list[i].virtual === true){
+                  that.list.splice(i,1);
+                  i--;
+                }
               }
             }
 
@@ -303,22 +312,26 @@
                 let tempList = [];
                 if(that.list.length > 0){
                   for(let j=0;j<that.list.length;j++){
-                    if(that.webResBody[i].inetAddress === that.list[j].ip){
-                      that.list[j].online = true;
-                      that.list[j].cpuclock = that.webResBody[i].cpuclock;
-                      that.list[j].ramsize = that.webResBody[i].ramsize;
-                      listIfExist = true;
-                      break;
+                    if(that.list[j].virtual !== true){       //虚拟设备不需要再赋值  或者在每次查之前把虚拟且离线的设备删除
+                      if(that.webResBody[i].inetAddress === that.list[j].ip){      //查找在线设备
+                        that.list[j].online = true;
+                        that.list[j].cpuclock = that.webResBody[i].cpuclock;
+                        that.list[j].ramsize = that.webResBody[i].ramsize;
+                        that.list[j].virtual = false;
+                        listIfExist = true;
+                        break;
+                      }
                     }
                   }
                 }
 
-                if(!listIfExist){
+                if(!listIfExist){       //添加虚拟设备
                   console.log(that.webResBody[i].inetAddress);
                   tempList.name = that.webResBody[i].inetAddress;
                   tempList.ip = that.webResBody[i].inetAddress;
                   tempList.cpuclock = that.webResBody[i].cpuclock;
                   tempList.ramsize = that.webResBody[i].ramsize;
+                  tempList.virtual = true;
                   tempList.online = true;
                   that.list.push(tempList);
                 }
@@ -329,6 +342,8 @@
               for (let i = 0; i < that.list.length; i++) {
                 Vue.set(that.list, i, that.list[i]);
               }
+              console.log("设备----------");
+              console.log(that.list);
             }
           });
         });
