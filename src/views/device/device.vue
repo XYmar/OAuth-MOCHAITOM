@@ -30,13 +30,13 @@
       <el-table-column min-width="100px" label="CPU">
         <template slot-scope="scope">
           <span v-if="!scope.row.online">--</span>
-          <span v-else>{{scope.row.cpuclock}}</span>
+          <span v-else>{{Math.round(scope.row.cpuclock/1000*100)/100}}GHZ</span>
         </template>
       </el-table-column>
       <el-table-column min-width="100px" :label="$t('table.memorySize')">
         <template slot-scope="scope">
           <span v-if="!scope.row.online">--</span>
-          <span v-else>{{scope.row.ramsize}}</span>
+          <span v-else>{{Math.round(scope.row.ramsize/1024*100)/100}}G</span>
         </template>
       </el-table-column>
       <el-table-column width="110px" align="center" :label="$t('table.deviceState')">
@@ -106,12 +106,12 @@
         </el-table-column>
         <el-table-column align="center" :label="$t('table.size')">
           <template slot-scope="scope">
-            <span>{{scope.row.size}}</span>
+            <span>{{scope.row.size}}G</span>
           </template>
         </el-table-column>
         <el-table-column align="center" :label="$t('table.usedSize')">
           <template slot-scope="scope">
-            <span>{{scope.row.usedSize}}</span>
+            <span>{{scope.row.usedSize}}G</span>
           </template>
         </el-table-column>
       </el-table>
@@ -257,6 +257,7 @@
           this.list = response.data.data
           this.listLoading = false
           for(let i=0;i<this.list.length;i++){
+            this.list[i].online = false;
             this.list[i].virtual = false;
           }
           this.getList2()
@@ -557,7 +558,7 @@
       handleDisk(row) {
         this.diskDialogVisible = true
         getDisks(row.id).then((res) => {
-          this.disks = res.data.data.diskInfoEntities
+          this.disks = res.data.data
         })
       },
       handleReport(row) {
