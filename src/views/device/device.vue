@@ -551,8 +551,10 @@
       },
       handleProcess(row) {
         this.processDialogVisible = true
-        getProcess(row.id, this.userData).then((res) => {
-          this.taskprocess = res.data.data.taskInfoEntities
+        this.listLoading = true
+        getProcess(row.id).then((res) => {
+          this.taskprocess = res.data.data
+          this.listLoading = false
         })
       },
       handleDisk(row) {

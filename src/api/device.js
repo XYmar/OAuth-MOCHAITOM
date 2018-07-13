@@ -56,9 +56,9 @@ export function getDisks(id) {
   })
 }
 
-export function getProcess(id, userData) {
+export function getProcess(id) {
   return request({
-    url: '/devices/' + id + '/tasks',
+    url: '/devices/' + id + '/process',
     method: 'get',
     headers: {
       'content-type': 'application/x-www-form-urlencoded'

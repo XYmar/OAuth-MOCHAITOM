@@ -177,7 +177,7 @@ export default {
     disk: '磁盘',
     close: '关闭',
     size: '大小',
-    usedSize: '已用大小',
+    usedSize: '可用大小',
     processName: '进程名',
     report: '上报'
   },
