@@ -46,7 +46,7 @@ export function copyDevices(data, id) {
   })
 }
 
-export function getDisks(id, userData) {
+export function getDisks(id) {
   return request({
     url: '/devices/' + id + '/disks',
     method: 'get',
@@ -56,9 +56,9 @@ export function getDisks(id, userData) {
   })
 }
 
-export function getProcess(id, userData) {
+export function getProcess(id) {
   return request({
-    url: '/devices/' + id + '/tasks',
+    url: '/devices/' + id + '/process',
     method: 'get',
     headers: {
       'content-type': 'application/x-www-form-urlencoded'
@@ -66,7 +66,7 @@ export function getProcess(id, userData) {
   })
 }
 
-export function reportDevices(proId, userData, data) {
+export function reportDevices(proId, data) {
   return request({
     url: '/projects/' + proId + '/devices',
     method: 'post',

@@ -12,7 +12,7 @@
               style="width: 100%">
       <!-- <el-table :data="list" row-key="id"  v-loading.body="listLoading" border fit highlight-current-row style="width: 100%">-->
 
-      <el-table-column align="center" :label="$t('table.deviceName')" width="100">
+      <el-table-column align="center" :label="$t('table.deviceName')" width="130">
         <template slot-scope="scope">
           <span>{{scope.row.name}}</span>
         </template>
@@ -30,12 +30,13 @@
       <el-table-column min-width="100px" label="CPU">
         <template slot-scope="scope">
           <span v-if="!scope.row.online">--</span>
-          <span v-else>{{scope.row.cpuclock}}</span>
+          <span v-else>{{Math.round(scope.row.cpuclock/1000*100)/100}}GHZ</span>
         </template>
       </el-table-column>
       <el-table-column min-width="100px" :label="$t('table.memorySize')">
         <template slot-scope="scope">
-          <span>{{scope.row.ramsize}}</span>
+          <span v-if="!scope.row.online">--</span>
+          <span v-else>{{Math.round(scope.row.ramsize/1024*100)/100}}G</span>
         </template>
       </el-table-column>
       <el-table-column width="110px" align="center" :label="$t('table.deviceState')">
@@ -47,11 +48,11 @@
       </el-table-column>
       <el-table-column align="center" :label="$t('table.check')" width="180" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button size="mini" @click="handleDisk(scope.row)" type="success">{{$t('table.disk')}}</el-button>
-          <!--<el-button type="primary" size="mini" v-if="scope.row.online && !scope.row.virtual" @click="handleProcess(scope.row)">{{$t('table.deviceProcess')}}</el-button>
+          <!--<el-button size="mini" @click="handleDisk(scope.row)" type="success">{{$t('table.disk')}}</el-button>-->
+          <el-button type="primary" size="mini" v-if="scope.row.online && !scope.row.virtual" @click="handleProcess(scope.row)">{{$t('table.deviceProcess')}}</el-button>
           <el-button size="mini" type="success" v-if="scope.row.online && !scope.row.virtual" @click="handleDisk(scope.row)">{{$t('table.disk')}}</el-button>
           <el-button type="primary" disabled="disabled" v-if="!scope.row.online || scope.row.virtual" size="mini">{{$t('table.deviceProcess')}}</el-button>
-          <el-button size="mini" disabled="disabled" v-if="!scope.row.online || scope.row.virtual" type="success">{{$t('table.disk')}}</el-button>-->
+          <el-button size="mini" disabled="disabled" v-if="!scope.row.online || scope.row.virtual" type="success">{{$t('table.disk')}}</el-button>
         </template>
       </el-table-column>
       <el-table-column align="center" :label="$t('table.actions')" width="280" class-name="small-padding fixed-width">
@@ -105,12 +106,12 @@
         </el-table-column>
         <el-table-column align="center" :label="$t('table.size')">
           <template slot-scope="scope">
-            <span>{{scope.row.size}}</span>
+            <span>{{scope.row.size}}G</span>
           </template>
         </el-table-column>
         <el-table-column align="center" :label="$t('table.usedSize')">
           <template slot-scope="scope">
-            <span>{{scope.row.usedSize}}</span>
+            <span>{{scope.row.usedSize}}G</span>
           </template>
         </el-table-column>
       </el-table>
@@ -164,6 +165,8 @@
   import service from '@/utils/request'
   import Stomp from 'stompjs'
   import SockJS from 'sockjs-client'
+  import Vue from 'vue'
+
   /* eslint-disable */
   export default {
     name: 'add-device',
@@ -174,6 +177,7 @@
       return {
         tableKey: 0,
         list: [],
+        webResBody: [],
         total: null,
         listLoading: true,
         searchQuery: '',
@@ -244,7 +248,7 @@
       this.userData.password = this.getCookie('password')
       this.proId = this.getCookie('projectId')
       this.getList()
-      this.getList2()
+
     },
     methods: {
       getList() {
@@ -252,29 +256,96 @@
         getDevices(this.proId).then(response => {
           this.list = response.data.data
           this.listLoading = false
+          for(let i=0;i<this.list.length;i++){
+            this.list[i].online = false;
+            this.list[i].virtual = false;
+          }
+          this.getList2()
         })
       },
       getList2() {
         let url = service.defaults.baseURL + '/OMS';
-        //alert(url);
         let socket = new SockJS(url);
         let stompClient = Stomp.over(socket);
+        let that = this;
         stompClient.connect({}, function (frame) {
-          //console.log('Connected: ' + frame);
-          /*stompClient.subscribe('/topic', function (greeting) {
-            showGreeting(JSON.parse(greeting.body).content);
-          });*/
-          /*stompClient.subscribe('/topic/time', function (response) {
-            $("#callback").html(response.body);
-          });*/
           stompClient.subscribe('/topic/onlineheartbeatmessages', function (response) {
-            console.log("测试-----------");
-            console.log(response);
-            //let body = JSON.parse(response.body);
             let resBody = response.body;
-            let resBody2 = resBody.replace(/[\'\"\\\/\b\f\n\r\t]/g, '');
-            console.log(resBody2);
-            $("#onlineheartbeatmessages").html(resBody2[0]);
+            let resBody2 = resBody.replace(/[\\]/g, '');
+            that.webResBody = JSON.parse(resBody2);
+            $("#onlineheartbeatmessages").html(resBody);
+
+            /*if(that.list.length > 0){
+              for(let i=0;i<that.list.length;i++){
+                that.list[i].online = false;
+                if(that.webResBody.length > 0){
+                  for(let j=0;j<that.webResBody.length;j++){
+                    console.log("判断-------");
+                    console.log(that.list[i].ip);
+                    console.log(that.webResBody[j].inetAddress);
+                    if(that.list[i].ip === that.webResBody[j].inetAddress){
+                      console.log("在线");
+                      that.list[i].online = true;
+                      break;
+                    }else {
+                      that.list[i].online = false;
+                    }
+                  }
+                }
+                Vue.set(that.list, i, that.list[i]);
+              }
+            }*/
+
+            if(that.list.length > 0){
+              for(let i=0;i<that.list.length;i++){
+                that.list[i].online = false;
+
+                if(that.list[i].online === false && that.list[i].virtual === true){
+                  that.list.splice(i,1);
+                  i--;
+                }
+              }
+            }
+
+            if(that.webResBody.length > 0){
+              for(let i=0;i<that.webResBody.length;i++){
+                let listIfExist = false;
+                let tempList = [];
+                if(that.list.length > 0){
+                  for(let j=0;j<that.list.length;j++){
+                    if(that.list[j].virtual !== true){       //虚拟设备不需要再赋值  或者在每次查之前把虚拟且离线的设备删除
+                      if(that.webResBody[i].inetAddress === that.list[j].ip){      //查找在线设备
+                        that.list[j].online = true;
+                        that.list[j].cpuclock = that.webResBody[i].cpuclock;
+                        that.list[j].ramsize = that.webResBody[i].ramsize;
+                        that.list[j].virtual = false;
+                        listIfExist = true;
+                        break;
+                      }
+                    }
+                  }
+                }
+
+                if(!listIfExist){       //添加虚拟设备
+                  console.log(that.webResBody[i].inetAddress);
+                  tempList.name = that.webResBody[i].inetAddress;
+                  tempList.ip = that.webResBody[i].inetAddress;
+                  tempList.cpuclock = that.webResBody[i].cpuclock;
+                  tempList.ramsize = that.webResBody[i].ramsize;
+                  tempList.virtual = true;
+                  tempList.online = true;
+                  that.list.push(tempList);
+                }
+              }
+            }
+
+            if(that.list.length > 0) {
+              for (let i = 0; i < that.list.length; i++) {
+                Vue.set(that.list, i, that.list[i]);
+              }
+              console.log("设备----------");
+              console.log(that.list);
+            }
           });
         });
 
@@ -480,14 +551,16 @@
       },
       handleProcess(row) {
         this.processDialogVisible = true
-        getProcess(row.id, this.userData).then((res) => {
-          this.taskprocess = res.data.data.taskInfoEntities
+        this.listLoading = true
+        getProcess(row.id).then((res) => {
+          this.taskprocess = res.data.data
+          this.listLoading = false
         })
       },
       handleDisk(row) {
         this.diskDialogVisible = true
         getDisks(row.id).then((res) => {
-          this.disks = res.data.data.diskInfoEntities
+          this.disks = res.data.data
         })
       },
       handleReport(row) {
@@ -503,7 +576,7 @@
           "ip":  this.reportData.ip,
           "deployPath": this.reportData.deployPath
         })
-        reportDevices(this.proId, this.userData, RpData).then((res) => {
+        reportDevices(this.proId, RpData).then((res) => {
           this.reportData.name = ''
           this.reportData.ip = ''
           this.reportData.deployPath = ''
