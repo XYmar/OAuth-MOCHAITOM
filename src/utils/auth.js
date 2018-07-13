@@ -20,3 +20,27 @@ export function getIp() {
 export function getPort() {
   return Cookies.get('port')
 }
+
+export function setUserId(id) {
+  return Cookies.set('userId', id)
+}
+
+export function removeUserId(id) {
+  return Cookies.remove('userId')
+}
+
+export function removeProId(id) {
+  return Cookies.set('projectId')
+}
+
+export function setExpire(timestamp) {
+  return Cookies.set('timestamp', timestamp)
+}
+
+export function getExpire(timestamp) {
+  return Cookies.get('timestamp', timestamp)
+}
+
+export function removeExpire(timestamp) {
+  return Cookies.remove('timestamp')
+}

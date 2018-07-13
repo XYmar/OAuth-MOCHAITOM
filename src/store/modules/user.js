@@ -1,5 +1,5 @@
 import { loginByUsername, logout, getUserInfo } from '@/api/login'
-import { getToken, setToken, removeToken } from '@/utils/auth'
+import { getToken, setToken, removeToken, setUserId, removeUserId, removeProId, setExpire, removeExpire } from '@/utils/auth'
 const jwt = require('jsonwebtoken')
 
 const user = {
@@ -128,7 +128,11 @@ const user = {
         }
         const data = state.token
         const decodeToken = jwt.decode(data)
+        // const dateNow = (new Date())/1000
         console.log(decodeToken, '22233')
+        setUserId(decodeToken.userId)
+        setExpire(decodeToken.exp)
+        // console.log(dateNow)
         // const rolesset = data.username === 'admin' ? 'admin' : 'editor'
         const rolesset = decodeToken.authorities.length > 1 ? 'admin' : 'editor'
         commit('SET_ROLES', rolesset)
@@ -173,6 +177,8 @@ const user = {
         commit('SET_TOKEN', '')
         commit('SET_ROLES', [])
         removeToken()
+        removeUserId()
+        removeProId()
         resolve()
       })
     },
@@ -182,6 +188,7 @@ const user = {
       return new Promise(resolve => {
         commit('SET_TOKEN', role)
         setToken(role)
+        alert(223)
         getUserInfo(role).then(response => {
           const data = response.data
           commit('SET_ROLES', data.roles)

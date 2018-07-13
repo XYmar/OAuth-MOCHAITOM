@@ -112,3 +112,11 @@ export function updateCompTypes(data, id) {
     data
   })
 }
+
+// getComById
+export function getCompById(id) {
+  return request({
+    url: '/components/' + id,
+    method: 'get'
+  })
+}

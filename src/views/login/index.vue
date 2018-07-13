@@ -158,7 +158,7 @@ export default {
 
           this.$store.dispatch('LoginByUsername', formData).then(() => {
             this.loading = false
-            this.getUserInfo()
+            // this.getUserInfo()
             this.$router.push({ path: '/projectManage' })
           }).catch(() => {
             this.loading = false
@@ -169,11 +169,11 @@ export default {
         }
       })
     },
-    getUserInfo () {
+   /* getUserInfo () {
       getUserId().then((res) => {
         this.setCookie('userId', res.data.data.id)
       })
-    },
+    },*/
     login: function () {
       /*let username = $("input#username").val();
       let password = $("input#password").val();*/
