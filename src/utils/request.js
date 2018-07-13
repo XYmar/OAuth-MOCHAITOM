@@ -27,7 +27,6 @@ service.interceptors.request.use(config => {
     config.headers['Authorization'] = 'Bearer' + getToken() // 让每个请求携带token-- ['X-Token']为自定义key 请根据实际情况自行修改
   }
   if (timeStamp < (new Date()) / 1000) {
-    alert((new Date()) / 100)
     let formData = qs.stringify({
       'grant_type': 'refresh_token',
       'scope': 'SCOPES',
