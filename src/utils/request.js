@@ -1,8 +1,7 @@
 import axios from 'axios'
 // import { Message } from 'element-ui'
 import store from '@/store'
-import { getToken, getIp, getPort } from '@/utils/auth'
-
+import { getToken, getIp, getPort, getExpire } from '@/utils/auth'
 // create an axios instance
 let ip_set = store.getters.ipconfig
 let port = store.getters.port
@@ -10,11 +9,14 @@ let config_set = 'http://' + ip_set + ':' + port
 let ipConfig = getIp()
 let portConfig = getPort()
 let serviceConfig = 'http://' + ipConfig + ':' + portConfig
+
+let timeStamp = getExpire()
+let qs = require('qs')
 const service = axios.create({
-  /*baseURL: process.env.BASE_API,*/
-  /*baseURL: serviceConfig*/
-  baseURL: serviceConfig, // api的base_url
-  /*baseURL: "http://192.168.0.107:9090",*/// api的base_url
+  /* baseURL: process.env.BASE_API,*/
+  /* baseURL: serviceConfig*/
+  baseURL: serviceConfig // api的base_url
+  /* baseURL: "http://192.168.0.107:9090",*/// api的base_url
 
 })
 
@@ -23,6 +25,27 @@ service.interceptors.request.use(config => {
   // Do something before request is sent
   if (store.getters.token) {
     config.headers['Authorization'] = 'Bearer' + getToken() // 让每个请求携带token-- ['X-Token']为自定义key 请根据实际情况自行修改
+  }
+  if (timeStamp < (new Date()) / 1000) {
+    let formData = qs.stringify({
+      'grant_type': 'refresh_token',
+      'scope': 'SCOPES',
+      'client_id': 'OAUTH_CLIENT_ID',
+      'enctype': 'OAUTH_CLIENT_ID',
+      'Authorization': 'Bearer' + getToken(),
+      'refresh_token': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX25hbWUiOiJyZW5ndSIsInNjb3BlIjpbIlNDT1BFUyJdLCJhdGkiOiI3NTQ4YjIwMS1hMzQ0LTQ1OGYtODQzOC0yN2FhODZiZDM4YzEiLCJleHAiOjE1MzE0NjU3MDQsInVzZXJJZCI6ImU4MTVhOTU3LTc0MDUtNGU2Ni1iYjI2LTg4ZGVlZmJkYmI3ZSIsImF1dGhvcml0aWVzIjpbIlJPTEVfYWRtaW4iLCJST0xFX3VzZXIiXSwianRpIjoiZTEyMjg4ZjEtZjEzYy00ZmRiLWJjMGQtN2QyMTQ2MTliNjU0IiwiY2xpZW50X2lkIjoiT0FVVEhfQ0xJRU5UX0lEIn0.z2BnRQpIreqQEN-ORJO7Z77aXkmB3t8w4fBxsq3-8fo'
+    })
+    axios({
+      method: 'post',
+      url: service.defaults.baseURL + '/oauth/token',
+      // data: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX25hbWUiOiJyZW5ndSIsInNjb3BlIjpbIlNDT1BFUyJdLCJhdGkiOiJkNThhZjU2MC0zY2Y1LTQ1ZDMtOWNkNi1lZDBhYmIyNDBjMTciLCJleHAiOjE1MzE0NTg3MzcsInVzZXJJZCI6IjZjYTlmMjI5LWQ2N2QtNDYzMC05ODhhLWYwOGMxNTY3NDg5YSIsImF1dGhvcml0aWVzIjpbIlJPTEVfYWRtaW4iLCJST0xFX3VzZXIiXSwianRpIjoiNmExODkzZmEtZDUwMi00ODA2LThlZDAtMTBhZjM0YTRmMTBhIiwiY2xpZW50X2lkIjoiT0FVVEhfQ0xJRU5UX0lEIn0.X_U7GV7kUEcirtCSR2lUsihng3e7EiM0Y66iNEb3m3Q'
+      data: formData
+    }).then(function(res) {
+      alert('22223rrr')
+      // resolve()
+    }).catch(() => {
+      // reject()
+    })
   }
   return config
 }, error => {
