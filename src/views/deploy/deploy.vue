@@ -82,6 +82,9 @@
   import { getDevices } from '@/api/device'
   import { doDeploy } from '@/api/deploy'
   import waves from '@/directive/waves' // 水波纹指令
+  import Stomp from 'stompjs'
+  import SockJS from 'sockjs-client'
+  import Vue from 'vue'
 
   /* eslint-disable */
   export default {
@@ -123,11 +126,77 @@
     methods: {
       getList() {
         this.listLoading = true
-        getDevices(this.proId, this.userData).then(response => {
+        getDevices(this.proId).then(response => {
           this.list = response.data.data
           this.listLoading = false
+          for(let i=0;i<this.list.length;i++){
+            this.list[i].online = true;
+          }
+          this.getList2()
         })
       },
+
+      getList2() {
+        let url = service.defaults.baseURL + '/OMS';
+        let socket = new SockJS(url);
+        let stompClient = Stomp.over(socket);
+        let that = this;
+        stompClient.connect({}, function (frame) {
+          stompClient.subscribe('/topic/onlineheartbeatmessages', function (response) {
+            let resBody = response.body;
+            let resBody2 = resBody.replace(/[\\]/g, '');
+            that.webResBody = JSON.parse(resBody2);
+            $("#onlineheartbeatmessages").html(resBody);
+
+            if(that.list.length > 0){
+              for(let i=0;i<that.list.length;i++){
+                that.list[i].online = false;
+              }
+            }
+
+            if(that.webResBody.length > 0){
+              for(let i=0;i<that.webResBody.length;i++){
+                let listIfExist = false;
+                if(that.list.length > 0){
+                  for(let j=0;j<that.list.length;j++){
+                    //if(that.list[j].virtual !== true){       //虚拟设备不需要再赋值  或者在每次查之前把虚拟且离线的设备删除
+                      if(that.webResBody[i].inetAddress === that.list[j].ip){      //查找在线设备
+                        that.list[j].online = true;
+                        /*that.list[j].cpuclock = that.webResBody[i].cpuclock;
+                        that.list[j].ramsize = that.webResBody[i].ramsize;*/
+                        //that.list[j].virtual = false;
+                        listIfExist = true;
+                        break;
+                      }
+                    //}
+                  }
+                }
+
+                /*if(!listIfExist){       //添加虚拟设备
+                  console.log(that.webResBody[i].inetAddress);
+                  tempList.name = that.webResBody[i].inetAddress;
+                  tempList.ip = that.webResBody[i].inetAddress;
+                  tempList.cpuclock = that.webResBody[i].cpuclock;
+                  tempList.ramsize = that.webResBody[i].ramsize;
+                  tempList.virtual = true;
+                  tempList.online = true;
+                  that.list.push(tempList);
+                }*/
+              }
+            }
+
+            if(that.list.length > 0) {
+              for (let i = 0; i < that.list.length; i++) {
+                Vue.set(that.list, i, that.list[i]);
+              }
+              console.log("设备----------");
+              console.log(that.list);
+            }
+          });
+        });
+
+      },
+
       deployDevice: function (row) {
         let username = this.getCookie('username');
         let password = this.getCookie('password');
@@ -150,7 +219,7 @@
           let msg = "您确定部署吗？";
           if (confirm(msg) === true) {
 
-            doDeploy(this.userData, this.deployPlanId, id).then(() => {
+            doDeploy(this.deployPlanId, id).then(() => {
               this.dialogFormVisible = false
               this.$notify({
                 title: '成功',
