@@ -13,7 +13,7 @@
 
       <span style="font-weight: 400 !important;color: #97a8be;line-height: 50px;position: relative;top: -13px;">
           {{selectedProName}}
-        </span>
+      </span>
 
 
       <!--<lang-select class="international right-menu-item"></lang-select>
@@ -21,7 +21,7 @@
         <theme-picker class="theme-switch right-menu-item"></theme-picker>
       </el-tooltip>-->
 
-      <el-dropdown class="avatar-container right-menu-item" trigger="click">
+      <!--<el-dropdown class="avatar-container right-menu-item" trigger="click">
         <div class="component-item proImg">
           <pan-thumb class="proImg" width="40px" height="40px" image="https://wpimg.wallstcn.com/577965b9-bb9e-4e02-9f0c-095b41417191">
             项目
@@ -45,7 +45,7 @@
             </el-option>
           </el-select>
         </el-dropdown-menu>
-      </el-dropdown>
+      </el-dropdown>-->
 
       <el-dropdown class="avatar-container right-menu-item" trigger="click">
         <div class="avatar-wrapper">
@@ -53,31 +53,43 @@
           <i class="el-icon-caret-bottom"></i>
         </div>
         <el-dropdown-menu slot="dropdown">
-          <router-link to="/">
+          <router-link to="/dashboard/dashboard">
             <el-dropdown-item>
-              {{$t('navbar.dashboard')}}
+              <span>首页</span>
             </el-dropdown-item>
           </router-link>
+          <router-link to="/projectManage">
+            <el-dropdown-item divided>
+              <span>项目管理</span>
+            </el-dropdown-item>
+          </router-link>
+          <el-dropdown-item divided>
+            <span v-if="role === 'admin'" style="display:block;">
+              <router-link to="/user_manage">用户管理</router-link>
+            </span>
+            <span v-else @click="handleModifyPassword" style="display:block;">修改密码</span>
+          </el-dropdown-item>
           <el-dropdown-item divided>
             <span @click="logout" style="display:block;">{{$t('navbar.logOut')}}</span>
           </el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
-      <el-dialog title="修改密码" :visible.sync="dialogFormVisible">
-        <el-form :model="form" style="width: 400px; margin-left:50px;">
-          <el-form-item label="原密码" :label-width="formLabelWidth">
+      <!--普通用户修改密码-->
+      <el-dialog title="修改密码" :visible.sync="modifyPasswordVisible">
+        <el-form :model="form" ref="modifyPassForm" :rules="modifyRules" style="width: 400px; margin-left:50px;">
+          <!--<el-form-item label="原密码" :label-width="formLabelWidth">
             <el-input type="password" v-model="form.passwordOld" auto-complete="off"></el-input>
-          </el-form-item>
-          <el-form-item label="新密码" :label-width="formLabelWidth">
+          </el-form-item>-->
+          <el-form-item label="新密码" :label-width="formLabelWidth" prop="passwordNew">
             <el-input type="password" v-model="form.passwordNew" auto-complete="off"></el-input>
           </el-form-item>
-          <el-form-item label="再次输入密码" :label-width="formLabelWidth">
-            <el-input type="password" v-model="form.passwordNew" auto-complete="off"></el-input>
+          <el-form-item label="再次输入" :label-width="formLabelWidth" prop="passwordAgain">
+            <el-input type="password" v-model="form.passwordAgain" auto-complete="off"></el-input>
           </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
-          <el-button @click="dialogFormVisible = false">取 消</el-button>
-          <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
+          <el-button @click="modifyPasswordVisible = false">取 消</el-button>
+          <el-button type="primary" @click="modifyPassword">确 定</el-button>
         </div>
       </el-dialog>
     </div>
@@ -94,6 +106,7 @@
   import LangSelect from '@/components/LangSelect'
   import ThemePicker from '@/components/ThemePicker'
   import { projectList, createProject } from '@/api/project'
+  import { updateUser } from '@/api/getUsers'
   /* eslint-disable */
   export default {
     components: {
@@ -106,23 +119,47 @@
       ThemePicker
     },
     data() {
+      const validatePassword = (rule, value, callback) => {
+        if (value.length < 6) {
+          callback(new Error('请输入正确的密码,至少六位！'))
+        } else {
+          callback()
+        }
+      }
+
+      const validatePasswordAgain = (rule, value, callback) => {
+        if (value.length < 6) {
+          callback(new Error('请输入正确的密码,至少六位！'))
+        } else if(this.form.passwordAgain !== this.form.passwordNew) {
+          callback(new Error('两次密码输入不一致，请再次输入新密码！'))
+        } else {
+          callback()
+        }
+      }
       return {
         list: null,
+        role: '',
+        userId: '',
         total: null,
         listLoading: true,
         proName: '',
         selectedProName: '',
         selected: '',
         dialogFormVisible: false,
+        modifyPasswordVisible: false,
         form: {
-          passwordOld: '',
-          passwordNew: ''
+          passwordNew: '',
+          passwordAgain: ''
         },
         formLabelWidth: '100px',
         temp: {
           id: '',
           name: '',
           description: ''
+        },
+        modifyRules: {
+          passwordNew: [{ required: true, trigger: 'blur', validator: validatePassword }],
+          passwordAgain: [{ required: true, trigger: 'blur', validator: validatePasswordAgain }]
         },
         projectLength: 0,
         projectExist: true,
@@ -133,9 +170,10 @@
       }
     },
     created() {
+      this.role = this.$store.getters.roles
       this.userData.username = this.getCookie('username')
       this.userData.password = this.getCookie('password')
-
+      this.userId = this.getCookie('userId')
       this.selectedProName = this.getCookie('projectName')
       //this.getList()
     },
@@ -267,6 +305,50 @@
       logout() {
         this.$store.dispatch('FedLogOut').then(() => {
           location.reload()// In order to re-instantiate the vue-router object to avoid bugs
+        })
+      },
+      handleModifyPassword() {
+        this.resetModify()
+        this.modifyPasswordVisible = true
+        this.$nextTick(() => {
+          this.$refs['modifyPassForm'].clearValidate()
+        })
+      },
+      resetModify () {
+        this.form = {
+          passwordAgain: '',
+          passwordNew: ''
+        }
+      },
+      modifyPassword() {
+        this.$refs['modifyPassForm'].validate((valid) => {
+          if(valid) {
+            let data = {
+              'password': this.form.passwordNew
+            }
+            var qs = require('qs');
+            let datapost = qs.stringify(data)
+            console.log(this.userId)
+            updateUser(datapost,this.userId).then(() => {
+              this.modifyPasswordVisible = false
+              this.$notify({
+                title: '成功',
+                message: '修改成功',
+                type: 'success',
+                duration: 2000
+              })
+              this.$store.dispatch('FedLogOut').then(() => {
+                location.reload()// In order to re-instantiate the vue-router object to avoid bugs
+              })
+            }).catch(() => {
+              this.$notify({
+                title: '失败',
+                message: '修改失败',
+                type: 'error',
+                duration: 2000
+              })
+            })
+          }
         })
       },
       ...mapMutations({
