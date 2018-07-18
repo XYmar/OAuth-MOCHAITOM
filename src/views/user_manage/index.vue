@@ -11,10 +11,15 @@
             <i class="el-icon-caret-bottom"></i>
           </div>
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item>
+            <router-link to="/projectManage">
+              <el-dropdown-item>
+                <span style="display:block;">项目管理</span>
+              </el-dropdown-item>
+            </router-link>
+            <!--<el-dropdown-item>
               <span v-if="role === 'admin'" style="display:block;">用户管理</span>
               <span v-else @click="modifyPasswordVisible = true" style="display:block;">修改密码</span>
-            </el-dropdown-item>
+            </el-dropdown-item>-->
             <el-dropdown-item divided>
               <span @click="logout" style="display:block;">{{$t('navbar.logOut')}}</span>
             </el-dropdown-item>

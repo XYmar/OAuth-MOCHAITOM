@@ -57,7 +57,7 @@
         </el-table-column>
         <el-table-column min-width="150px" :label="$t('table.projectDesc')">
           <template slot-scope="scope">
-            <span class="link-type">{{ scope.row.description }}</span>
+            <span>{{ scope.row.description }}</span>
           </template>
         </el-table-column>
         <el-table-column align="center" :label="$t('table.actions')" width="230" class-name="small-padding fixed-width">

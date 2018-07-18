@@ -36,7 +36,7 @@
 
       <el-table-column :label="$t('table.compName')" width="100">
         <template slot-scope="scope">
-          <span @click="handleUpdate(scope.row)">{{scope.row.name}}</span>
+          <span class="link-type" @click="handleUpdate(scope.row)">{{scope.row.name}}</span>
         </template>
       </el-table-column>
       <el-table-column width="150px" :label="$t('table.compVersion')">
@@ -61,7 +61,7 @@
       </el-table-column>
       <el-table-column :label="$t('table.actions')" width="280" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">{{$t('table.edit')}}</el-button>
+          <el-button type="primary" size="mini" @click="handleUpdate(scope.row)" style="margin-left: 10px;">{{$t('table.edit')}}</el-button>
           <el-button size="mini" type="success" @click="compCopy(scope.row)">复制</el-button>
           <a @click="exportLink(scope.row)">
             <el-button size="mini" type="info">导出</el-button>
@@ -735,6 +735,9 @@
 </script>
 
 <style scoped>
+  .el-button+.el-button {
+    margin-left: 0;
+  }
   .el-dialog__body {
     padding: 30px 20px;
     color: #606266;

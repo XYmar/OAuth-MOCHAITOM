@@ -85,6 +85,7 @@
   import Stomp from 'stompjs'
   import SockJS from 'sockjs-client'
   import Vue from 'vue'
+  import service from '@/utils/request'
 
   /* eslint-disable */
   export default {
@@ -118,10 +119,9 @@
       this.userData.username = this.getCookie('username')
       this.userData.password = this.getCookie('password')
       this.proId = this.getCookie('projectId')
-
       this.deployPlanId = this.$route.params.id
+      // alert(this.deployPlanId)
       this.getList()
-
     },
     methods: {
       getList() {
@@ -171,7 +171,6 @@
                     //}
                   }
                 }
-
                 /*if(!listIfExist){       //添加虚拟设备
                   console.log(that.webResBody[i].inetAddress);
                   tempList.name = that.webResBody[i].inetAddress;
@@ -194,31 +193,28 @@
             }
           });
         });
-
       },
-
       deployDevice: function (row) {
         let username = this.getCookie('username');
         let password = this.getCookie('password');
-
         let id = row.id;
         //alert(id);
         let qs = require('qs');
-
         let online = false;
-
         for (let i = 0; i < this.list.length; i++) {
           if (this.list[i].id === id) {
             online = this.list[i].online;
             break;
-
           }
         }
-
         if (online) {
           let msg = "您确定部署吗？";
-          if (confirm(msg) === true) {
-
+          this.$confirm('确认部署吗？', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            // alert(this.deployPlanId)
             doDeploy(this.deployPlanId, id).then(() => {
               this.dialogFormVisible = false
               this.$notify({
@@ -233,8 +229,6 @@
 
               this.setProjectNum(this.listLength)
             }).catch(err => {
-              console.log("提示---------");
-              console.log(err.response.data.data);
               if(err.response.data.data.length != 0){
                 this.$notify({
                   title: '失败',
@@ -244,22 +238,19 @@
                 })
               }
             })
-
-
-          } else {
-            return false;
-          }
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '已取消删除'
+            })
+          })
         } else {
           this.$message({
             message: '设备离线!',
             type: 'warning'
           })
         }
-
-
-
       },
-
       deployDetails: function (row) {
 
         this.deviceDeployDetail.splice(0, this.deviceDeployDetail.length);    //清空某设备的部署详情数组
@@ -389,7 +380,6 @@
             return item.name.toLowerCase().indexOf(self.searchQuery.toLowerCase()) !== -1;
           })
         }
-
       },
       listenProjectId () {
         return this.$store.state.app.projectId
