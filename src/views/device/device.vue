@@ -559,8 +559,10 @@
       },
       handleDisk(row) {
         this.diskDialogVisible = true
+        this.listLoading = true
         getDisks(row.id).then((res) => {
           this.disks = res.data.data
+          this.listLoading = false
         })
       },
       handleReport(row) {
