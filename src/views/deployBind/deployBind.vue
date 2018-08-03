@@ -70,7 +70,7 @@
                         </el-table-column>
                         <el-table-column min-width="100px" align="center" :label="$t('table.compSize')">
                           <template slot-scope="scope">
-                            <span>{{scope.row.size}}</span>
+                            <span>{{Math.round(scope.row.size/1024/1024*100)/100}}M</span>
                           </template>
                         </el-table-column>
                         <el-table-column label="解绑" width="80" align="center">

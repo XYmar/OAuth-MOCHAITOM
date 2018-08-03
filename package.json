@@ -33,6 +33,7 @@
     "screenfull": "3.3.2",
     "showdown": "1.8.5",
     "simplemde": "1.11.2",
+    "sockjs-client": "^1.1.5",
     "sortablejs": "1.7.0",
     "stompjs": "^2.3.3",
     "vue": "2.5.10",

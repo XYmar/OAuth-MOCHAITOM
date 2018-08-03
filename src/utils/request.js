@@ -1,7 +1,11 @@
+/* eslint-disable */
+import Vue from 'vue'
 import axios from 'axios'
-// import { Message } from 'element-ui'
+ import { Message } from 'element-ui'
+/*import { Confirm } from 'element-ui'*/
 import store from '@/store'
-import { getToken, getIp, getPort, getExpire } from '@/utils/auth'
+import MessageBox from '../../static/tinymce4.7.5/tinymce.min'
+import { getToken, getRefreshToken, getIp, getPort, getExpire, getExpire2 } from '@/utils/auth'
 // create an axios instance
 let ip_set = store.getters.ipconfig
 let port = store.getters.port
@@ -11,6 +15,7 @@ let portConfig = getPort()
 let serviceConfig = 'http://' + ipConfig + ':' + portConfig
 
 let timeStamp = getExpire()
+let refreshTimeStamp = getExpire2()
 let qs = require('qs')
 const service = axios.create({
   /* baseURL: process.env.BASE_API,*/
@@ -22,31 +27,65 @@ const service = axios.create({
 
 // request interceptor
 service.interceptors.request.use(config => {
-  // Do something before request is sent
-  if (store.getters.token) {
-    config.headers['Authorization'] = 'Bearer' + getToken() // 让每个请求携带token-- ['X-Token']为自定义key 请根据实际情况自行修改
+
+  //判断是否超过刷新token
+  console.log("时间比较-----------")
+  console.log(refreshTimeStamp)
+  console.log(new Date() /1000)
+  /*if (refreshTimeStamp < (new Date() /1000)) {       //超过刷新token则重新登录*/
+  if (timeStamp < (new Date()) / 1000){      //目前是让过期就回到登录页面
+    console.log("超过刷新token了，重新登录----------");
+    /*this.$confirm('你已被登出，可以取消继续留在该页面，或者重新登录', '确定登出', {
+      confirmButtonText: '重新登录',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })*/
+    Vue.prototype.$confirm('你已被登出，可以取消继续留在该页面，或者重新登录', '确定登出', {
+      confirmButtonText: '重新登录',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }).then(() => {
+      store.dispatch('FedLogOut').then(() => {
+        location.reload();// 为了重新实例化vue-router对象 避免bug
+      });
+    })
   }
-  if (timeStamp < (new Date()) / 1000) {
+ /* else if (timeStamp < (new Date()) / 1000) {      //过期则刷新token
+    console.log("过期了----------");
     let formData = qs.stringify({
       'grant_type': 'refresh_token',
       'scope': 'SCOPES',
       'client_id': 'OAUTH_CLIENT_ID',
       'enctype': 'OAUTH_CLIENT_ID',
+      'client_secret': 'OAUTH_CLIENT_SECRET',
       'Authorization': 'Bearer' + getToken(),
-      'refresh_token': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX25hbWUiOiJyZW5ndSIsInNjb3BlIjpbIlNDT1BFUyJdLCJhdGkiOiI3NTQ4YjIwMS1hMzQ0LTQ1OGYtODQzOC0yN2FhODZiZDM4YzEiLCJleHAiOjE1MzE0NjU3MDQsInVzZXJJZCI6ImU4MTVhOTU3LTc0MDUtNGU2Ni1iYjI2LTg4ZGVlZmJkYmI3ZSIsImF1dGhvcml0aWVzIjpbIlJPTEVfYWRtaW4iLCJST0xFX3VzZXIiXSwianRpIjoiZTEyMjg4ZjEtZjEzYy00ZmRiLWJjMGQtN2QyMTQ2MTliNjU0IiwiY2xpZW50X2lkIjoiT0FVVEhfQ0xJRU5UX0lEIn0.z2BnRQpIreqQEN-ORJO7Z77aXkmB3t8w4fBxsq3-8fo'
+      'refresh_token': getRefreshToken()
     })
+    /!*http://localhost/oauth/token?grant_type=refresh_token&refresh_token=fbde81ee-f419-42b1-1234-9191f1f95be9
+    &client_id=demoClientId&client_secret=demoClientSecret*!/
     axios({
-      method: 'post',
+      method: 'get',
       url: service.defaults.baseURL + '/oauth/token',
-      // data: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX25hbWUiOiJyZW5ndSIsInNjb3BlIjpbIlNDT1BFUyJdLCJhdGkiOiJkNThhZjU2MC0zY2Y1LTQ1ZDMtOWNkNi1lZDBhYmIyNDBjMTciLCJleHAiOjE1MzE0NTg3MzcsInVzZXJJZCI6IjZjYTlmMjI5LWQ2N2QtNDYzMC05ODhhLWYwOGMxNTY3NDg5YSIsImF1dGhvcml0aWVzIjpbIlJPTEVfYWRtaW4iLCJST0xFX3VzZXIiXSwianRpIjoiNmExODkzZmEtZDUwMi00ODA2LThlZDAtMTBhZjM0YTRmMTBhIiwiY2xpZW50X2lkIjoiT0FVVEhfQ0xJRU5UX0lEIn0.X_U7GV7kUEcirtCSR2lUsihng3e7EiM0Y66iNEb3m3Q'
-      data: formData
+      params: {
+        'grant_type': 'refresh_token',
+        'client_id': 'OAUTH_CLIENT_ID',
+        'client_secret': 'OAUTH_CLIENT_SECRET',
+        'refresh_token': getRefreshToken()
+      }
     }).then(function(res) {
-      alert('22223rrr')
+      alert('获取了新的token---')
       // resolve()
     }).catch(() => {
-      // reject()
+      alert('未能获取新的token---')
     })
+  }*/
+
+  // Do something before request is sent
+  if (store.getters.token) {
+    config.headers['Authorization'] = 'Bearer' + getToken() // 让每个请求携带token-- ['X-Token']为自定义key 请根据实际情况自行修改
   }
+
+
   return config
 }, error => {
   // Do something with request error

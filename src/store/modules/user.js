@@ -1,5 +1,5 @@
 import { loginByUsername, logout, getUserInfo } from '@/api/login'
-import { getToken, setToken, removeToken, setUserId, removeUserId, removeProId, setExpire, removeExpire } from '@/utils/auth'
+import { getToken, getRefreshToken, setToken, setRefreshToken, removeToken, setUserId, removeUserId, removeProId, setExpire, setExpire2, removeExpire } from '@/utils/auth'
 const jwt = require('jsonwebtoken')
 
 const user = {
@@ -8,6 +8,7 @@ const user = {
     status: '',
     code: '',
     token: getToken(),
+    refreshToken: getRefreshToken(),
     name: '',
     avatar: '',
     introduction: '',
@@ -26,6 +27,9 @@ const user = {
     },
     SET_TOKEN: (state, token) => {
       state.token = token
+    },
+    SET_REFRESHTOKEN: (state, token) => {
+      state.refreshToken = token
     },
     SET_INTRODUCTION: (state, introduction) => {
       state.introduction = introduction
@@ -88,7 +92,9 @@ const user = {
           const access_token = response.data.access_token
           const refresh_token = response.data.refresh_token
           commit('SET_TOKEN', access_token)
+          commit('SET_REFRESHTOKEN', refresh_token)
           setToken(access_token)
+          setRefreshToken(refresh_token)
           resolve()
         }).catch(error => {
           reject(error)
@@ -126,12 +132,16 @@ const user = {
           reject('error')
           console.log('hasNoToken')
         }
+        console.log(state);
         const data = state.token
+        const refreshToken = state.refreshToken
         const decodeToken = jwt.decode(data)
+        const decodeRefreshToken = jwt.decode(refreshToken)
         // const dateNow = (new Date())/1000
         console.log(decodeToken, '22233')
         setUserId(decodeToken.userId)
         setExpire(decodeToken.exp)
+        setExpire2(decodeRefreshToken.exp)   //refreshToken
         // console.log(dateNow)
         // const rolesset = data.username === 'admin' ? 'admin' : 'editor'
         const rolesset = decodeToken.authorities.length > 1 ? 'admin' : 'editor'

@@ -121,9 +121,15 @@
     </el-dialog>
     <el-dialog title="进程" :visible.sync="processDialogVisible">
       <el-table :key='tableKey' :data="taskprocess" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row
-                style="width: 100%">
+                style="width: 100%"
+                @selection-change="handleCheckedProcess">
         <!-- <el-table :data="list" row-key="id"  v-loading.body="listLoading" border fit highlight-current-row style="width: 100%">-->
 
+        <el-table-column
+          type="selection"
+          width="55"
+          align="center">
+        </el-table-column>
         <el-table-column align="center" label="pid">
           <template slot-scope="scope">
             <span>{{scope.row.pid}}</span>
@@ -137,9 +143,28 @@
       </el-table>
       <div slot="footer" class="dialog-footer">
         <el-button @click="processDialogVisible = false">{{$t('table.cancel')}}</el-button>
-        <el-button v-if="dialogStatus=='create'" type="primary" @click="createData">{{$t('table.confirm')}}</el-button>
-        <el-button v-else type="primary" @click="updateData">{{$t('table.confirm')}}</el-button>
+        <el-button type="primary" @click="compMonitor()">组件进程监控</el-button>
       </div>
+    </el-dialog>
+    <el-dialog title="组件进程监控" :visible.sync="compProcessDialogVisible">
+      <el-table :key='tableKey' :data="taskprocess" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row
+                style="width: 100%">
+
+        <el-table-column align="center" label="进程">
+          <template slot-scope="scope">
+            <span>--</span>
+          </template>
+        </el-table-column>
+        <el-table-column align="center" label="状态">
+          <template slot-scope="scope">
+            <span>--</span>
+          </template>
+        </el-table-column>
+      </el-table>
+      <!--<div slot="footer" class="dialog-footer">
+        <el-button @click="processDialogVisible = false">{{$t('table.cancel')}}</el-button>
+        <el-button type="primary" @click="compMonitor()">组件进程监控</el-button>
+      </div>-->
     </el-dialog>
     <el-dialog title="请填写路径" :visible.sync="reportDialogVisible">
       <el-form :rules="rules" ref="dataForm" :model="temp" label-position="left" label-width="70px" style='width: 400px; margin-left:50px;'>
@@ -178,6 +203,8 @@
         tableKey: 0,
         list: [],
         webResBody: [],
+        checkedProcess: [],           //checkbox, 进程id
+        processIds: [],             //进程id
         total: null,
         listLoading: true,
         searchQuery: '',
@@ -216,6 +243,7 @@
         dialogFormVisible: false,
         diskDialogVisible: false,
         processDialogVisible: false,
+        compProcessDialogVisible: false,
         reportDialogVisible: false,
         dialogStatus: '',
         textMap: {
@@ -343,8 +371,8 @@
               for (let i = 0; i < that.list.length; i++) {
                 Vue.set(that.list, i, that.list[i]);
               }
-              console.log("设备----------");
-              console.log(that.list);
+              /*console.log("设备----------");
+              console.log(that.list);*/
             }
           });
         });
@@ -559,8 +587,10 @@
       },
       handleDisk(row) {
         this.diskDialogVisible = true
+        this.listLoading = true
         getDisks(row.id).then((res) => {
           this.disks = res.data.data
+          this.listLoading = false
         })
       },
       handleReport(row) {
@@ -597,6 +627,89 @@
           })
         })
       },
+
+      handleCheckedProcess(val) {          //所选的进程，checkbox
+        this.checkedProcess = val;
+        console.log("checkbox---------");
+        console.log(this.checkedProcess)
+
+        this.processIds.splice(0,this.processIds.length);
+
+        for(let i=0;i<this.checkedProcess.length;i++){
+          this.processIds.push(this.checkedProcess[i].id);
+        }
+
+        console.log(this.processIds);
+      },
+      compMonitor() {
+        // alert("查看组件进程----------");
+        this.compProcessDialogVisible = true
+        //this.listLoading = true
+        /*getProcess(row.id).then((res) => {
+          this.taskprocess = res.data.data
+          this.listLoading = false
+        })*/
+      },
+      /*compMonitor: function () {
+        alert("查看组件进程----------");
+        /!*this.processIds.splice(0,this.processIds.length);
+
+        console.log(this.componentIds.length);
+        if(this.componentIds.length !== 0){
+
+          for(let i=0;i<this.componentIds.length;i++){
+            for(let j=0;j<this.bindCompsId.length;j++){
+              if(this.bindCompsId[j] === this.componentIds[i]){  //判断索选择的组件是否有已绑定的
+                this.repeatCompsId.push(this.bindCompsId[j]);
+
+              }
+            }
+          }
+
+          if(this.repeatCompsId.length !== 0){
+            this.$message({
+              type: 'warning',
+              message: '有' + this.repeatCompsId.length + '个组件已绑定过！'
+            })
+
+            return;
+          }
+
+          let dataBindId = (this.componentIds + '').replace(/\[|]/g,'')
+          console.log(dataBindId, '99980')
+          let data = {
+            'componentIds': dataBindId
+          }
+          let qs = require('qs')
+          let dataBind = qs.stringify(data)
+          doDeployBind(this.deployPlanId, this.deviceCHId, dataBind).then(() => {
+            this.$notify({
+              title: '成功',
+              message: '绑定成功',
+              type: 'success',
+              duration: 2000
+            })
+
+            getDeployComLists(this.deployPlanId, this.deviceCHId).then((res) => {
+              this.bindedDeviceList = res.data.data
+            })
+
+          }).catch(() =>{
+            this.$notify({
+              title: '失败',
+              message: '绑定失败',
+              type: 'error',
+              duration: 2000
+            })
+          })
+        }else{
+          this.$message({
+            type: 'warning',
+            message: '无绑定信息!'
+          })
+        }*!/
+
+      },*/
       setSort() {
         const el = document.querySelectorAll('.el-table__body-wrapper > table > tbody')[0]
         this.sortable = Sortable.create(el, {

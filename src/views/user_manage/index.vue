@@ -84,7 +84,7 @@
     <el-dialog title="添加用户" :visible.sync="createUserFormVisible">
       <el-form :rules="rules" ref="createDataForm" :model="createForm" label-position="left" label-width="100px" style='width: 400px; margin-left:50px;'>
         <el-form-item label="用户名" prop="username">
-          <el-input v-model="createForm.username" type="password"></el-input>
+          <el-input v-model="createForm.username" type="text"></el-input>
         </el-form-item>
         <el-form-item label="密码" prop="password">
           <el-input v-model="createForm.password" type="password"></el-input>
