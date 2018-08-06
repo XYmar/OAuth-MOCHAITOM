@@ -9,7 +9,7 @@ export function projectList() {
 
 export function projectList_user(id) {
   return request({
-    url: '/users/' + id + '/projects',
+    url: '/users/' + id + '/project',
     method: 'get'
   })
 }

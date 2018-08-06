@@ -94,9 +94,9 @@ export default {
     }
     return {
       loginForm: {
-        username: 'rengu',
-        password: 'rengu',
-        ipConfig: '192.168.0.117',
+        username: '',
+        password: '',
+        ipConfig: '192.168.31.13',
         port: 8080
       },
       loginRules: {
@@ -158,8 +158,10 @@ export default {
 
           this.$store.dispatch('LoginByUsername', formData).then(() => {
             this.loading = false
-            // this.getUserInfo()
-            this.$router.push({ path: '/projectManage' })
+            getUserId().then((res) => {
+              this.setCookie('userId', res.data.data.id)
+              this.$router.push({ path: '/projectManage' })
+            })
           }).catch(() => {
             this.loading = false
           })
@@ -169,11 +171,6 @@ export default {
         }
       })
     },
-   /* getUserInfo () {
-      getUserId().then((res) => {
-        this.setCookie('userId', res.data.data.id)
-      })
-    },*/
     login: function () {
       /*let username = $("input#username").val();
       let password = $("input#password").val();*/
@@ -284,6 +281,15 @@ export default {
     })
   },
   created() {
+    if(this.getCookie('ip')) {
+      this.loginForm.ipConfig = this.getCookie('ip')
+    }
+    if(this.getCookie('port')) {
+      this.loginForm.port = this.getCookie('port')
+    }
+    if(this.getCookie('username')) {
+      this.loginForm.username = this.getCookie('username')
+    }
     this.setIP(this.loginForm.ipConfig)
     this.setPort(this.loginForm.port)
     // window.addEventListener('hashchange', this.afterQRScan)
@@ -335,7 +341,7 @@ $light_gray:#eee;
     .colon {
       display: inline-block;
       text-align: center;
-      width: 3%;
+      width: 5%;
       color:#fff;
     }
     .el-form-item.portform{

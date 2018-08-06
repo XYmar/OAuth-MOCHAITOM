@@ -3,11 +3,9 @@
     <div class="filter-container">
       <el-input @keyup.enter.native="handleFilter" style="width: 200px;" class="filter-item" :placeholder="$t('table.deviceName')" v-model="searchQuery">
       </el-input>
-
       <el-button class="filter-item" type="primary" v-waves icon="el-icon-search" @click="handleFilter">{{$t('table.search')}}</el-button>
       <el-button class="filter-item pull-right" style="margin-left: 10px;" @click="handleCreate" type="primary" icon="el-icon-edit">{{$t('table.add')}}</el-button>
     </div>
-
     <el-table :key='tableKey' :data="listA" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row
               style="width: 100%">
       <!-- <el-table :data="list" row-key="id"  v-loading.body="listLoading" border fit highlight-current-row style="width: 100%">-->
@@ -17,7 +15,7 @@
           <span>{{scope.row.name}}</span>
         </template>
       </el-table-column>
-      <el-table-column width="150px" align="center" :label="$t('table.deviceIP')">
+      <el-table-column width="140px" align="center" :label="$t('table.deviceIP')">
         <template slot-scope="scope">
           <span>{{scope.row.ip}}</span>
         </template>
@@ -27,32 +25,38 @@
           <span>{{scope.row.deployPath}}</span>
         </template>
       </el-table-column>
-      <el-table-column min-width="100px" label="CPU">
+      <el-table-column min-width="80px" label="CPU">
         <template slot-scope="scope">
           <span v-if="!scope.row.online">--</span>
           <span v-else>{{Math.round(scope.row.cpuclock/1000*100)/100}}GHZ</span>
         </template>
       </el-table-column>
-      <el-table-column min-width="100px" :label="$t('table.memorySize')">
+      <el-table-column min-width="80px" :label="$t('table.memorySize')">
         <template slot-scope="scope">
           <span v-if="!scope.row.online">--</span>
           <span v-else>{{Math.round(scope.row.ramsize/1024*100)/100}}G</span>
         </template>
       </el-table-column>
-      <el-table-column width="110px" align="center" :label="$t('table.deviceState')">
+      <el-table-column align="center" :label="$t('table.deviceState')">
         <template slot-scope="scope">
           <!--<el-tag :type="scope.row.online | statusFilter">{{scope.row.online | statusFilter}}</el-tag>-->
           <span class="el-tag el-tag--danger" v-if="scope.row.online == false">离线</span>
           <span class="el-tag el-tag--primary" v-else>在线</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" :label="$t('table.check')" width="180" class-name="small-padding fixed-width">
+      <el-table-column align="center" :label="$t('table.check')" min-width="230" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <!--<el-button size="mini" @click="handleDisk(scope.row)" type="success">{{$t('table.disk')}}</el-button>-->
           <el-button type="primary" size="mini" v-if="scope.row.online && !scope.row.virtual" @click="handleProcess(scope.row)">{{$t('table.deviceProcess')}}</el-button>
           <el-button size="mini" type="success" v-if="scope.row.online && !scope.row.virtual" @click="handleDisk(scope.row)">{{$t('table.disk')}}</el-button>
+          <router-link :to='{name:"connectvnc",params:{id:scope.row.id, ip:scope.row.ip}}'>
+            <el-button size="mini" type="primary" v-if="!scope.row.virtual" style="margin-left: 10px">
+              远程
+            </el-button>
+          </router-link>
           <el-button type="primary" disabled="disabled" v-if="!scope.row.online || scope.row.virtual" size="mini">{{$t('table.deviceProcess')}}</el-button>
           <el-button size="mini" disabled="disabled" v-if="!scope.row.online || scope.row.virtual" type="success">{{$t('table.disk')}}</el-button>
+          <!--<el-button type="primary" disabled="disabled" v-if="!scope.row.online || scope.row.virtual" size="mini">远程</el-button>-->
         </template>
       </el-table-column>
       <el-table-column align="center" :label="$t('table.actions')" width="280" class-name="small-padding fixed-width">
@@ -728,6 +732,8 @@
           }
         })
       },
+      connectVNC(row) {
+      }
     },
     computed: {
       listA: function () {
