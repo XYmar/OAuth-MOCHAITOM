@@ -39,8 +39,8 @@
         <span class="svg-container">
           <svg-icon icon-class="password" />
         </span>
-        <el-input name="password" :type="passwordType" @keyup.enter.native="handleLogin" v-model="loginForm.againPassword" autoComplete="on" placeholder="再次输入密码" />
-        <span class="show-pwd" @click="showPwd">
+        <el-input name="password" :type="passwordTypeAgin" @keyup.enter.native="handleLogin" v-model="loginForm.againPassword" autoComplete="on" placeholder="再次输入密码" />
+        <span class="show-pwd" @click="showPwdAgin">
           <svg-icon icon-class="eye" />
         </span>
       </el-form-item>
@@ -76,7 +76,7 @@
 </template>
 
 <script>
-  import { isvalidUsername } from '@/utils/validate'
+  import { isvalidUsername, isvalidPwd } from '@/utils/validate'
   // import { addUser } from '../../api/getUsers'
   // import service from '@/utils/request'
 
@@ -90,23 +90,25 @@
     data() {
       const validateUsername = (rule, value, callback) => {
         if (!isvalidUsername(value)) {
-          callback(new Error('请输入正确的用户名！'))
+          callback(new Error('账号必须是5-15位的英文字母或数字！'))
         } else {
           callback()
         }
       }
       const validatePassword = (rule, value, callback) => {
-        if (value.length < 6) {
-          callback(new Error('请输入正确的密码,至少6位！'))
+        if (value.length === 0) {
+          callback(new Error('密码不能为空！'))
+        } else if (!isvalidPwd(value)) {
+          callback(new Error('密码必须是6-16位数字和字母的组合！'))
         } else {
           callback()
         }
       }
       const validatePasswordAgain = (rule, value, callback) => {
-        if (value.length < 6) {
-          callback(new Error('请输入正确的密码,至少6位！'))
+        if (value.length === 0) {
+          callback(new Error('请再次输入密码！'))
         } else if (this.loginForm.againPassword !== this.loginForm.password) {
-          callback(new Error('两次密码输入不一致，请再次输入新密码！'))
+          callback(new Error('两次输入的密码不一致！'))
         } else {
           callback()
         }
@@ -125,6 +127,7 @@
           againPassword: [{required: true, trigger: 'blur', validator: validatePasswordAgain}]
         },
         passwordType: 'password',
+        passwordTypeAgin: 'password',
         loading: false,
         showDialog: false
       }
@@ -138,6 +141,13 @@
           this.passwordType = ''
         } else {
           this.passwordType = 'password'
+        }
+      },
+      showPwdAgin() {
+        if (this.passwordTypeAgin === 'password') {
+          this.passwordTypeAgin = ''
+        } else {
+          this.passwordTypeAgin = 'password'
         }
       },
       handleLogin() {

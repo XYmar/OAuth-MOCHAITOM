@@ -3,9 +3,21 @@
  */
 
 export function isvalidUsername(str) {
- /* const valid_map = ['admin', 'editor']
+/* const valid_map = ['admin', 'editor']
   return valid_map.indexOf(str.trim()) >= 0*/
- return str.length > 0
+// return str.length > 0
+  const usernamePattern = /^[a-zA-Z0-9]{5,15}$/
+
+  return usernamePattern.test(str)
+}
+
+export function isvalidPwd(str) {
+  /* const valid_map = ['admin', 'editor']
+    return valid_map.indexOf(str.trim()) >= 0*/
+// return str.length > 0
+  const pwdPattern = /^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z]{6,16}$/
+
+  return pwdPattern.test(str)
 }
 
 /* 合法uri*/
