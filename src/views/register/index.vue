@@ -195,7 +195,15 @@
           }
         })
       }
-    }
+    },
+    created() {
+      if(this.getCookie('ip')) {
+        this.loginForm.ipConfig = this.getCookie('ip')
+      }
+      if(this.getCookie('port')) {
+        this.loginForm.port = this.getCookie('port')
+      }
+    },
   }
 </script>
 
@@ -219,7 +227,7 @@
         height: 47px;
         &:-webkit-autofill {
           -webkit-box-shadow: 0 0 0px 1000px $bg inset !important;
-          -webkit-text-fill-color: #fff !important;
+          -webkit-text-fill-color: $bg !important;
         }
       }
     }
