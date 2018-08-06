@@ -205,14 +205,15 @@
         this.listLoading = true
         if(this.role == 'admin') {
           projectList().then(response => {
-            this.list = response.data.data
+            this.list = response.data.data.content
             this.total = response.data.total
             this.listLoading = false
             this.listLength = response.data.data.length
           })
         } else if(this.role == 'editor') {
+          alert(this.userId)
           projectList_user(this.userId).then(response => {
-            this.list = response.data.data
+            this.list = response.data.data.content
             this.total = response.data.total
             this.listLoading = false
             this.listLength = response.data.data.length
