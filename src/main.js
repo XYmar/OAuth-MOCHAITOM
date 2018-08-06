@@ -15,6 +15,8 @@ import '@/styles/index.scss' // global css
 import App from './App'
 import router from './router'
 import store from './store'
+import Stomp from 'stompjs'
+import SockJS from 'sockjs-client'
 
 import i18n from './lang' // Internationalization
 import './icons' // icon
@@ -31,7 +33,6 @@ import * as filters from './filters' // global filters
 import '@/ztree/js/jquery-1.4.4.min.js'
 import '@/ztree/js/jquery.ztree.core'
 import '@/ztree/js/jquery.ztree.excheck'
-
 
 // add
 Vue.prototype.GLOBAL = global
