@@ -335,5 +335,11 @@ export const asyncRouterMap = [
     path: '/baseline',
     component: Layout,
     children: [{ path: 'baseline', component: _import('baseline/baseline'), name: 'baseline', meta: { title: 'baseline', icon: 'example' }}]
+  },
+  {
+    path: '/connectvnc',
+    component: Layout,
+    hidden: true,
+    children: [{ path: 'vnc/:id', component: _import('connectVNC/index'), name: 'connectvnc', meta: { title: 'vnc', icon: 'example' }}]
   }
 ]
