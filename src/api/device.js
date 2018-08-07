@@ -9,7 +9,7 @@ export function getDevices(proId) {
 
 export function saveDevices(proId, data) {
   return request({
-    url: '/projects/' + proId + '/devices',
+    url: '/projects/' + proId + '/device',
     method: 'post',
     data
   })
@@ -35,14 +35,13 @@ export function updateDevice(id, data) {
   })
 }
 
-export function copyDevices(data, id) {
+export function copyDevices(id) {
   return request({
     url: '/devices/' + id + '/copy',
     method: 'post',
     headers: {
       'content-type': 'application/x-www-form-urlencoded'
-    },
-    data
+    }
   })
 }
 
@@ -68,7 +67,7 @@ export function getProcess(id) {
 
 export function reportDevices(proId, data) {
   return request({
-    url: '/projects/' + proId + '/devices',
+    url: '/projects/' + proId + '/device',
     method: 'post',
     data
   })

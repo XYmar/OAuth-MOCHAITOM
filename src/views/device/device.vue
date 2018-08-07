@@ -50,13 +50,13 @@
           <el-button type="primary" size="mini" v-if="scope.row.online && !scope.row.virtual" @click="handleProcess(scope.row)">{{$t('table.deviceProcess')}}</el-button>
           <el-button size="mini" type="success" v-if="scope.row.online && !scope.row.virtual" @click="handleDisk(scope.row)">{{$t('table.disk')}}</el-button>
           <router-link :to='{name:"connectvnc",params:{id:scope.row.id, ip:scope.row.ip}}'>
-            <el-button size="mini" type="primary" v-if="!scope.row.virtual" style="margin-left: 10px">
+            <el-button size="mini" type="primary" v-if="!scope.row.virtual && scope.row.online" style="margin-left: 10px">
               远程
             </el-button>
           </router-link>
           <el-button type="primary" disabled="disabled" v-if="!scope.row.online || scope.row.virtual" size="mini">{{$t('table.deviceProcess')}}</el-button>
           <el-button size="mini" disabled="disabled" v-if="!scope.row.online || scope.row.virtual" type="success">{{$t('table.disk')}}</el-button>
-          <!--<el-button type="primary" disabled="disabled" v-if="!scope.row.online || scope.row.virtual" size="mini">远程</el-button>-->
+          <el-button type="primary" disabled="disabled" v-if="!scope.row.online || scope.row.virtual" size="mini">远程</el-button>
         </template>
       </el-table-column>
       <el-table-column align="center" :label="$t('table.actions')" width="280" class-name="small-padding fixed-width">
@@ -286,7 +286,7 @@
       getList() {
         this.listLoading = true
         getDevices(this.proId).then(response => {
-          this.list = response.data.data
+          this.list = response.data.data.content
           this.listLoading = false
           for(let i=0;i<this.list.length;i++){
             this.list[i].online = false;
@@ -562,7 +562,7 @@
           'name': this.temp.name
         };
         let proData = qs.stringify(data);
-        copyDevices(proData, id).then(() => {
+        copyDevices(id).then(() => {
           this.list.unshift(this.temp)
           /* this.dialogFormVisible = false */
           this.$notify({
