@@ -1,22 +1,30 @@
 import request from '../utils/request'
 
-export function projectList() {
+export function projectList(listQuery) {
   return request({
     url: '/projects',
-    method: 'get'
+    method: 'get',
+    params: {
+      size: listQuery.size,
+      page: listQuery.page
+    }
   })
 }
 
-export function projectList_user(id) {
+export function projectList_user(id, listQuery) {
   return request({
     url: '/users/' + id + '/project',
-    method: 'get'
+    method: 'get',
+    params: {
+      size: listQuery.size,
+      page: listQuery.page
+    }
   })
 }
 
-export function createProject(data) {
+export function createProject(data, id) {
   return request({
-    url: '/projects',
+    url: '/users/' + id + '/project',
     method: 'post',
     data
   })
