@@ -68,7 +68,20 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-pagination
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :current-page="currentPage"
+        :page-sizes="[20,50,100]"
+        :page-size="10"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="this.total"
+        background
+        style="text-align: center;margin-top:20px"
+      >
+      </el-pagination>
     </div>
+    <!--分页-->
     <!--修改/新建项目-->
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form :rules="rules" ref="dataForm" :model="temp" label-position="left" label-width="70px" style='width: 400px; margin-left:50px;'>
@@ -143,6 +156,15 @@
         selectedId: '',
         tableKey: 0,
         list: [],
+        listQuery: {
+          page: 0,
+          size:20,
+          limit: 5,
+          tagname: ''
+        },
+        total: null,
+        pagesize:10,//每页的数据条数
+        currentPage:1,//默认开始页面
         searchQuery: '',
         dialogFormVisible: false,
         modifyPasswordVisible: false,
@@ -204,15 +226,15 @@
       getList() {
         this.listLoading = true
         if(this.role == 'admin') {
-          projectList().then(response => {
+          projectList(this.listQuery).then(response => {
             this.list = response.data.data.content
             this.total = response.data.total
             this.listLoading = false
             this.listLength = response.data.data.length
           })
         } else if(this.role == 'editor') {
-          alert(this.userId)
-          projectList_user(this.userId).then(response => {
+          // alert(this.userId)
+          projectList_user(this.userId, this.listQuery).then(response => {
             this.list = response.data.data.content
             this.total = response.data.total
             this.listLoading = false
@@ -245,7 +267,7 @@
               'description': this.temp.description
             };
             let proData = qs.stringify(data);
-            createProject(proData).then(() => {
+            createProject(proData, this.userId).then(() => {
               this.list.unshift(this.temp)
               this.dialogFormVisible = false
               this.$notify({
@@ -399,7 +421,17 @@
         this.$store.commit('SET_PROJECTID',row.id)
         this.$store.commit('SET_PROJECTNAME',row.name)
         this.$router.push({path:'/dashboard/dashboard'})
-      }
+      },
+      handleSizeChange(val) {
+        this.listQuery.size = val
+        this.pagesize = val
+        this.getList()
+      },
+      handleCurrentChange(val) {
+        this.listQuery.page = val - 1
+        this.currentPage = val
+        this.getList()
+      },
     },
     computed: {
       listA: function () {
