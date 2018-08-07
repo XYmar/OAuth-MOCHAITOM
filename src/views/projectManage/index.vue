@@ -231,6 +231,7 @@
             this.total = response.data.total
             this.listLoading = false
             this.listLength = response.data.data.length
+            this.total = response.data.data.totalElements
           })
         } else if(this.role == 'editor') {
           // alert(this.userId)
@@ -239,6 +240,7 @@
             this.total = response.data.total
             this.listLoading = false
             this.listLength = response.data.data.length
+            this.total = response.data.data.totalElements
           })
         }
 
