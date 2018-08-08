@@ -204,3 +204,12 @@ code {
     color: #fff;
   }
 }
+.fileList .el-table__header tr{
+  height: 50px;
+}
+.uploadDialog .el-dialog{
+  position: absolute;
+  left: unset;
+  bottom: 0;
+  right: 0;
+}

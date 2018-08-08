@@ -65,7 +65,8 @@ export default {
     baseline: '基线',
     deployPlan: '部署设计',
     deployPlanDetail: '绑定详情',
-    deployBind: '绑定'
+    deployBind: '绑定',
+    files: '组件文件'
   },
   navbar: {
     logOut: '退出登录',

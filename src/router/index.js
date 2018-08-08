@@ -341,5 +341,16 @@ export const asyncRouterMap = [
     component: Layout,
     hidden: true,
     children: [{ path: 'vnc/:id', component: _import('connectVNC/index'), name: 'connectvnc', meta: { title: 'vnc', icon: 'example' }}]
+  },
+  {
+    path: '/comps',
+    component: Layout,
+    children: [{ path: 'comps', component: _import('fileManager/comps'), name: 'compd', meta: { title: 'files', icon: 'table', noCache: true }}]
+  },
+  {
+    path: '/newfiles',
+    component: Layout,
+    hidden: true,
+    children: [{ path: 'newfiles/:id', component: _import('fileManager/index'), name: 'files', meta: { title: 'files', icon: 'table', noCache: false }}]
   }
 ]
