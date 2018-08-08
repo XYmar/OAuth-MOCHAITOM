@@ -50,13 +50,13 @@
           <el-button type="primary" size="mini" v-if="scope.row.online && !scope.row.virtual" @click="handleProcess(scope.row)">{{$t('table.deviceProcess')}}</el-button>
           <el-button size="mini" type="success" v-if="scope.row.online && !scope.row.virtual" @click="handleDisk(scope.row)">{{$t('table.disk')}}</el-button>
           <router-link :to='{name:"connectvnc",params:{id:scope.row.id, ip:scope.row.ip}}'>
-            <el-button size="mini" type="primary" v-if="!scope.row.virtual" style="margin-left: 10px">
+            <el-button size="mini" type="primary" v-if="!scope.row.virtual && scope.row.online" style="margin-left: 10px">
               远程
             </el-button>
           </router-link>
           <el-button type="primary" disabled="disabled" v-if="!scope.row.online || scope.row.virtual" size="mini">{{$t('table.deviceProcess')}}</el-button>
           <el-button size="mini" disabled="disabled" v-if="!scope.row.online || scope.row.virtual" type="success">{{$t('table.disk')}}</el-button>
-          <!--<el-button type="primary" disabled="disabled" v-if="!scope.row.online || scope.row.virtual" size="mini">远程</el-button>-->
+          <el-button type="primary" disabled="disabled" v-if="!scope.row.online || scope.row.virtual" size="mini">远程</el-button>
         </template>
       </el-table-column>
       <el-table-column align="center" :label="$t('table.actions')" width="280" class-name="small-padding fixed-width">
@@ -71,11 +71,23 @@
         </template>-->
       </el-table-column>
     </el-table>
-
-    <div class="pagination-container">
+    <el-pagination
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+      :current-page="currentPage"
+      :page-sizes="[20,50,100]"
+      :page-size="10"
+      layout="total, sizes, prev, pager, next, jumper"
+      :total="this.total"
+      background
+      style="text-align: center;margin-top:20px"
+    >
+    </el-pagination>
+    <!--<div class="pagination-container">
       <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="listQuery.page" :page-sizes="[10,20,30, 50]" :page-size="listQuery.limit" layout="total, sizes, prev, pager, next, jumper" :total="total">
       </el-pagination>
-    </div>
+    </div>-->
+
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form :rules="rules" ref="dataForm" :model="temp" label-position="left" label-width="70px" style='width: 400px; margin-left:50px;'>
@@ -209,7 +221,6 @@
         webResBody: [],
         checkedProcess: [],           //checkbox, 进程id
         processIds: [],             //进程id
-        total: null,
         listLoading: true,
         searchQuery: '',
         userData:{
@@ -224,14 +235,14 @@
         proId: '',
         deviceId: '',
         listQuery: {
-          page: 1,
-          limit: 10,
-          importance: undefined,
-          title: undefined,
-          type: undefined,
-          sort: '+id',
-          deviceName: undefined
+          page: 0,
+          size:20,
+          limit: 5,
+          tagname: ''
         },
+        total: null,
+        pagesize:10,//每页的数据条数
+        currentPage:1,//默认开始页面
         sortable: null,
         oldList: [],
         newList: [],
@@ -285,13 +296,16 @@
     methods: {
       getList() {
         this.listLoading = true
-        getDevices(this.proId).then(response => {
-          this.list = response.data.data
+        getDevices(this.proId, this.listQuery).then(response => {
+          this.list = response.data.data.content
+          this.total = response.data.total
           this.listLoading = false
           for(let i=0;i<this.list.length;i++){
             this.list[i].online = false;
             this.list[i].virtual = false;
           }
+          this.listLength = response.data.data.length
+          this.total = response.data.data.totalElements
           this.getList2()
         })
       },
@@ -387,11 +401,13 @@
         this.getList()
       },
       handleSizeChange(val) {
-        this.listQuery.limit = val
+        this.listQuery.size = val
+        this.pagesize = val
         this.getList()
       },
       handleCurrentChange(val) {
-        this.listQuery.page = val
+        this.listQuery.page = val - 1
+        this.currentPage = val
         this.getList()
       },
       handleModifyStatus(row, status) {
@@ -562,7 +578,7 @@
           'name': this.temp.name
         };
         let proData = qs.stringify(data);
-        copyDevices(proData, id).then(() => {
+        copyDevices(id).then(() => {
           this.list.unshift(this.temp)
           /* this.dialogFormVisible = false */
           this.$notify({
@@ -608,7 +624,8 @@
         let RpData = qs.stringify({
           "name": this.reportData.name,
           "ip":  this.reportData.ip,
-          "deployPath": this.reportData.deployPath
+          "deployPath": this.reportData.deployPath,
+          "description": ''
         })
         reportDevices(this.proId, RpData).then((res) => {
           this.reportData.name = ''

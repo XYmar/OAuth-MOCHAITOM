@@ -1,15 +1,19 @@
 import request from '../utils/request'
 
-export function deployplanList(projectId) {
+export function deployplanList(projectId, listQuery) {
   return request({
-    url: 'projects/' + projectId + '/deploymentdesigns',
-    method: 'get'
+    url: 'projects/' + projectId + '/deploymentdesign',
+    method: 'get',
+    params: {
+      size: listQuery.size,
+      page: listQuery.page
+    }
   })
 }
 
 export function createDeployplan(data, projectId) {
   return request({
-    url: 'projects/' + projectId + '/deploymentdesigns',
+    url: 'projects/' + projectId + '/deploymentdesign',
     method: 'post',
     data
   })
