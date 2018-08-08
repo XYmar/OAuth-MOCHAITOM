@@ -1,9 +1,13 @@
 import request from '../utils/request'
 
-export function getDevices(proId) {
+export function getDevices(proId, listQuery) {
   return request({
     url: '/projects/' + proId + '/devices',
-    method: 'get'
+    method: 'get',
+    params: {
+      size: listQuery.size,
+      page: listQuery.page
+    }
   })
 }
 

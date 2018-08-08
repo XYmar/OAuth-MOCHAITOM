@@ -71,11 +71,23 @@
         </template>-->
       </el-table-column>
     </el-table>
-
-    <div class="pagination-container">
+    <el-pagination
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+      :current-page="currentPage"
+      :page-sizes="[20,50,100]"
+      :page-size="10"
+      layout="total, sizes, prev, pager, next, jumper"
+      :total="this.total"
+      background
+      style="text-align: center;margin-top:20px"
+    >
+    </el-pagination>
+    <!--<div class="pagination-container">
       <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="listQuery.page" :page-sizes="[10,20,30, 50]" :page-size="listQuery.limit" layout="total, sizes, prev, pager, next, jumper" :total="total">
       </el-pagination>
-    </div>
+    </div>-->
+
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form :rules="rules" ref="dataForm" :model="temp" label-position="left" label-width="70px" style='width: 400px; margin-left:50px;'>
@@ -209,7 +221,6 @@
         webResBody: [],
         checkedProcess: [],           //checkbox, 进程id
         processIds: [],             //进程id
-        total: null,
         listLoading: true,
         searchQuery: '',
         userData:{
@@ -224,14 +235,14 @@
         proId: '',
         deviceId: '',
         listQuery: {
-          page: 1,
-          limit: 10,
-          importance: undefined,
-          title: undefined,
-          type: undefined,
-          sort: '+id',
-          deviceName: undefined
+          page: 0,
+          size:20,
+          limit: 5,
+          tagname: ''
         },
+        total: null,
+        pagesize:10,//每页的数据条数
+        currentPage:1,//默认开始页面
         sortable: null,
         oldList: [],
         newList: [],
@@ -285,13 +296,16 @@
     methods: {
       getList() {
         this.listLoading = true
-        getDevices(this.proId).then(response => {
+        getDevices(this.proId, this.listQuery).then(response => {
           this.list = response.data.data.content
+          this.total = response.data.total
           this.listLoading = false
           for(let i=0;i<this.list.length;i++){
             this.list[i].online = false;
             this.list[i].virtual = false;
           }
+          this.listLength = response.data.data.length
+          this.total = response.data.data.totalElements
           this.getList2()
         })
       },
@@ -387,11 +401,13 @@
         this.getList()
       },
       handleSizeChange(val) {
-        this.listQuery.limit = val
+        this.listQuery.size = val
+        this.pagesize = val
         this.getList()
       },
       handleCurrentChange(val) {
-        this.listQuery.page = val
+        this.listQuery.page = val - 1
+        this.currentPage = val
         this.getList()
       },
       handleModifyStatus(row, status) {
@@ -608,7 +624,8 @@
         let RpData = qs.stringify({
           "name": this.reportData.name,
           "ip":  this.reportData.ip,
-          "deployPath": this.reportData.deployPath
+          "deployPath": this.reportData.deployPath,
+          "description": ''
         })
         reportDevices(this.proId, RpData).then((res) => {
           this.reportData.name = ''
