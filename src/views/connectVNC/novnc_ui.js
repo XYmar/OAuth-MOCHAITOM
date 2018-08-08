@@ -284,7 +284,7 @@ var UI = {
         UI.rfb.sendCtrlAltDel();
     },
     openConnectPanel: function () {
-      document.getElementById('noVNC_control_bar').classList.add("noVNC_open");
+      // document.getElementById('noVNC_control_bar').classList.add("noVNC_open");
     },
 };
 // Set up translations
