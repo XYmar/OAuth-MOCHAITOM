@@ -92,6 +92,18 @@
                 </template>
               </el-table-column>
             </el-table>
+            <el-pagination
+              @size-change="handleSizeChange"
+              @current-change="handleCurrentChange"
+              :current-page="currentPage"
+              :page-sizes="[20,50,100]"
+              :page-size="10"
+              layout="total, sizes, prev, pager, next, jumper"
+              :total="this.total"
+              background
+              style="text-align: center;margin-top:20px"
+            >
+            </el-pagination>
           </div>
 
 
@@ -118,6 +130,10 @@
   import splitPane from 'vue-splitpane'
   import Popper from 'vue-popper'
   import deployBindER from './deployBindER.vue'
+  import service from '@/utils/request'
+  import Stomp from 'stompjs'
+  import SockJS from 'sockjs-client'
+  import Vue from 'vue'
 
   /* eslint-disable */
   export default {
@@ -140,7 +156,15 @@
         proId: '',
         listComp: [],
         listBind: [],
+        listQuery: {
+          page: 0,
+          size:20,
+          limit: 5,
+          tagname: ''
+        },
         total: null,
+        pagesize:10,//每页的数据条数
+        currentPage:1,//默认开始页面
         listLoading: true,
 
         deployPlanId: '',       //所选部署设计的id
@@ -178,14 +202,86 @@
       //this.ifShow = false;
     },
     methods: {
-      getList() {     //获取设备信息
+      getList() {    //获取设备信息
         this.listLoading = true
-        getDevices(this.proId, this.userData).then(response => {
-          this.list = response.data.data
+        getDevices(this.proId, this.listQuery).then(response => {
+          this.list = response.data.data.content
+          this.total = response.data.total
           this.listLoading = false
+          for(let i=0;i<this.list.length;i++){
+            this.list[i].online = false;
+            this.list[i].virtual = false;
+          }
+          this.listLength = response.data.data.length
+          this.total = response.data.data.totalElements
+          this.getList2()
         })
       },
+      getList2() {
+        let url = service.defaults.baseURL + '/OMS';
+        let socket = new SockJS(url);
+        let stompClient = Stomp.over(socket);
+        let that = this;
+        stompClient.connect({}, function (frame) {
+          stompClient.subscribe('/topic/onlineheartbeatmessages', function (response) {
+            let resBody = response.body;
+            let resBody2 = resBody.replace(/[\\]/g, '');
+            that.webResBody = JSON.parse(resBody2);
+            $("#onlineheartbeatmessages").html(resBody);
 
+            if(that.list.length > 0){
+              for(let i=0;i<that.list.length;i++){
+                that.list[i].online = false;
+
+                if(that.list[i].online === false && that.list[i].virtual === true){
+                  that.list.splice(i,1);
+                  i--;
+                }
+              }
+            }
+
+            if(that.webResBody.length > 0){
+              for(let i=0;i<that.webResBody.length;i++){
+                let listIfExist = false;
+                let tempList = [];
+                if(that.list.length > 0){
+                  for(let j=0;j<that.list.length;j++){
+                    if(that.list[j].virtual !== true){       //虚拟设备不需要再赋值  或者在每次查之前把虚拟且离线的设备删除
+                      if(that.webResBody[i].inetAddress === that.list[j].ip){      //查找在线设备
+                        that.list[j].online = true;
+                        that.list[j].cpuclock = that.webResBody[i].cpuclock;
+                        that.list[j].ramsize = that.webResBody[i].ramsize;
+                        that.list[j].virtual = false;
+                        listIfExist = true;
+                        break;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+            if(that.list.length > 0) {
+              for (let i = 0; i < that.list.length; i++) {
+                Vue.set(that.list, i, that.list[i]);
+              }
+              /*console.log("设备----------");
+              console.log(that.list);*/
+            }
+          });
+        });
+
+      },
+      handleSizeChange(val) {
+        this.listQuery.size = val
+        this.pagesize = val
+        this.getList()
+      },
+      handleCurrentChange(val) {
+        this.listQuery.page = val - 1
+        this.currentPage = val
+        this.getList()
+      },
       showPop(){
         //this.ifShow = true;
         //console.log(this.ifShow);
