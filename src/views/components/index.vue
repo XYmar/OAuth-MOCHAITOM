@@ -277,7 +277,7 @@
       getList() {
         this.listLoading = true
         compList(this.projectId).then(response => {
-          this.list = response.data.data
+          this.list = response.data.data.content
           this.total = response.data.total
           this.listLoading = false
           /*this.oldList = this.list.map(v => v.id);

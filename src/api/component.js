@@ -2,7 +2,7 @@ import request from '../utils/request'
 
 export function compList(proId) {
   return request({
-    url: '/projects/' + proId + '/components',
+    url: '/projects/' + proId + '/component',
     method: 'get',
     params: {
       // isShowHistory: false,
@@ -13,7 +13,7 @@ export function compList(proId) {
 
 export function createComp(proId, data) {
   return request({
-    url: '/projects/' + proId + '/components',
+    url: '/projects/' + proId + '/component',
     method: 'post',
     headers: {
       // 'Content-Type': 'multipart/form-data'
@@ -118,5 +118,41 @@ export function getCompById(id) {
   return request({
     url: '/components/' + id,
     method: 'get'
+  })
+}
+
+// 组件管理
+// savefiles
+export function saveFiles(id, data) {
+  return request({
+    url: '/components/' + id + '/componentfiles/savefile',
+    method: 'post',
+    headers: {
+      // 'content-type': 'application/x-www-form-urlencoded'
+      'content-type': 'application/json'
+    },
+    data
+  })
+}
+// saveFolder
+export function saveFolder(id, data) {
+  return request({
+    url: '/components/' + id + '/componentfiles/savefolder',
+    method: 'post',
+    headers: {
+      'content-type': 'application/x-www-form-urlencoded'
+    },
+    data
+  })
+}
+
+// getfiles
+export function getCompFiles(id, parent) {
+  return request({
+    url: '/components/' + id + '/componentfiles',
+    method: 'get',
+    params: {
+      parentnodeid: parent
+    }
   })
 }

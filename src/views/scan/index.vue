@@ -250,13 +250,21 @@
       </div>
       <div class="btns">
         <div class="btn-group" style="margin-top: 20px;padding-bottom: 20px;height: 80px;">
-          <el-button class="pan-btn light-blue-btn" style="width:150px" @click="scanAll"><svg-icon icon-class="circle"></svg-icon>完整扫描
+          <el-button class="pan-btn light-blue-btn" style="width:150px" @click="scanAll">
+            <svg-icon icon-class="circle"></svg-icon>
+            完整扫描
           </el-button>
-          <el-button class="pan-btn light-blue-btn" style="width:150px" @click="scanQuick1"><svg-icon icon-class="lightning"></svg-icon>快速扫描
+          <el-button class="pan-btn light-blue-btn" style="width:150px" @click="scanQuick1">
+            <svg-icon icon-class="lightning"></svg-icon>
+            快速扫描
           </el-button>
-          <el-button class="pan-btn green-btn" type="primary" @click="checkComponentStatus" style="width:160px; float: right;margin-right: 0"><svg-icon icon-class="upload"></svg-icon>查看组件状态
+          <el-button class="pan-btn light-blue-btn" style="width:180px" @click="checkComponentStatus">
+            <svg-icon icon-class="lightning"></svg-icon>
+            组件运行状态
           </el-button>
-          <el-button class="pan-btn green-btn" type="primary" style="width:130px; float: right;margin-right: 0"><svg-icon icon-class="upload"></svg-icon>上传
+          <el-button class="pan-btn green-btn" type="primary" style="width:130px; float: right;margin-right: 0">
+            <svg-icon icon-class="upload"></svg-icon>
+            上传
           </el-button>
         </div>
         <!-- <div class="btn-group pull-right" style="margin-top: 20px;">
@@ -281,6 +289,26 @@
       <div slot="footer" class="dialog-footer">
         <el-button @click="formReset">取 消</el-button>
         <el-button type="primary" @click="scanQuick">确 定</el-button>
+      </div>
+    </el-dialog>
+    <el-dialog title="组件运行状态" :visible.sync="comStatusVisble">
+      <el-table :key='tableKey' :data="compStatus" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row
+                style="width: 100%">
+        <el-table-column align="center" label="组件名">
+          <template slot-scope="scope">
+            <span>{{scope.row.componentEntity.name}}</span>
+          </template>
+        </el-table-column>
+        <el-table-column align="center" label="pid">
+          <template slot-scope="scope">
+            <span>{{scope.row.componentEntity.size}}</span>
+          </template>
+        </el-table-column>
+      </el-table>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="comStatusVisble = false">{{$t('table.cancel')}}</el-button>
+        <!--<el-button v-if="dialogStatus=='create'" type="primary" @click="createData">{{$t('table.confirm')}}</el-button>
+        <el-button v-else type="primary" @click="updateData">{{$t('table.confirm')}}</el-button>-->
       </div>
     </el-dialog>
     <!--上传组件-->
@@ -330,9 +358,12 @@
 <script>
   import { deployplanList, deployplanDetailsList } from '@/api/deployplan'
   import { Loading } from 'element-ui'
+  import { getDeployComLists } from '@/api/deployBind'
+  import { getCompById } from '@/api/component'
   /* import { compSingle } from '@/api/component'*/
   /* eslint-disable */
   var relativePath = "";
+
   function getCurrentRoot(treeNode) {
     if (treeNode.getParentNode() != null) {
       var parentNode = treeNode.getParentNode();
@@ -343,6 +374,7 @@
       return treeNode.id;
     }
   }
+
   let deviceNodeId;
   let deployPlanId;
   let deviceId;
@@ -390,8 +422,7 @@
   let tempZtree = [];//存放扫描之后的树节点信息
   export default {
     name: "areaTree",
-    components: {
-    },
+    components: {},
     /* eslint-disable */
     data() {
       return {
@@ -403,13 +434,15 @@
         projectId: '',
         listLoading: true,
         tableKey: 0,
-        userData:{
+        userData: {
           username: '',
           password: ''
         },
         dialogFormVisible: false,
+        comStatusVisble: false,
+        compStatus: [],
         type1: '',
-        typeSuggest: [{value:'pdf'}, {value:'txt'}, {value:'sig'}],
+        typeSuggest: [{value: 'pdf'}, {value: 'txt'}, {value: 'sig'}],
         loadingText: '给我一点时间'
       };
     },
@@ -421,7 +454,7 @@
       this.$nextTick(function () {
         $.fn.zTree.init($("#treeDemo"), setting, zNodes);
       });
-      if(this.projectId){
+      if (this.projectId) {
         this.loadingText = '给我一点时间'
         deployplanList(this.projectId).then((res) => {
           for (let i = 0; i < res.data.data.length; i++) {
@@ -437,28 +470,28 @@
         this.loadingText = '请先选择项目'
       }
 
-    /* this.$axios.get(this.getIP() + "projects/" + this.projectId + "/deploymentdesigns", {
-        //设置头
-        headers: {
-          "content-type": "application/x-www-form-urlencoded"
-        },
-        auth: {
-          username: username,
-          password: password
-        }
-      }).then(res => {
+      /* this.$axios.get(this.getIP() + "projects/" + this.projectId + "/deploymentdesigns", {
+          //设置头
+          headers: {
+            "content-type": "application/x-www-form-urlencoded"
+          },
+          auth: {
+            username: username,
+            password: password
+          }
+        }).then(res => {
 
-        for (let i = 0; i < res.data.data.length; i++) {
-          this.deployplanInfos.push({
-            id: res.data.data[i].id,
-            name: res.data.data[i].name
-          })
-        }
+          for (let i = 0; i < res.data.data.length; i++) {
+            this.deployplanInfos.push({
+              id: res.data.data[i].id,
+              name: res.data.data[i].name
+            })
+          }
 
 
-      }).catch(err => {
-        console.log(err);
-      });*/
+        }).catch(err => {
+          console.log(err);
+        });*/
     },
     methods: {
       // 获取建议类型
@@ -824,7 +857,7 @@
 
           if (zTree.getSelectedNodes()[0].deviceId) {
             componentNodeId = zTree.getSelectedNodes()[0].id;
-            this.$axios.get(this.getIP() + "components/" + componentNodeId, {
+            /*this.$axios.get(this.getIP() + "components/" + componentNodeId, {
               headers: {
                 "content-type": "application/x-www-form-urlencoded"
               },
@@ -832,7 +865,8 @@
                 username: username,
                 password: password
               }
-            }).then(res => {
+            }).then(res => {*/
+              getCompById(componentNodeId).then(res => {
               for (let i = 0; i < res.data.data.componentDetailEntities.length; i++) {
                 for (let j = 0; j < tempZtree.length; j++) {//扫描之后的数据信息
                   if (res.data.data.componentDetailEntities[i].id == tempZtree[j].id) {
@@ -855,7 +889,8 @@
           } else if (zTree.getSelectedNodes()[0].deployPlanId) {
             deviceNodeId = zTree.getSelectedNodes()[0].id;
             deployPlanId = zTree.getSelectedNodes()[0].deployPlanId;
-            this.$axios.get(this.getIP() + "deploymentdesigns/" + deployPlanId + "/deploymentdesigndetails/devices/" + deviceNodeId, {
+
+            /*this.$axios.get(this.getIP() + "deploymentdesigns/" + deployPlanId + "/deploymentdesigndetails/devices/" + deviceNodeId, {
               headers: {
                 "content-type": "application/x-www-form-urlencoded"
               },
@@ -863,7 +898,8 @@
                 username: username,
                 password: password
               }
-            }).then(res => {
+            }).then(res => {*/
+            getDeployComLists(deployPlanId, deviceNodeId).then(res => {
               for (let i = 0; i < res.data.data.length; i++) {
                 for (let j = 0; j < res.data.data[i].componentEntity.componentDetailEntities.length; j++) {
                   for (let k = 0; k < tempZtree.length; k++) {
@@ -924,7 +960,7 @@
             componentNodeId = zTree.getSelectedNodes()[0].id;
             /*console.log(zTree.getSelectedNodes()[0],100000)
             console.log(componentNodeId)*/
-            this.$axios.get(this.getIP() + "components/" + componentNodeId, {
+           /* this.$axios.get(this.getIP() + "components/" + componentNodeId, {
               headers: {
                 "content-type": "application/x-www-form-urlencoded"
               },
@@ -932,26 +968,27 @@
                 username: username,
                 password: password
               }
-            }).then(
-            /*compSingle(componentNodeId, this.userData).then(*/ res => {
-              this.listLoading = false
-              for (let i = 0; i < res.data.data.componentDetailEntities.length; i++) {
-                res.data.data.componentDetailEntities[i].state = "--";
-                this.componentEntity.push(res.data.data.componentDetailEntities[i]);
-              }
+            }).then(res => {*/
+              getCompById(componentNodeId).then(res => {
+              /*compSingle(componentNodeId, this.userData).then(*/
+                this.listLoading = false
+                for (let i = 0; i < res.data.data.componentDetailEntities.length; i++) {
+                  res.data.data.componentDetailEntities[i].state = "--";
+                  this.componentEntity.push(res.data.data.componentDetailEntities[i]);
+                }
 
-              //size
-              /*for (let j = 0; j < this.componentEntity.length; j++) {
-                this.componentEntity[j].size = ((this.componentEntity[j].size) / 1024 / 1024).toFixed(5);
-              }*/
+                //size
+                /*for (let j = 0; j < this.componentEntity.length; j++) {
+                  this.componentEntity[j].size = ((this.componentEntity[j].size) / 1024 / 1024).toFixed(5);
+                }*/
 
-            }).catch(err => {
+              }).catch(err => {
 
             });
           } else if (zTree.getSelectedNodes()[0].deployPlanId) {//有deployPlanId字段，说明是设备
             deviceNodeId = zTree.getSelectedNodes()[0].id;
             deployPlanId = zTree.getSelectedNodes()[0].deployPlanId;
-            this.$axios
+            /* this.$axios
               .get(this.getIP() + "deploymentdesigns/" + deployPlanId + "/deploymentdesigndetails/devices/" + deviceNodeId, {
                 headers: {
                   "content-type": "application/x-www-form-urlencoded"
@@ -960,7 +997,8 @@
                   username: username,
                   password: password
                 }
-              }).then(res => {
+              }).then(res => {*/
+              getDeployComLists(deployPlanId, deviceNodeId).then(res => {
               this.listLoading = false
 
               for (let i = 0; i < res.data.data.length; i++) {
@@ -1027,12 +1065,12 @@
         if (zTree.getSelectedNodes()[0].deployPlanId) {
           deviceAllId = zTree.getSelectedNodes()[0].id;
           deployAllId = zTree.getSelectedNodes()[0].deployPlanId;
-          console.log(deployAllId,'allid')
+          console.log(deployAllId, 'allid')
 
           deviceName = zTree.getSelectedNodes()[0].name;
 
           console.log(deviceName);
-        }else{
+        } else {
           deviceName = "";
         }
         /*if (zTree.getSelectedNodes()[0].deviceId) {
@@ -1357,7 +1395,7 @@
           }
         }
 
-        console.log(deployAllId,'alllllll')
+        console.log(deployAllId, 'alllllll')
         this.$axios
           .get(this.getIP() +
             "deploymentdesigns/" +
@@ -1685,7 +1723,27 @@
       },
 
       // 查看组件运行状态
-      checkComponentStatus () {
+      checkComponentStatus() {
+        if (zTree.getSelectedNodes()[0].state == false) {//设备不在线，无法扫描
+          /*layer.msg("设备离线！");*/
+          this.$message({
+            message: '设备离线！',
+            type: 'warning'
+          })
+        }
+        else if (deviceName == "") {
+          /*layer.msg("请选择设备！");*/
+          this.$message({
+            message: '请选择设备！',
+            type: 'warning'
+          })
+        }
+        else {
+          this.comStatusVisble = true
+          getDeployComLists(deployPlanId, deviceNodeId).then((res) => {
+            this.compStatus = res.data.data
+          })
+        }
       }
     },
     computed: {
@@ -1696,27 +1754,27 @@
           return item.name.toLowerCase().indexOf(self.searchQuery.toLowerCase()) !== -1;
         })
       },
-      listenProId () {
+      listenProId() {
         return this.$store.state.app.projectId
       }
     },
     watch: {
       listenProId: function (a, b) {
         window.location.reload()
-       /* this.projectId = this.getCookie('projectId')
-        this.selected = {}
-        this.deployplanInfos = []
-        deployplanList(this.projectId).then((res) => {
-          for (let i = 0; i < res.data.data.length; i++) {
-            this.deployplanInfos.push({
-              id: res.data.data[i].id,
-              name: res.data.data[i].name
-            })
-          }
-        }).catch(err => {
-          console.log(err);
-        })
-        this.changeDeployPlan()*/
+        /* this.projectId = this.getCookie('projectId')
+         this.selected = {}
+         this.deployplanInfos = []
+         deployplanList(this.projectId).then((res) => {
+           for (let i = 0; i < res.data.data.length; i++) {
+             this.deployplanInfos.push({
+               id: res.data.data[i].id,
+               name: res.data.data[i].name
+             })
+           }
+         }).catch(err => {
+           console.log(err);
+         })
+         this.changeDeployPlan()*/
       }
     }
   }
@@ -1726,51 +1784,62 @@
   .tree-box div.el-table__body-wrapper {
     display: none;
   }
-  .tree-box table th{
-    border:none;
+
+  .tree-box table th {
+    border: none;
   }
-  .showDetail table{
+
+  .showDetail table {
   }
-  .showDetail div.el-table__body-wrapper{
+
+  .showDetail div.el-table__body-wrapper {
     height: 100%;
   }
-  div.pan-btn{
+
+  div.pan-btn {
     cursor: pointer;
   }
 </style>
 <style type="text/css" scoped>
-  .content{
-    height:90%;
+  .content {
+    height: 90%;
   }
-  div.selectBox{
+
+  div.selectBox {
     margin-bottom: 20px;
   }
+
   div.selectBox span.text {
     margin-left: 7px;
-    dispaly:inline-block;
-    width:100px;
+    dispaly: inline-block;
+    width: 100px;
     font-size: 14px;
     font-weight: 700;
-    color:#909399;
+    color: #909399;
   }
-  #scan-selection{
+
+  #scan-selection {
     display: inline-block;
   }
-  .searchBox{
+
+  .searchBox {
     float: right;
   }
-  div.showDetail{
-    float:right;
-    width:70%;
+
+  div.showDetail {
+    float: right;
+    width: 70%;
   }
+
   #areaTree {
     margin-left: -1px;
     height: 650px;
     overflow-y: auto;
     white-space: pre;
     width: 28%;
-    border:1px solid #ebeef5;
+    border: 1px solid #ebeef5;
   }
+
   .zTreeDemoBackground {
     margin-top: -10px;
   }
