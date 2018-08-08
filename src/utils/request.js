@@ -28,28 +28,6 @@ const service = axios.create({
 // request interceptor
 service.interceptors.request.use(config => {
 
-  //判断是否超过刷新token
-  console.log("时间比较-----------")
-  console.log(refreshTimeStamp)
-  console.log(new Date() /1000)
-  /*if (refreshTimeStamp < (new Date() /1000)) {       //超过刷新token则重新登录*/
-  if (timeStamp < (new Date()) / 1000){      //目前是让过期就回到登录页面
-    console.log("超过刷新token了，重新登录----------");
-    /*this.$confirm('你已被登出，可以取消继续留在该页面，或者重新登录', '确定登出', {
-      confirmButtonText: '重新登录',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })*/
-    Vue.prototype.$confirm('你已被登出，可以取消继续留在该页面，或者重新登录', '确定登出', {
-      confirmButtonText: '重新登录',
-      cancelButtonText: '取消',
-      type: 'warning'
-    }).then(() => {
-      store.dispatch('FedLogOut').then(() => {
-        location.reload();// 为了重新实例化vue-router对象 避免bug
-      });
-    })
-  }
  /* else if (timeStamp < (new Date()) / 1000) {      //过期则刷新token
     console.log("过期了----------");
     let formData = qs.stringify({
@@ -96,6 +74,30 @@ service.interceptors.request.use(config => {
 // respone interceptor
 service.interceptors.response.use(
   response => response,
+  response => {
+//判断是否超过刷新token
+    console.log("时间比较-----------")
+    console.log(timeStamp)
+    console.log(new Date() /1000)
+    /*if (refreshTimeStamp < (new Date() /1000)) {       //超过刷新token则重新登录*/
+    if (timeStamp < (new Date()) / 1000){      //目前是让过期就回到登录页面
+      console.log("超过刷新token了，重新登录----------");
+      /*this.$confirm('你已被登出，可以取消继续留在该页面，或者重新登录', '确定登出', {
+        confirmButtonText: '重新登录',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })*/
+      Vue.prototype.$confirm('你已被登出，可以取消继续留在该页面，或者重新登录', '确定登出', {
+        confirmButtonText: '重新登录',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        store.dispatch('FedLogOut').then(() => {
+          location.reload();// 为了重新实例化vue-router对象 避免bug
+        });
+      })
+    }
+  },
   /**
   * 下面的注释为通过response自定义code来标示请求状态，当code返回如下情况为权限有问题，登出并返回到登录页
   * 如通过xmlhttprequest 状态码标识 逻辑可写在下面error中
