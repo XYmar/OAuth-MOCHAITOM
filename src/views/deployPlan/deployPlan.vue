@@ -38,7 +38,18 @@
       </el-table-column>
 
     </el-table>
-
+    <el-pagination
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+      :current-page="currentPage"
+      :page-sizes="[20,50,100]"
+      :page-size="10"
+      layout="total, sizes, prev, pager, next, jumper"
+      :total="this.total"
+      background
+      style="text-align: center;margin-top:20px"
+    >
+    </el-pagination>
     <!--<div class="pagination-container">
       <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="listQuery.page" :page-sizes="[10,20,30, 50]" :page-size="listQuery.limit" layout="total, sizes, prev, pager, next, jumper" :total="total">
       </el-pagination>
@@ -79,17 +90,16 @@
         selectedId: '',
         tableKey: 0,
         list: [],
-        total: null,
         listLoading: true,
         listQuery: {
-          page: 1,
-          limit: 10,
-          importance: undefined,
-          title: undefined,
-          type: undefined,
-          sort: '+id',
-          deviceName: undefined
+          page: 0,
+          size:20,
+          limit: 5,
+          tagname: ''
         },
+        total: null,
+        pagesize:10,//每页的数据条数
+        currentPage:1,//默认开始页面
         sortable: null,
         oldList: [],
         newList: [],
@@ -123,11 +133,12 @@
         this.listLoading = true;
         let projectId = this.getCookie('projectId');
 
-        deployplanList(projectId).then(response => {
-          this.list = response.data.data
+        deployplanList(projectId, this.listQuery).then(response => {
+          this.list = response.data.data.content
           this.total = response.data.total
           this.listLoading = false
-
+          this.listLength = response.data.data.length
+          this.total = response.data.data.totalElements
           console.log(this.list);
         })
       },
@@ -135,14 +146,16 @@
         this.listQuery.page = 1
         this.getList()
       },
-      /*handleSizeChange(val) {
-        this.listQuery.limit = val
+      handleSizeChange(val) {
+        this.listQuery.size = val
+        this.pagesize = val
         this.getList()
       },
       handleCurrentChange(val) {
-        this.listQuery.page = val
+        this.listQuery.page = val - 1
+        this.currentPage = val
         this.getList()
-      },*/
+      },
       handleModifyStatus(row, status) {
         this.$message({
           message: '操作成功',
@@ -152,13 +165,8 @@
       },
       resetTemp() {
         this.temp = {
-          id: undefined,
-          importance: 1,
-          remark: '',
-          timestamp: new Date(),
-          title: '',
-          deviceState: '在线',
-          type: ''
+          name: '',
+          description: ''
         }
       },
       handleCreate() {
@@ -217,13 +225,6 @@
 
             let deployplanData = qs.stringify(data);
             updateDeployplan(deployplanData, id).then(() => {
-              for (const v of this.list) {
-                if (v.id === this.temp.id) {
-                  const index = this.list.indexOf(v)
-                  this.list.splice(index, 1, this.temp)
-                  break
-                }
-              }
               this.dialogFormVisible = false
               this.$notify({
                 title: '成功',
@@ -231,7 +232,14 @@
                 type: 'success',
                 duration: 2000
               })
-
+              this.getList()
+            }).catch(() =>{
+              this.$notify({
+                title: '失败',
+                message: '修改失败',
+                type: 'error',
+                duration: 2000
+              })
             })
 
           }
