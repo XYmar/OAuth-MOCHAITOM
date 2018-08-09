@@ -99,6 +99,7 @@
               label: {
                 normal: {
                   show: true,
+                  position: 'top',
                   /*formatter: function (name) {
                     return '{name|' + name + '}';
                   },
@@ -209,8 +210,8 @@
           this.dataList.push(this.dataItem)
           this.linksList.push(this.linksItem)
         }
-        console.log(this.dataList,'jjjjjj')
-        console.log(this.linksList, 'lllll')
+        /*console.log(this.dataList,'jjjjjj')
+        console.log(this.linksList, 'lllll')*/
         if(this.linksList.length > 0) {
           this.title = '设备组件关系图'
         } else {
@@ -220,8 +221,8 @@
     },
     watch: {
       detaillist () {
-        console.log('我变啦！！')
-        console.log(this.detaillist)
+        /*console.log('我变啦！！')
+        console.log(this.detaillist)*/
         this.list = this.detaillist
         this.initConfig()
         this.initChart()

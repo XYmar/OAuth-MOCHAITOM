@@ -92,6 +92,7 @@
                 </template>
               </el-table-column>
             </el-table>
+            <span id="clicktag"></span>
             <el-pagination
               @size-change="handleSizeChange"
               @current-change="handleCurrentChange"
@@ -388,6 +389,7 @@
            let qs = require('qs')
            let dataBind = qs.stringify(data)
            doDeployBind(this.deployPlanId, dataBind).then(() => {
+             document.getElementById('clicktag').click()
              this.$notify({
                title: '成功',
                message: '绑定成功',
@@ -440,6 +442,9 @@
               type: 'success',
               message: '解绑成功!'
             });
+            getDeployComLists(this.deployPlanId, this.deviceCHId).then((res) => {
+              this.bindedDeviceList = res.data.data
+            })
           }).catch(() => {
             this.$message({
               type: 'error',
