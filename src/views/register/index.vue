@@ -23,7 +23,7 @@
         <span class="svg-container svg-container_login">
           <svg-icon icon-class="user" />
         </span>
-        <el-input name="username" type="text" v-model="loginForm.username" autoComplete="on" placeholder="请输入用户名" />
+        <el-input name="username" type="text" id="hasUser" v-model="loginForm.username" autoComplete="on" placeholder="请输入用户名" />
       </el-form-item>
 
       <el-form-item prop="password">
@@ -77,7 +77,7 @@
 
 <script>
   import { isvalidUsername, isvalidPwd } from '@/utils/validate'
-  // import { addUser } from '../../api/getUsers'
+  import { addUser, UserIfExist } from '../../api/getUsers'
   // import service from '@/utils/request'
 
   /* import LangSelect from '@/components/LangSelect'*/
@@ -91,7 +91,9 @@
       const validateUsername = (rule, value, callback) => {
         if (!isvalidUsername(value)) {
           callback(new Error('账号必须是5-15位的英文字母或数字！'))
-        } else {
+        } else if(this.hasUser()){
+          callback(new Error('用户名已存在！'))
+        }else {
           callback()
         }
       }
@@ -166,7 +168,43 @@
           }
         })
       },
+      hasUser() {
+        let username = this.loginForm.username
+        UserIfExist(username).then(response => {
+          console.log("A")
+          let ifExist = response.data.data
+          console.log(ifExist);
+        })
+      },
       registerUser: function () {
+        this.$refs['loginForm'].validate((valid) => {
+          if(valid) {
+            let qs = require('qs');
+            let data = {
+              'username': this.loginForm.username,
+              'password': this.loginForm.password
+            }
+            let datapost = qs.stringify(data)
+            addUser(datapost).then(() => {
+              this.$notify({
+                title: '成功',
+                message: '注册成功',
+                type: 'success',
+                duration: 2000
+              })
+              this.$router.replace('/login')
+            }).catch(() => {
+              this.$notify({
+                title: '失败',
+                message: '注册失败',
+                type: 'error',
+                duration: 2000
+              })
+            })
+          }
+        })
+      }
+      /*registerUser: function () {
         this.$refs['loginForm'].validate((valid) => {
           if (valid) {
             var qs = require('qs')
@@ -194,7 +232,7 @@
             })
           }
         })
-      }
+      }*/
     },
     created() {
       if(this.getCookie('ip')) {
