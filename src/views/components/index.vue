@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container calendar-list-container">
+  <div class="app-container calendar-list-container" id="components">
     <div class="filter-container">
       <el-input @keyup.enter.native="handleFilter" style="width: 200px;" class="filter-item" placeholder="标题" v-model="searchQuery">
       </el-input>
@@ -26,6 +26,14 @@
 
       </el-upload>
 
+      <span class="pull-right hitoryClass" id="history" type="danger" @click="showHistory">
+        <svg-icon icon-class="history" style="margin-right: 0;"></svg-icon>
+            <span style="margin-left: 5px;">历史组件</span>
+      </span>
+      <span class="pull-right nowClass" id="now" type="warning" @click="showNow">
+        <svg-icon icon-class="time" style="margin-right: 0;"></svg-icon>
+            <span style="margin-left: 5px;">现有组件</span>
+      </span>
     </div>
 
     <el-table :key='tableKey' :data="listA" v-loading="listLoading" element-loading-text="给我一点时间" border fit
@@ -171,7 +179,7 @@
 </template>
 
 <script>
-  import { compList, createComp, updateComp, copyComp, importComp, deleteComp, compSingle } from '@/api/component'
+  import { compList, createComp, updateComp, copyComp, importComp, deleteComp, compListHistory, compSingle } from '@/api/component'
   import waves from '@/directive/waves' // 水波纹指令
   import { Loading } from 'element-ui'
   import comFileManage from '@/views/fileManager/filecomp'
@@ -286,7 +294,7 @@
             this.setSort()
           })*/
 
-          console.log(this.list);
+          //console.log(this.list);
         })
       },
       handleSizeChange(val) {
@@ -584,6 +592,7 @@
                 type: 'success',
                 duration: 2000
               })
+              this.getList()
             }).catch(() => {
               this.$notify({
                 title: '失败',
@@ -720,6 +729,82 @@
         }
 
       },
+
+      showHistory: function(){
+        compListHistory(this.projectId).then(response => {
+          this.list = response.data.data.content
+          this.total = response.data.total
+          this.listLoading = false
+          //隐藏历史按钮
+          $("#history").attr("style","display:none;");
+
+          $("#now").attr("style","display:block;");
+        })
+        /*this.$axios.get(this.getIP() + 'components',
+
+          {
+            params: {  //get请求在第二个位置，post在第三个位置
+              isShowHistory: true
+            },
+            //设置头
+            headers: {
+              'content-type': 'application/x-www-form-urlencoded'
+            },
+            auth: {
+              username: username,
+              password: password
+            }
+          }).then(res => {
+          this.components = res.data.data;
+
+          //隐藏历史按钮
+          $("#history").attr("style","display:none;");
+
+          $("#now").attr("style","display:block;");
+        })
+          .catch(err => {
+            console.log(err);
+          })*/
+      },
+
+      showNow: function(){
+        this.listLoading = true
+        compList(this.projectId).then(response => {
+          this.list = response.data.data.content
+          this.total = response.data.total
+          this.listLoading = false
+          //隐藏历史按钮
+          $("#now").attr("style","display:none;");
+
+          $("#history").attr("style","display:block;");
+        })
+
+        /*this.$axios.get(this.getIP() + 'components',
+
+          {
+            params: {  //get请求在第二个位置，post在第三个位置
+              isShowHistory: false
+            },
+            //设置头
+            headers: {
+              'content-type': 'application/x-www-form-urlencoded'
+            },
+            auth: {
+              username: username,
+              password: password
+            }
+          }).then(res => {
+          this.components = res.data.data;
+
+          //隐藏历史按钮
+          $("#now").attr("style","display:none;");
+
+          $("#history").attr("style","display:block;");
+        })
+          .catch(err => {
+            console.log(err);
+          })*/
+      },
     },
     computed: {
       listA: function () {
@@ -728,11 +813,48 @@
           return item.name.toLowerCase().indexOf(self.searchQuery.toLowerCase()) !== -1;
         })
       }
+    },
+    mounted () {
+      this.$nextTick(() => {
+        //隐藏现有按钮
+        $("#now").attr("style","display:none;");
+      })
     }
   }
 </script>
 
 <style scoped>
+  #components #now{
+    float: right;
+    margin-right: 10px;
+    font-size: 14px;
+    height: 33.5px;
+    padding: 9px 15px;
+    background-color:#e6a23c;
+    cursor:pointer;
+    box-sizing:border-box;
+    color:#fff;
+    border-radius:4px;
+  }
+  #components #history{
+    float: right;
+    margin-right: 10px;
+    font-size: 14px;
+    height: 33.5px;
+    padding: 9px 15px;
+    background-color:#f56c6c;
+    cursor:pointer;
+    box-sizing:border-box;
+    color:#fff;
+    border-radius:4px;
+  }
+  #components span#now:hover{
+    background-color:#ebb563;
+  }
+  #components span#history:hover{
+    background-color:#f78989;
+  }
+
   .el-button+.el-button {
     margin-left: 0;
   }

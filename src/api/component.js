@@ -11,6 +11,17 @@ export function compList(proId) {
   })
 }
 
+export function compListHistory(proId) {
+  return request({
+    url: '/projects/' + proId + '/component',
+    method: 'get',
+    params: {
+      // isShowHistory: false,
+      deleted: true
+    }
+  })
+}
+
 export function createComp(proId, data) {
   return request({
     url: '/projects/' + proId + '/component',
