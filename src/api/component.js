@@ -156,3 +156,10 @@ export function getCompFiles(id, parent) {
     }
   })
 }
+// deletefiles
+export function deleteCompFiles(id) {
+  return request({
+    url: '/componentfiles/' + id,
+    method: 'delete'
+  })
+}

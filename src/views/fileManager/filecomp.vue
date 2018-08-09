@@ -1,12 +1,12 @@
 <template>
-  <div class="app-container calendar-list-container">
+  <div class="fileComp">
     <div class="operationContainer" style="height: 40px;border-bottom:1px solid #ebeef5">
-      <div style="float: left">
+      <div style="float: left;padding-left: 10px;">
         <el-breadcrumb separator-class="el-icon-arrow-right">
-          <el-breadcrumb-item v-for="(item,index) in breadcrumbList" :key="index"><span @click="switchFolder(item,index)">{{item.name}}</span></el-breadcrumb-item>
+          <el-breadcrumb-item v-for="(item,index) in breadcrumbList" :key="index"><span style="cursor: pointer;color:rgb(0, 171, 235);" @click="switchFolder(item,index)">{{item.name}}</span></el-breadcrumb-item>
         </el-breadcrumb>
       </div>
-      <div style="float: right;color:rgb(0, 171, 235);cursor: pointer;">
+      <div style="float: right;color:rgb(0, 171, 235);cursor: pointer;padding-right: 20px;">
         <span style="margin-right: 18px" @click="addFolder">
           <svg-icon icon-class="add"></svg-icon>
           <span style="font-size: 14px;margin-left: 6px;">新建文件夹</span>
@@ -22,7 +22,7 @@
               style="width: 100%"
               class="fileList"
     >
-      <el-table-column :label="$t('table.compName')" width="200">
+      <el-table-column label="文件名" width="200">
         <template slot-scope="scope">
           <span>
             <svg-icon :icon-class="classifyIcon(scope.row)" style="font-size: 30px;margin-right: 10px;"></svg-icon>
@@ -57,6 +57,20 @@
       <el-table-column min-width="150px" label="创建时间">
         <template slot-scope="scope">
           <span>{{scope.row.createTime}}</span>
+        </template>
+      </el-table-column>
+      <el-table-column width="40px">
+        <template slot-scope="scope">
+          <el-dropdown>
+            <span class="el-dropdown-link">
+              <svg-icon icon-class="ellipsis"></svg-icon>
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item>
+                <span style="display:inline-block;padding:0 10px;" @click="deleteFile(scope.row)">删除</span>
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
         </template>
       </el-table-column>
       <!--<el-table-column min-width="100px" :label="$t('table.compPath')">
@@ -99,9 +113,17 @@
 
 <script>
   /*eslint-disable*/
-  import { compList, createComp, updateComp, copyComp, importComp, deleteComp, compSingle, saveFolder, getCompFiles, saveFiles } from '@/api/component'
+  import { compList, createComp, updateComp, copyComp, importComp, deleteComp, compSingle, saveFolder, getCompFiles, saveFiles, deleteCompFiles} from '@/api/component'
   export default {
-    name: 'index',
+    name: 'comFileManage',
+    props: {
+      selectCompId: {
+        type: String
+      },
+      selectCompName: {
+        type: String
+      }
+    },
     data() {
       return {
         projectId:'',
@@ -167,23 +189,24 @@
       }
     },
     created() {
-      /*this.userData.username = this.getCookie('username')
-      this.userData.password = this.getCookie('password')*/
-      this.projectId = this.$store.getters.projectId
-      this.componentId = this.$route.params.id
-      this.compName = this.$route.params.name
-      this.breadcrumbList = []
-      this.breadcrumbList.push({
-        name: this.compName,
-        componentId: this.componentId,
-        parentNodeId: '',
-        folder: true
-      })
-      console.log(this.breadcrumbList)
-      this.getList();
-      this.autoStart = false;      //取消自动上传
+      this.initData()
     },
     methods: {
+      initData() {
+        this.projectId = this.$store.getters.projectId
+        this.componentId = this.selectCompId
+        this.compName = this.selectCompName
+        this.breadcrumbList = []
+        this.breadcrumbList.push({
+          name: this.compName,
+          componentId: this.componentId,
+          parentNodeId: '',
+          folder: true
+        })
+        // console.log(this.breadcrumbList)
+        this.getList();
+        this.autoStart = false; //取消自动上传
+      },
       getList() {
         this.listLoading = true
         getCompFiles(this.componentId,this.parentNodeId).then((res) => {
@@ -271,6 +294,28 @@
           this.uploadDialog = false
         })
       },
+      deleteFile(row) {
+        alert(row.id)
+        this.listLoading = true
+        deleteCompFiles(row.id).then((res) => {
+          this.listLoading = false
+          this.getList()
+          this.$notify({
+            title: '成功',
+            message: '删除成功',
+            type: 'success',
+            duration: 2000
+          })
+        }).catch(() => {
+          this.listLoading = false
+          this.$notify({
+            title: '失败',
+            message: '删除失败',
+            type: 'error',
+            duration: 2000
+          })
+        })
+      },
       switchFolder(row,index){
         // console.log(this.breadcrumbList)
         if(row.folder){
@@ -303,6 +348,11 @@
           }
           return iconType
         }
+      }
+    },
+    watch: {
+      selectCompId(newValue, oldValue) {
+        this.initData()
       }
     }
   }

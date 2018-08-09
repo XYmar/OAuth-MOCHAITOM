@@ -213,3 +213,6 @@ code {
   bottom: 0;
   right: 0;
 }
+.fileComp div.el-dialog__wrapper.uploadDialog{
+  z-index: 2100!important;
+}
