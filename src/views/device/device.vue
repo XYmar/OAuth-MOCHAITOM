@@ -98,7 +98,7 @@
           <el-input v-model="temp.ip"></el-input>
         </el-form-item>
         <el-form-item :label="$t('table.devicePath')" prop="path">
-          <el-input v-model="temp.deployPath"></el-input>
+          <el-input v-model="temp.deployPath" placeholder="例如：D:/test/"></el-input>
         </el-form-item>
         <el-form-item :label="$t('table.deviceDesc')" prop="description">
           <el-input v-model="temp.description"></el-input>
