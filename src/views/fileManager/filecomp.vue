@@ -27,20 +27,21 @@
           <span>
             <svg-icon :icon-class="classifyIcon(scope.row)" style="font-size: 30px;margin-right: 10px;"></svg-icon>
             <el-tooltip class="item" effect="dark" :content="scope.row.name" placement="top">
-              <span v-if="!scope.row.newFolder"class="link-type"
+              <span v-if="!scope.row.newFolder" class="link-type"
                     @click="loadListFile(scope.row)"
                     style="position:relative;top:2px;display:inline-block;width:70%;white-space:nowrap;overflow:hidden;text-overflow: ellipsis">
                 {{scope.row.name}}
               </span>
             </el-tooltip>
-            <el-input @keyup.enter.native="newFoler"
-                      ref="newFolderInput"
-                      autofocus="autofocus"
-                      v-if="scope.row.newFolder"
-                      v-model="newFolderName"
-                      placeholder="按enter确定"
-                      style="width: 70%;display: inline-block;position: relative;top:-2px;">
-            </el-input>
+            <span v-if="scope.row.newFolder">
+              <el-input @keyup.enter.native="newFoler"
+                        ref="newFolderInput"
+                        autofocus="autofocus"
+                        v-model="newFolderName"
+                        placeholder="按enter确定"
+                        style="width: 70%;display: inline-block;position: relative;top:-2px;">
+              </el-input>
+            </span>
           </span>
         </template>
       </el-table-column>
@@ -52,6 +53,9 @@
       <el-table-column min-width="150px" :label="$t('table.compSize')">
         <template slot-scope="scope">
           <span>{{computedSize(scope.row.size)}}</span>
+          <span v-if="scope.row.newFolder" style="cursor: pointer;" @click="cancelNewFolder">
+            <svg-icon icon-class="cancel"></svg-icon>
+          </span>
         </template>
       </el-table-column>
       <el-table-column min-width="150px" label="创建时间">
@@ -61,7 +65,7 @@
       </el-table-column>
       <el-table-column width="40px">
         <template slot-scope="scope">
-          <el-dropdown>
+          <el-dropdown v-if="scope.row.name">
             <span class="el-dropdown-link">
               <svg-icon icon-class="ellipsis"></svg-icon>
             </span>
@@ -257,25 +261,33 @@
         }
       },
       addFolder() {
-        let newFolder = {
-          name: '',
-          newFolder: true
+        if(this.list[0].name != '') {
+          let newFolder = {
+            name: '',
+            newFolder: true
+          }
+          this.list.splice(0, 0, newFolder);
         }
-        this.list.splice(0, 0, newFolder);
-        this.$nextTick(() => {
-          // this.$refs['newFolderInput'].onfocus
-        })
       },
       newFoler() {
-        let formData = new FormData();
-        formData.append('name',this.newFolderName)
-        formData.append('parentnodeid',this.parentNodeId)
-        saveFolder(this.componentId, formData).then(() => {
-          this.newFolderName = ''
-          this.getList()
-        }).catch(() => {
-          this.newFolderName = ''
-        })
+        if(this.newFolderName) {
+          this.list.splice(0, 1);
+          let formData = new FormData();
+          formData.append('name',this.newFolderName)
+          formData.append('parentnodeid',this.parentNodeId)
+          saveFolder(this.componentId, formData).then(() => {
+            this.newFolderName = ''
+            this.getList()
+          }).catch(() => {
+            this.newFolderName = ''
+          })
+        }
+      },
+      cancelNewFolder() {
+        if(!this.list[0].id) {
+          this.list.splice(0,1)  // 删除新建行
+          this.newFolderName = '' // 清空输入框
+        }
       },
       handleuploadFile() {
         this.uploadDialog = true
