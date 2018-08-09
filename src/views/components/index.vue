@@ -84,7 +84,7 @@
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" top="10vh" width="60%"
                v-if="dialogStatus=='create'">
       <el-form :rules="rules" ref="dataForm" :model="temp" label-position="left" label-width="70px"
-               style='height: 400px;overflow-y: auto;padding-right: 10%;padding-left: 10%;'>
+               style='height:240px;overflow-y: auto;padding-right: 10%;padding-left: 10%;'>
         <el-form-item :label="$t('table.compName')" prop="name">
           <el-input v-model="temp.name"></el-input>
         </el-form-item>
@@ -97,8 +97,8 @@
         <el-form-item :label="$t('table.compDesc')" prop="desc">
           <el-input v-model="temp.description"></el-input>
         </el-form-item>
-
-        <el-form-item :label="$t('table.compUpload')" prop="files">
+        <!--去除新建组件时的文件上传模块-->
+        <!--<el-form-item :label="$t('table.compUpload')" prop="files">
           <uploader :options="options"
                     :autoStart="autoStart"
                     :file-status-text="statusText"
@@ -113,7 +113,7 @@
             </uploader-drop>
             <uploader-list></uploader-list>
           </uploader>
-        </el-form-item>
+        </el-form-item>-->
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">{{$t('table.cancel')}}</el-button>
@@ -139,8 +139,8 @@
             <el-form-item :label="$t('table.compDesc')" prop="desc">
               <el-input v-model="temp.description"></el-input>
             </el-form-item>
-
-            <el-form-item :label="$t('table.compUpload')" prop="fileAll">
+            <!--去除修改组件时的文件上传模块-->
+            <!--<el-form-item :label="$t('table.compUpload')" prop="fileAll">
             <uploader :options="options"
                       :autoStart="autoStart"
                       :file-status-text="statusText"
@@ -155,16 +155,14 @@
               </uploader-drop>
               <uploader-list id="fileUp"></uploader-list>
             </uploader>
-          </el-form-item>
+          </el-form-item>-->
           </div>
 
-          <div style="height: 500px;overflow: auto;width: 60%;float: right;padding-left: 10px;border-left:1px solid #ccc;padding-top: 5px;margin-top: -48px">
+          <div style="height: 450px;overflow: auto;width: 60%;float: right;padding:5px 0 10px 10px;border-left:1px solid #ccc;margin-top: -44px">
             <!--<label style="width: 100%;font-size: 14px;">组件详细信息</label>-->
             <comFileManage :selectCompId="selectedId" :selectCompName="selectdName"></comFileManage>
           </div>
         </el-form>
-
-
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false" style="margin-right: 10px">{{$t('table.cancel')}}</el-button>
         <el-button type="primary" @click="updateData">{{$t('table.confirm')}}</el-button>
@@ -329,10 +327,10 @@
         this.$nextTick(() => {
           this.$refs['dataForm'].clearValidate()
 
-          console.log("文件信息");
+          /*console.log("文件信息");
           console.log(this.$refs.uploader.uploader.files);
           this.$refs.uploader.uploader.files.splice(0,this.$refs.uploader.uploader.files.length);
-          console.log(this.$refs.uploader.uploader.files);
+          console.log(this.$refs.uploader.uploader.files);*/
           // this.getList()
         })
         // this.getList()
@@ -347,8 +345,8 @@
             })
             let formData = new FormData();
 
-            this.fileAll = this.$refs.uploader.uploader.files;
-            console.log(this.fileAll,'所有文件')
+            /*this.fileAll = this.$refs.uploader.uploader.files;
+            console.log(this.fileAll,'所有文件')*/
 
             formData.append('name', this.temp.name);
             formData.append('version', this.temp.version);
@@ -357,16 +355,16 @@
             formData.append('description', this.temp.description);
 
             //开始上传后去掉暂停和删除按钮
-            $(".uploader-file-actions").children(".uploader-file-pause").removeClass("uploader-file-pause");
-            $(".uploader-file-actions").children(".uploader-file-remove").removeClass("uploader-file-remove");
+            /*$(".uploader-file-actions").children(".uploader-file-pause").removeClass("uploader-file-pause");
+            $(".uploader-file-actions").children(".uploader-file-remove").removeClass("uploader-file-remove");*/
 
             formData.append('enctype', "multipart/form-data")
 
-            for (var i = 0; i < this.fileAll.length; i++) {
+            /*for (var i = 0; i < this.fileAll.length; i++) {
               //判断数组里是文件夹还是文件
               formData.append('componentEntityFiles', this.fileAll[i].file);
 
-            }
+            }*/
 
             createComp(this.projectId, formData).then(() => {
               createloading.close()
@@ -548,7 +546,7 @@
 
             let formData = new FormData();
 
-            this.fileAll = this.$refs.uploader.uploader.files;
+            // this.fileAll = this.$refs.uploader.uploader.files;
 
             formData.append('name', this.temp.name);
             formData.append('version', this.temp.version);
@@ -557,16 +555,16 @@
             formData.append('description', this.temp.description);
 
             //开始上传后去掉暂停和删除按钮
-            $(".uploader-file-actions").children(".uploader-file-pause").removeClass("uploader-file-pause");
-            $(".uploader-file-actions").children(".uploader-file-remove").removeClass("uploader-file-remove");
+            //$(".uploader-file-actions").children(".uploader-file-pause").removeClass("uploader-file-pause");
+            //$(".uploader-file-actions").children(".uploader-file-remove").removeClass("uploader-file-remove");
 
             formData.append('enctype', "multipart/form-data");
 
-            for (var i = 0; i < this.fileAll.length; i++) {
+            /*for (var i = 0; i < this.fileAll.length; i++) {
               //判断数组里是文件夹还是文件
               formData.append('componentEntityFiles', this.fileAll[i].file);
 
-            }
+            }*/
             // patch暂时不支持修改文件
             let data = {
               name: this.temp.name,
@@ -577,19 +575,26 @@
             let qs = require('qs')
             let newdata = qs.stringify(data)
             updateComp(newdata,id).then(() => {
-              for (const v of this.list) {
+              /*for (const v of this.list) {
                 if (v.id === this.temp.id) {
                   const index = this.list.indexOf(v)
                   this.list.splice(index, 1, this.temp)
                   break
                 }
-              }
+              }*/
               updateloading.close()
               this.dialogFormVisible = false
               this.$notify({
                 title: '成功',
                 message: '更新成功',
                 type: 'success',
+                duration: 2000
+              })
+            }).catch(() => {
+              this.$notify({
+                title: '失败',
+                message: '更新失败',
+                type: 'error',
                 duration: 2000
               })
             })

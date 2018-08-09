@@ -51,7 +51,7 @@
       </el-table-column>-->
       <el-table-column min-width="150px" :label="$t('table.compSize')">
         <template slot-scope="scope">
-          <span>{{scope.row.size}}</span>
+          <span>{{computedSize(scope.row.size)}}</span>
         </template>
       </el-table-column>
       <el-table-column min-width="150px" label="创建时间">
@@ -197,6 +197,7 @@
         this.componentId = this.selectCompId
         this.compName = this.selectCompName
         this.breadcrumbList = []
+        this.list = []
         this.breadcrumbList.push({
           name: this.compName,
           componentId: this.componentId,
@@ -347,6 +348,21 @@
             iconType = 'file'
           }
           return iconType
+        }
+      },
+      computedSize() {
+        return function(val) {
+          let resVal
+          if( val < 1024 ) {
+            resVal = val + 'B'
+          } else if(val >= 1024 && val < 1048576 ) {
+            resVal = Math.round(val/1024*10)/10 + 'KB'
+          } else if(val >= 1048576 && val < 1073741824) {
+            resVal = Math.round(val/1048576*10)/10 + 'MB'
+          } else if(val >= 1099511627776) {
+            resVal = Math.round(val/1073741824*10)/10 + 'G'
+          }
+          return resVal
         }
       }
     },

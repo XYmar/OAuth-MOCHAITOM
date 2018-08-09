@@ -32,3 +32,12 @@ export function addUser(data) {
     data
   })
 }
+export function UserIfExist(name) {
+  return request({
+    url: 'users/hasusername',
+    method: 'get',
+    params: {
+      username: name
+    }
+  })
+}

@@ -91,10 +91,16 @@
       const validateUsername = (rule, value, callback) => {
         if (!isvalidUsername(value)) {
           callback(new Error('账号必须是5-15位的英文字母或数字！'))
-        } else if(this.hasUser()){
-          callback(new Error('用户名已存在！'))
-        }else {
-          callback()
+        } else {
+          UserIfExist(this.loginForm.username).then((res) => {
+            if(res.data.data) {
+              callback(new Error('用户已存在'))
+            }else {
+              callback()
+            }
+          }).catch(() => {
+            callback()
+          })
         }
       }
       const validatePassword = (rule, value, callback) => {
@@ -116,6 +122,7 @@
         }
       }
       return {
+        ifExist: false,
         loginForm: {
           ipConfig: '192.168.0.117',
           port: '8080',
@@ -172,8 +179,8 @@
         let username = this.loginForm.username
         UserIfExist(username).then(response => {
           console.log("A")
-          let ifExist = response.data.data
-          console.log(ifExist);
+          this.ifExist = response.data.data
+          // console.log(ifExist);
         })
       },
       registerUser: function () {
