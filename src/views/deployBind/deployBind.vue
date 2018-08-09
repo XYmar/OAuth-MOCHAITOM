@@ -17,17 +17,17 @@
               <div>
 
               </div>
-              <el-table-column align="center" :label="$t('table.deviceName')" min-width="140">
+              <el-table-column align="center" :label="$t('table.deviceName')" width="180px">
                 <template slot-scope="scope">
                   <span @click="getDeployComList(scope.row)" style="cursor: pointer">{{scope.row.name}}</span>
                 </template>
               </el-table-column>
-              <el-table-column width="150px" align="center" :label="$t('table.deviceIP')">
+              <el-table-column min-width="140" align="center" :label="$t('table.deviceIP')">
                 <template slot-scope="scope">
                   <span>{{scope.row.ip}}</span>
                 </template>
               </el-table-column>
-              <el-table-column width="110px" align="center" :label="$t('table.deviceState')">
+              <el-table-column width="140px" align="center" :label="$t('table.deviceState')">
                 <template slot-scope="scope">
                   <span class="el-tag el-tag--danger" v-if="scope.row.online == false">离线</span>
                   <span class="el-tag el-tag--primary" v-else>在线</span>
@@ -113,7 +113,7 @@
         <div>
           <!--<div id="deviceComp" style="width: 100%;height:440px;"></div>-->
           <div class='chart-container'>
-            <deployBindER height='450px' width='450px' :detaillist="bindedDeviceList"></deployBindER>
+            <deployBindER height='480px' width='550px' :detaillist="bindedDeviceList"></deployBindER>
           </div>
         </div>
       </template>
