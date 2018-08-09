@@ -1,9 +1,9 @@
 import request from '../utils/request'
 
-export function doDeployBind(deployPlanId, deviceCHId, data) {
+export function doDeployBind(deployPlanId, data) {
   return request({
-    url: 'deploymentdesigns/' + deployPlanId + '/devices/' + deviceCHId,
-    method: 'put',
+    url: 'deploymentdesigns/' + deployPlanId + '/deploymentdesigndetail',
+    method: 'post',
     headers: {
       'content-type': 'application/x-www-form-urlencoded'
     },
@@ -13,8 +13,11 @@ export function doDeployBind(deployPlanId, deviceCHId, data) {
 
 export function getDeployComLists(deployPlanId, deviceId) {
   return request({
-    url: 'deploymentdesigns/' + deployPlanId + '/devices/' + deviceId + '/deploymentdesigndetails',
+    url: 'deploymentdesigns/' + deployPlanId + '/deploymentdesigndetail',
     method: 'get',
+    params: {
+      'deviceId': deviceId
+    },
     headers: {
       'content-type': 'application/x-www-form-urlencoded'
     }

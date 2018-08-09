@@ -308,14 +308,13 @@
           this.total = response.data.total
           this.listLoading = false
 
-          console.log(this.listBind.length);
-          console.log(this.listBind);
+         /* console.log(this.listBind.length);
+          console.log(this.listBind);*/
 
           compList(this.proId).then(response => {
-            this.listComp = response.data.data
+            this.listComp = response.data.data.content
             this.total = response.data.total
             this.listLoading = false
-
             for(var j=0;j<this.listComp.length;j++){
               this.listComp[j].isBind = false;
             }
@@ -338,7 +337,6 @@
             }
           })
         })
-
       },
 
       handleCheckedCompsChange(val) {          //所选的组件，checkbox
@@ -384,11 +382,12 @@
            let dataBindId = (this.componentIds + '').replace(/\[|]/g,'')
            console.log(dataBindId, '99980')
            let data = {
+             'deviceId': this.deviceCHId,
              'componentIds': dataBindId
            }
            let qs = require('qs')
            let dataBind = qs.stringify(data)
-           doDeployBind(this.deployPlanId, this.deviceCHId, dataBind).then(() => {
+           doDeployBind(this.deployPlanId, dataBind).then(() => {
              this.$notify({
                title: '成功',
                message: '绑定成功',
