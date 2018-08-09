@@ -137,6 +137,7 @@
     </el-dialog>
     <el-dialog title="进程" :visible.sync="processDialogVisible">
       <el-table :key='tableKey' :data="taskprocess" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row
+                stripe
                 style="width: 100%"
                 @selection-change="handleCheckedProcess">
         <!-- <el-table :data="list" row-key="id"  v-loading.body="listLoading" border fit highlight-current-row style="width: 100%">-->
