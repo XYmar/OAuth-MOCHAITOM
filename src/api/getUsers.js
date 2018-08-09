@@ -1,9 +1,13 @@
 import request from '@/utils/request'
 
-export function UserList() {
+export function UserList(listQuery) {
   return request({
     url: '/users',
-    method: 'get'
+    method: 'get',
+    params: {
+      size: listQuery.size,
+      page: listQuery.page
+    }
   })
 }
 export function getUserId() {
