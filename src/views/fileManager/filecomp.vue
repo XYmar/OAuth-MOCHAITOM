@@ -88,13 +88,14 @@
       class="uploadDialog"
       title="提示"
       :visible.sync="uploadDialog"
+      append-to-body
       width="30%">
       <uploader :options="options"
                 :autoStart="autoStart"
                 :file-status-text="statusText"
                 :started="started"
                 ref="uploader"
-                class="uploader-example">
+                class="manage-uploader">
         <uploader-unsupport></uploader-unsupport>
         <uploader-drop>
           <p>拖拽文件到此处或</p>
@@ -278,7 +279,9 @@
       },
       handleuploadFile() {
         this.uploadDialog = true
-        // this.$refs['uploader'].fileList = []
+        this.$nextTick(() => {
+          this.$refs.uploader.uploader.cancel() //清空文件上传列表
+        })
       },
       uploadFile() {
         this.listLoading = true
@@ -290,9 +293,12 @@
           formData.append('files', this.fileAll[i].file)
         }
         saveFiles(this.componentId, formData).then((res) => {
+          this.$refs.uploader.uploader.cancel()
           this.getList()
           this.listLoading = false
           this.uploadDialog = false
+        }).catch(() => {
+          this.listLoading = false
         })
       },
       deleteFile(row) {
