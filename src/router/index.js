@@ -351,6 +351,6 @@ export const asyncRouterMap = [
     path: '/newfiles',
     component: Layout,
     hidden: true,
-    children: [{ path: 'newfiles/:id', component: _import('fileManager/index'), name: 'files', meta: { title: 'files', icon: 'table', noCache: false }}]
+    children: [{ path: 'newfiles/:id', component: _import('fileManager/index'), name: 'files', meta: { title: 'files', icon: 'table' }}]
   }
 ]

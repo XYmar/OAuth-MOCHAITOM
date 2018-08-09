@@ -122,11 +122,11 @@
     </el-dialog>
 
     <!-- 修改 -->
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" top="7vh" width="80%" v-else>
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" top="7vh" width="86%" v-else>
 
         <el-form :rules="rules" ref="dataForm" :model="temp" label-position="left" label-width="70px"
                  style='width: 100%;'>
-          <div style="height: 400px;overflow-y: auto;width: 60%;float: left;border-right: 1px solid lightgrey;padding-right: 30px;">
+          <div style="height: 500px;overflow-y: auto;width: 40%;float: left;padding-right: 16px;">
             <el-form-item :label="$t('table.compName')" prop="name">
               <el-input v-model="temp.name"></el-input>
             </el-form-item>
@@ -158,16 +158,15 @@
           </el-form-item>
           </div>
 
-          <div style="height: 400px;overflow: auto;width: 40%;float: right;padding-left: 30px;padding-top: 5px;">
-            <label style="width: 100%;font-size: 14px;">组件详细信息</label>
-            <br/>
-            <ul id="treeDemo" class="ztree"></ul>
+          <div style="height: 500px;overflow: auto;width: 60%;float: right;padding-left: 10px;border-left:1px solid #ccc;padding-top: 5px;margin-top: -48px">
+            <!--<label style="width: 100%;font-size: 14px;">组件详细信息</label>-->
+            <comFileManage :selectCompId="selectedId" :selectCompName="selectdName"></comFileManage>
           </div>
         </el-form>
 
 
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">{{$t('table.cancel')}}</el-button>
+        <el-button @click="dialogFormVisible = false" style="margin-right: 10px">{{$t('table.cancel')}}</el-button>
         <el-button type="primary" @click="updateData">{{$t('table.confirm')}}</el-button>
       </div>
     </el-dialog>
@@ -179,6 +178,7 @@
   import { compList, createComp, updateComp, copyComp, importComp, deleteComp, compSingle } from '@/api/component'
   import waves from '@/directive/waves' // 水波纹指令
   import { Loading } from 'element-ui'
+  import comFileManage from '@/views/fileManager/filecomp'
 
   /* eslint-disable */
   export default {
@@ -190,6 +190,7 @@
       return {
         projectId: '',
         selectedId: '',
+        selectdName: '',
         treeInfo: [],
         fileList: [],
         tableKey: 0,
@@ -264,6 +265,9 @@
         }
       }
     },
+    components: {
+      comFileManage
+    },
     created() {
       this.projectId = this.$store.getters.projectId
       this.userData.username = this.getCookie('username')
@@ -322,21 +326,15 @@
         this.resetTemp();
         this.dialogStatus = 'create'
         this.dialogFormVisible = true
-
-
         this.$nextTick(() => {
           this.$refs['dataForm'].clearValidate()
-
-
 
           console.log("文件信息");
           console.log(this.$refs.uploader.uploader.files);
           this.$refs.uploader.uploader.files.splice(0,this.$refs.uploader.uploader.files.length);
           console.log(this.$refs.uploader.uploader.files);
-
           // this.getList()
         })
-
         // this.getList()
       },
       createData() {
@@ -392,11 +390,12 @@
       },
       handleUpdate(row) {
         this.selectedId = row.id;
+        this.selectdName = row.name
         this.temp = Object.assign({}, row) // copy obj
         this.temp.timestamp = new Date(this.temp.timestamp)
         this.dialogStatus = 'update'
         this.dialogFormVisible = true
-        this.$nextTick(() => {
+        /*this.$nextTick(() => {
           this.$refs['dataForm'].clearValidate();
 
           //树
@@ -505,7 +504,7 @@
             $.fn.zTree.init($("#treeDemo"), setting, zNodes);
           });
 
-        })
+        })*/
       },
       compCopy(row) {
         let qs = require('qs');
