@@ -213,6 +213,20 @@ code {
   bottom: 0;
   right: 0;
 }
-.fileComp div.el-dialog__wrapper.uploadDialog{
-  z-index: 2100!important;
+.manage-uploader .uploader-file{
+  .uploader-file-name {
+    width:40%;
+  }
+  .uploader-file-size {
+    width:15%;
+  }
+  .uploader-file-meta {
+    width: 1%;
+  }
+  .uploader-file-status {
+    width: 20%
+  }
+  .uploader-file-actions {
+    width:24%;
+  }
 }
