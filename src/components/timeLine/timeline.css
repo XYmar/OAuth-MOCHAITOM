@@ -116,7 +116,10 @@
   left: -14px;
   right: auto;
 }
-
+.timeline .timeBox {
+  margin-top: 14px;
+  color:#999;
+}
 .timeline-badge.primary {
   background-color: #2e6da4 !important;
 }
@@ -137,6 +140,14 @@
   background-color: #5bc0de !important;
 }
 
+.timeline-badge.copy {
+  background-color: #00e3e3 !important;
+}
+
+.timeline-badge.scan {
+  background-color: #1296db !important;
+}
+
 .timeline-title {
   margin-top: 0;
   color: rgba(0, 0, 0, 0.45);
@@ -145,6 +156,12 @@
 .timeline-body > p,
 .timeline-body > ul {
   margin-bottom: 0;
+}
+.timeline-body .description {
+  font-size: 18px;
+  font-weight: 500;
+  color: #24292e;
+  font-family: fantasy;
 }
 
 .timeline-body > p + p {
