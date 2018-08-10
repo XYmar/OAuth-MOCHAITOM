@@ -164,6 +164,12 @@ export default {
             })
           }).catch(() => {
             this.loading = false
+            this.$notify({
+              title: '失败',
+              message: '登录失败',
+              type: 'error',
+              duration: 1000
+            })
           })
         } else {
           console.log('error submit!!')
