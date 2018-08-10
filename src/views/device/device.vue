@@ -1,9 +1,9 @@
 <template>
   <div class="app-container calendar-list-container">
     <div class="filter-container">
-      <el-input @keyup.enter.native="handleFilter" style="width: 200px;" class="filter-item" :placeholder="$t('table.deviceName')" v-model="searchQuery">
+      <el-input @keyup.enter.native="handleFilter" style="width: 240px;" class="filter-item" :placeholder="$t('table.deviceName')" v-model="searchQuery">
       </el-input>
-      <el-button class="filter-item pull-right" style="margin-left: 10px;" @click="handleCreate" type="primary" icon="el-icon-edit">{{$t('table.add')}}</el-button>
+      <el-button class="filter-item pull-right" style="margin-left: 10px;float: right;" @click="handleCreate" type="primary" icon="el-icon-edit">{{$t('table.add')}}</el-button>
     </div>
     <el-table :key='tableKey' :data="listA" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row
               style="width: 100%">
@@ -58,11 +58,28 @@
           <el-button type="primary" disabled="disabled" v-if="!scope.row.online || scope.row.virtual" size="mini">远程</el-button>
         </template>
       </el-table-column>
-      <el-table-column align="center" :label="$t('table.actions')" width="280" class-name="small-padding fixed-width">
+      <el-table-column align="center" :label="$t('table.actions')" width="140" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button type="primary" v-if="!scope.row.virtual" size="mini" @click="handleUpdate(scope.row)">{{$t('table.edit')}}</el-button>
+          <!--<el-button type="primary" v-if="!scope.row.virtual" size="mini" @click="handleUpdate(scope.row)">{{$t('table.edit')}}</el-button>
           <el-button size="mini" v-if="!scope.row.virtual" type="success" @click="copyDevice(scope.row)">{{$t('table.copy')}}</el-button>
           <el-button size="mini" v-if="!scope.row.virtual" type="danger" @click="deleteDevice(scope.row)">{{$t('table.delete')}}</el-button>
+          <el-button type="primary" size="mini" v-if="scope.row.virtual" @click="handleReport(scope.row)">{{$t('table.report')}}</el-button>-->
+          <el-dropdown trigger="click">
+            <span class="el-dropdown-link" v-if="!scope.row.virtual">
+              <el-button type="success" plain>更多操作</el-button>
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item>
+                <span style="display:inline-block;padding:0 10px;" @click="handleUpdate(scope.row)">编辑</span>
+              </el-dropdown-item>
+              <el-dropdown-item divided>
+                <span style="display:inline-block;padding:0 10px;" @click="copyDevice(scope.row)">复制</span>
+              </el-dropdown-item>
+              <el-dropdown-item divided>
+                <span style="display:inline-block;padding:0 10px;" @click="deleteDevice(scope.row)">删除</span>
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
           <el-button type="primary" size="mini" v-if="scope.row.virtual" @click="handleReport(scope.row)">{{$t('table.report')}}</el-button>
         </template>
         <!--<template v-else slot-scope="scope">
@@ -395,10 +412,6 @@
           });
         });
 
-      },
-      handleFilter() {
-        this.listQuery.page = 1
-        this.getList()
       },
       handleSizeChange(val) {
         this.listQuery.size = val
