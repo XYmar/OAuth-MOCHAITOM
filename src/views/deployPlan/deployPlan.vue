@@ -3,7 +3,7 @@
     <div class="filter-container">
       <el-input @keyup.enter.native="handleFilter" style="width: 200px;" class="filter-item" placeholder="名称" v-model="searchQuery">
       </el-input>
-      <el-button class="filter-item pull-right" style="margin-left: 10px;" @click="handleCreate" type="primary" icon="el-icon-edit">{{$t('table.add')}}</el-button>
+      <el-button class="filter-item" style="margin-left: 10px;float:right;" @click="handleCreate" type="primary" icon="el-icon-edit">{{$t('table.add')}}</el-button>
     </div>
 
     <el-table :key='tableKey' :data="listA" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row
@@ -19,19 +19,80 @@
           <span>{{scope.row.description}}</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" width="100px" :label="$t('table.deployBindDetail')">
+      <el-table-column align="center" width="240px" label="部署操作">
         <template slot-scope="scope">
-            <router-link class="pan-btn tiffany-btn" :to='{name:"deployPlanDetail",params:{id:scope.row.id}}'>查看</router-link>
-        </template>
-      </el-table-column>
-      <el-table-column align="center" :label="$t('table.actions')" width="380" class-name="small-padding fixed-width">
-        <template slot-scope="scope">
+          <router-link class="pan-btn tiffany-btn" :to='{name:"deployPlanDetail",params:{id:scope.row.id}}'>查看</router-link>
           <router-link class="pan-btn light-blue-btn" :to='{name:"deploy",params:{id:scope.row.id}}'>部署</router-link>
           <router-link class="pan-btn green-btn" :to='{name:"deployBind",params:{id:scope.row.id}}'>设计</router-link>
+        </template>
+      </el-table-column>
+      <el-table-column align="center" :label="$t('table.actions')" width="200" class-name="small-padding fixed-width">
+        <template slot-scope="scope">
           <!--<el-button size="mini" type="success">设计</el-button>-->
-          <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">{{$t('table.edit')}}</el-button>
+          <!--<el-button type="primary" size="mini" @click="handleUpdate(scope.row)">{{$t('table.edit')}}</el-button>
           <el-button size="mini" type="danger" @click="handleDelete(scope.row)">{{$t('table.delete')}}</el-button>
-          <el-button size="mini" type="info">基线</el-button>
+          <el-button size="mini" type="info">基线</el-button>-->
+          <el-dropdown trigger="click">
+            <span class="el-dropdown-link" v-if="!scope.row.virtual">
+              <el-button type="success" plain>更多操作</el-button>
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item>
+                <span style="display:inline-block;padding:0 10px;" @click="handleUpdate(scope.row)">编辑</span>
+              </el-dropdown-item>
+              <el-dropdown-item divided>
+                <span style="display:inline-block;padding:0 10px;" @click="handleDelete(scope.row)">删除</span>
+              </el-dropdown-item>
+              <el-dropdown-item divided>
+                <span style="display:inline-block;padding:0 10px;" @click="handleCreateBaseline(scope.row)">新建基线</span>
+              </el-dropdown-item>
+              <el-dropdown-item divided>
+                <!--<el-popover
+                  ref="popover4"
+                  placement="right"
+                  width="420"
+                  height="400"
+                  trigger="click"
+                  @show="getBaslines(scope.row)">
+                  <div class="filter-container">
+                    <el-input style="width: 200px;" class="filter-item" placeholder="组件名" v-model="searchQuery2">
+                    </el-input>
+                  </div>
+                  <div style="height: 425px;overflow-y: auto;margin-top: 0" id="compTab">
+                    <el-table :key='tableKey' :data="baslineList" v-loading="listLoading" element-loading-text="给我一点时间" border fit
+                              highlight-current-row
+                              style="width: 100%;"
+                              height="380"
+                              id="compTable">
+                      <el-table-column label="基线名称" width="140" align="center">
+                        <template slot-scope="scope">
+                          <span @click="handleUpdate(scope.row)">{{scope.row.name}}</span>
+                        </template>
+                      </el-table-column>
+                      <el-table-column width="100px" align="center" label="基线描述">
+                        <template slot-scope="scope">
+                          <span>{{scope.row.version}}</span>
+                        </template>
+                      </el-table-column>
+                      <el-table-column min-width="100px" align="center" :label="$t('table.compSize')">
+                        <template slot-scope="scope">
+                          <span>{{Math.round(scope.row.size/1024/1024*100)/100}}M</span>
+                        </template>
+                      </el-table-column>
+                      <el-table-column label="解绑" width="80" align="center">
+                        <template slot-scope="scope">
+                          &lt;!&ndash;<span>{{scope.row.isBind}}</span>&ndash;&gt;
+                          <el-button type="danger" icon="el-icon-delete" size="mini" circle v-if="scope.row.isBind" @click="deleteBindRelation(scope.row)"></el-button>
+                        </template>
+                      </el-table-column>
+
+                    </el-table>
+                  </div>
+                </el-popover>-->
+                <span style="display:inline-block;padding:0 10px;" @click="checkBaselines(scope.row)">基线详情</span>
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
         </template>
       </el-table-column>
 
@@ -68,12 +129,68 @@
         <el-button v-else type="primary" @click="updateData">{{$t('table.confirm')}}</el-button>
       </div>
     </el-dialog>
+    <!--基线新建对话框-->
+    <el-dialog title="请填写基线信息" :visible.sync="baselineVisible">
+      <el-form :rules="baselineRules" ref="baselineForm" :model="baselineTemp" label-position="right" label-width="70px" style='width: 400px; margin-left:50px;'>
+        <el-form-item label="名称" prop="name">
+          <el-input v-model="baselineTemp.name"></el-input>
+        </el-form-item>
+        <el-form-item label="描述" prop="desc">
+          <el-input v-model="baselineTemp.description"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="baselineVisible = false">{{$t('table.cancel')}}</el-button>
+        <el-button type="primary" @click="createBaseline">{{$t('table.confirm')}}</el-button>
+      </div>
+    </el-dialog>
+    <!--基线详情对话框-->
+    <el-dialog :title="deployName" :visible.sync="baselineDetailVisible">
+      <el-table :key='tableKey' :data="baslineList" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row
+                style="width: 100%">
 
+        <el-table-column align="center" label="基线名称" width="200">
+          <template slot-scope="scope">
+            <span>{{scope.row.name}}</span>
+          </template>
+        </el-table-column>
+        <el-table-column align="center" label="基线描述" min-width="200">
+          <template slot-scope="scope">
+            <span>{{scope.row.description}}</span>
+          </template>
+        </el-table-column>
+        <el-table-column align="center" label="操作" width="200">
+          <template slot-scope="scope">
+            <el-button type="primary" @click="handleModifyBaseline(scope.row)">编辑</el-button>
+            <el-button type="danger" @click="deleteBaseline(scope.row)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="baselineDetailVisible = false">关闭</el-button>
+      </div>
+    </el-dialog>
+    <!--修改基线对话框-->
+    <el-dialog title="请填写基线信息" :visible.sync="modifyBaselineVisible">
+      <el-form :rules="baselineRules" ref="baselineForm" :model="modifyBaselineTemp" label-position="right" label-width="70px" style='width: 400px; margin-left:50px;'>
+        <el-form-item label="名称" prop="name">
+          <el-input v-model="modifyBaselineTemp.name"></el-input>
+        </el-form-item>
+        <el-form-item label="描述" prop="desc">
+          <el-input v-model="modifyBaselineTemp.description"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="modifyBaselineVisible = false">{{$t('table.cancel')}}</el-button>
+        <el-button type="primary" @click="modifyBaseline">{{$t('table.confirm')}}</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
   import { deployplanList, createDeployplan, updateDeployplan, deleteDeployplan } from '@/api/deployplan'
+  import { saveDeploymentDesignSnapshots, getDeploymentDesignSnapshots, deleteDeploymentDesignSnapshots, modifySnapshots } from '@/api/baseline'
   import waves from '@/directive/waves' // 水波纹指令
   import Sortable from 'sortablejs'
 
@@ -86,8 +203,10 @@
     data() {
       return {
         selectedId: '',
+        deployName: '',
         tableKey: 0,
         list: [],
+        baslineList: [],
         listLoading: true,
         listQuery: {
           page: 0,
@@ -107,6 +226,19 @@
           description: ''
         },
         dialogFormVisible: false,
+        baselineVisible: false,
+        baselineDetailVisible: false,
+        modifyBaselineVisible: false,
+        baselineTemp: {
+          id: '',
+          name: '',
+          description: ''
+        },
+        modifyBaselineTemp: {
+          id: '',
+          name: '',
+          description: ''
+        },
         dialogStatus: '',
         textMap: {
           update: 'Edit',
@@ -118,6 +250,9 @@
           type: [{ required: true, message: 'type is required', trigger: 'change' }],
           timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
           title: [{ required: true, message: 'title is required', trigger: 'blur' }]
+        },
+        baselineRules: {
+          name: [{ required: true, message: '请输入基线名', trigger: 'blur' }]
         },
         downloadLoading: false,
         searchQuery: ''
@@ -139,6 +274,17 @@
           this.total = response.data.data.totalElements
           console.log(this.list);
         })
+      },
+      getBaslines(id) {
+        getDeploymentDesignSnapshots(id).then((res) => {
+          this.baslineList = res.data.data.content
+        })
+      },
+      checkBaselines(row) {
+        this.selectedId = row.id
+        this.baselineDetailVisible = true
+        this.deployName = row.name + '基线详情'
+        this.getBaslines(row.id)
       },
       handleFilter() {
         this.listQuery.page = 1
@@ -163,6 +309,13 @@
       },
       resetTemp() {
         this.temp = {
+          name: '',
+          description: ''
+        }
+      },
+      resetBaseLineTemp() {
+        this.baselineTemp = {
+          id: '',
           name: '',
           description: ''
         }
@@ -283,6 +436,84 @@
           this.$message({
             type: 'info',
             message: '已取消删除'
+          })
+        })
+      },
+      handleCreateBaseline(row) {
+        this.resetBaseLineTemp()
+        this.baselineVisible = true
+        this.selectedId = row.id
+        this.$nextTick(() => {
+          this.$refs['baselineForm'].clearValidate()
+        })
+      },
+      createBaseline() {
+        this.$refs['baselineForm'].validate((valid) => {
+          if(valid) {
+            let formData = new FormData();
+
+            formData.append('name', this.baselineTemp.name);
+            formData.append('description', this.baselineTemp.description);
+            saveDeploymentDesignSnapshots(this.selectedId,formData).then(() => {
+              this.baselineVisible = false
+              this.$notify({
+                title: '成功',
+                message: '基线创建成功',
+                type: 'success',
+                duration: 2000
+              })
+            })
+          }
+        })
+      },
+      deleteBaseline(row) {
+        deleteDeploymentDesignSnapshots(row.id).then((res) => {
+          this.$notify({
+            title: '成功',
+            message: '删除成功',
+            type: 'success',
+            duration: 2000
+          })
+          this.getBaslines(this.selectedId)
+        }).catch(() => {
+          this.$notify({
+            title: '失败',
+            message: '删除失败',
+            type: 'error',
+            duration: 2000
+          })
+        })
+      },
+      handleModifyBaseline(row) {
+        this.modifyBaselineVisible = true
+        this.modifyBaselineTemp = {
+          id: row.id,
+          name: row.name,
+          description: row.description
+        }
+      },
+      modifyBaseline() {
+        let data = {
+          'name': this.modifyBaselineTemp.name,
+          'description': this.modifyBaselineTemp.description,
+        }
+        var qs = require('qs');
+        let datapost = qs.stringify(data)
+        modifySnapshots(this.modifyBaselineTemp.id, datapost).then(() => {
+          this.modifyBaselineVisible = false
+          this.getBaslines(this.selectedId)
+          this.$notify({
+            title: '成功',
+            message: '修改成功',
+            type: 'success',
+            duration: 2000
+          })
+        }).catch(() => {
+          this.$notify({
+            title: '失败',
+            message: '修改失败',
+            type: 'error',
+            duration: 2000
           })
         })
       }
