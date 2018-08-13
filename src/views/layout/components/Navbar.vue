@@ -75,21 +75,27 @@
         </el-dropdown-menu>
       </el-dropdown>
       <!--普通用户修改密码-->
-      <el-dialog title="修改密码" :visible.sync="modifyPasswordVisible">
-        <el-form :model="form" ref="modifyPassForm" :rules="modifyRules" style="width: 400px; margin-left:50px;">
+      <el-dialog title="修改密码" :visible.sync="modifyPasswordVisible" width="40%">
+        <el-form :model="form" ref="modifyPassForm" :rules="modifyRules" style="width: 80%; margin:0 auto;">
           <!--<el-form-item label="原密码" :label-width="formLabelWidth">
             <el-input type="password" v-model="form.passwordOld" auto-complete="off"></el-input>
           </el-form-item>-->
           <el-form-item label="新密码" :label-width="formLabelWidth" prop="passwordNew">
-            <el-input type="password" v-model="form.passwordNew" auto-complete="off"></el-input>
+            <el-input :type="passwordType" v-model="form.passwordNew" auto-complete="off"></el-input>
+            <span class="show-pwd" @click="showPwd">
+              <svg-icon icon-class="eye" />
+            </span>
           </el-form-item>
           <el-form-item label="再次输入" :label-width="formLabelWidth" prop="passwordAgain">
-            <el-input type="password" v-model="form.passwordAgain" auto-complete="off"></el-input>
+            <el-input :type="passwordTypeAgain" v-model="form.passwordAgain" auto-complete="off"></el-input>
+            <span class="show-pwd" @click="showPwdAgain">
+              <svg-icon icon-class="eye" />
+            </span>
           </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
           <el-button @click="modifyPasswordVisible = false">取 消</el-button>
-          <el-button type="primary" @click="modifyPassword">确 定</el-button>
+          <el-button :disabled="this.btnConfirm" type="primary" @click="modifyPassword">确 定</el-button>
         </div>
       </el-dialog>
     </div>
@@ -98,6 +104,7 @@
 
 <script>
   import { mapGetters, mapMutations } from 'vuex'
+  import { isvalidPwd } from '@/utils/validate'
   import PanThumb from '@/components/PanThumb'
   import Breadcrumb from '@/components/Breadcrumb'
   import Hamburger from '@/components/Hamburger'
@@ -119,7 +126,7 @@
       ThemePicker
     },
     data() {
-      const validatePassword = (rule, value, callback) => {
+      /*const validatePassword = (rule, value, callback) => {
         if (value.length < 6) {
           callback(new Error('请输入正确的密码,至少六位！'))
         } else {
@@ -135,6 +142,37 @@
         } else {
           callback()
         }
+      }*/
+      const validatePassword = (rule, value, callback) => {
+        if (!isvalidPwd(value)) {
+          callback(new Error('密码必须是6-16位数字和字母的组合！'))
+          this.btnConfirm = true
+          this.passwordValidate = false
+        } else {
+          callback()
+          this.passwordValidate = true
+          if(this.passwordValidate && this.pasAgainValidate) {
+            this.btnConfirm = false
+          }
+        }
+
+      }
+      const validatePasswordAgain = (rule, value, callback) => {
+        if (!isvalidPwd(value)) {
+          callback(new Error('密码必须是6-16位数字和字母的组合！'))
+          this.btnConfirm = true
+          this.pasAgainValidate = false
+        } else if(this.form.passwordAgain !== this.form.passwordNew) {
+          this.btnConfirm = true
+          this.pasAgainValidate = false
+          callback(new Error('两次密码输入不一致，请再次输入新密码！'))
+        } else {
+          callback()
+          this.pasAgainValidate = true
+          if(this.passwordValidate && this.pasAgainValidate) {
+            this.btnConfirm = false
+          }
+        }
       }
       return {
         list: null,
@@ -147,6 +185,11 @@
         selected: '',
         dialogFormVisible: false,
         modifyPasswordVisible: false,
+        passwordType: 'password',
+        passwordTypeAgain: 'password',
+        btnConfirm: false,
+        passwordValidate: false,
+        pasAgainValidate: false,
         form: {
           passwordNew: '',
           passwordAgain: ''
@@ -211,6 +254,20 @@
     methods: {
       onFocus() {
         this.getList()
+      },
+      showPwd() {
+        if (this.passwordType === 'password') {
+          this.passwordType = ''
+        } else {
+          this.passwordType = 'password'
+        }
+      },
+      showPwdAgain() {
+        if (this.passwordTypeAgain === 'password') {
+          this.passwordTypeAgain = ''
+        } else {
+          this.passwordTypeAgain = 'password'
+        }
       },
       getList() {
         this.listLoading = true
@@ -362,6 +419,14 @@
 </script>
 
 <style rel="stylesheet/scss" lang="scss" scoped>
+  .show-pwd {
+    position: absolute;
+    right: 10px;
+    top: 2px;
+    font-size: 16px;
+    cursor: pointer;
+    user-select: none;
+  }
   .proIcon {
     position: absolute;
     right: -20px;

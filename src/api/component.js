@@ -1,12 +1,14 @@
 import request from '../utils/request'
 
-export function compList(proId) {
+export function compList(proId, listQuery) {
   return request({
     url: '/projects/' + proId + '/component',
     method: 'get',
     params: {
       // isShowHistory: false,
-      deleted: false
+      deleted: false,
+      size: listQuery.limit,
+      page: listQuery.page
     }
   })
 }
@@ -28,7 +30,8 @@ export function createComp(proId, data) {
     method: 'post',
     headers: {
       // 'Content-Type': 'multipart/form-data'
-      'content-type': 'application/json'
+      // 'content-type': 'application/json'
+      'content-type': 'application/x-www-form-urlencoded'
     },
     data
   })

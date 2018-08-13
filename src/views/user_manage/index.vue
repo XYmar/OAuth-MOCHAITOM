@@ -68,8 +68,8 @@
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
         :current-page="currentPage"
-        :page-sizes="[20,50,100]"
-        :page-size="10"
+        :page-sizes="[10,20,30,50]"
+        :page-size="listQuery.size"
         layout="total, sizes, prev, pager, next, jumper"
         :total="this.total"
         background
@@ -78,36 +78,48 @@
       </el-pagination>
     </div>
     <!--修改用户-->
-    <el-dialog title="修改用户" :visible.sync="dialogFormVisible" append-to-body>
-      <el-form :rules="modifyRules" ref="modifyDataForm" :model="form" label-position="left" label-width="100px" style='width: 400px; margin-left:50px;'>
+    <el-dialog title="修改用户" :visible.sync="dialogFormVisible" append-to-body width="40%">
+      <el-form :rules="modifyRules" ref="modifyDataForm" :model="form" label-width="100px" style='width:80%; margin:0 auto;'>
         <el-form-item label="新密码" prop="passwordNew">
-          <el-input v-model="form.passwordNew" type="password"></el-input>
+          <el-input v-model="form.passwordNew" :type="passwordType"></el-input>
+          <span class="show-pwd" @click="showPwd">
+            <svg-icon icon-class="eye" />
+          </span>
         </el-form-item>
         <el-form-item label="再次输入" prop="passwordAgain">
-          <el-input v-model="form.passwordAgain" type="password"></el-input>
+          <el-input v-model="form.passwordAgain" :type="passwordTypeAgain"></el-input>
+          <span class="show-pwd" @click="showPwdAgain">
+            <svg-icon icon-class="eye" />
+          </span>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">{{$t('table.cancel')}}</el-button>
-        <el-button type="primary" @click="updateUser">{{$t('table.confirm')}}</el-button>
+        <el-button :disabled="this.btnConfirm" type="primary" @click="updateUser">{{$t('table.confirm')}}</el-button>
       </div>
     </el-dialog>
     <!--创建用户-->
-    <el-dialog title="添加用户" :visible.sync="createUserFormVisible" append-to-body>
-      <el-form :rules="rules" ref="createDataForm" :model="createForm" label-position="left" label-width="100px" style='width: 400px; margin-left:50px;'>
+    <el-dialog title="添加用户" :visible.sync="createUserFormVisible" append-to-body width="40%">
+      <el-form :rules="rules" ref="createDataForm" :model="createForm" label-width="100px" style='width: 400px; margin:0 auto;'>
         <el-form-item label="用户名" prop="username">
           <el-input v-model="createForm.username" type="text"></el-input>
         </el-form-item>
         <el-form-item label="密码" prop="password">
-          <el-input v-model="createForm.password" type="password"></el-input>
+          <el-input v-model="createForm.password" :type="passwordType"></el-input>
+          <span class="show-pwd" @click="showPwd">
+            <svg-icon icon-class="eye" />
+          </span>
         </el-form-item>
         <el-form-item label="再次输入" prop="passwordAgain">
-          <el-input v-model="createForm.passwordAgain" type="password"></el-input>
+          <el-input v-model="createForm.passwordAgain" :type="passwordTypeAgain"></el-input>
+          <span class="show-pwd" @click="showPwdAgain">
+            <svg-icon icon-class="eye" />
+          </span>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="createUserFormVisible = false">{{$t('table.cancel')}}</el-button>
-        <el-button type="primary" @click="createUser">{{$t('table.confirm')}}</el-button>
+        <el-button :disabled="this.btnConfirm" type="primary" @click="createUser">{{$t('table.confirm')}}</el-button>
       </div>
     </el-dialog>
   </div>
@@ -115,7 +127,7 @@
 
 <script>
   import PanThumb from '@/components/PanThumb'
-  import { isvalidUsername } from '@/utils/validate'
+  import { isvalidUsername, isvalidPwd } from '@/utils/validate'
   import { UserList, updateUser, deleteUser, addUser } from '@/api/getUsers'
   import store from '../../store'
 
@@ -135,20 +147,52 @@
         }
       }
       const validatePassword = (rule, value, callback) => {
-        if (value.length < 6) {
-          callback(new Error('请输入正确的密码,至少六位！'))
+        if (!isvalidPwd(value)) {
+          callback(new Error('密码必须是6-16位数字和字母的组合！'))
+          this.btnConfirm = true
+          this.passwordValidate = false
         } else {
           callback()
+          this.passwordValidate = true
+          if(this.passwordValidate && this.pasAgainValidate) {
+            this.btnConfirm = false
+          }
         }
       }
 
       const validatePasswordAgain = (rule, value, callback) => {
-        if (value.length < 6) {
-          callback(new Error('请输入正确的密码,至少六位！'))
+        if (!isvalidPwd(value)) {
+          callback(new Error('密码必须是6-16位数字和字母的组合！'))
+          this.btnConfirm = true
+          this.pasAgainValidate = false
         } else if(this.createForm.passwordAgain !== this.createForm.password) {
+          this.btnConfirm = true
+          this.pasAgainValidate = false
           callback(new Error('两次密码输入不一致，请再次输入新密码！'))
         } else {
           callback()
+          this.pasAgainValidate = true
+          if(this.passwordValidate && this.pasAgainValidate) {
+            this.btnConfirm = false
+          }
+        }
+      }
+
+      const validateModifyPasAg = (rule, value, callback) => {
+        if (value.length < 6) {
+          callback(new Error('请输入正确的密码,至少六位！'))
+          this.btnConfirm = true
+          this.pasAgainValidate = false
+        } else if(this.form.passwordAgain !== this.form.passwordNew) {
+          this.btnConfirm = true
+          this.pasAgainValidate = false
+          callback(new Error('两次密码输入不一致，请再次输入新密码！'))
+        } else {
+          callback()
+          this.pasAgainValidate = true
+          if(this.passwordValidate && this.pasAgainValidate) {
+            this.btnConfirm = false
+          }
         }
       }
       return {
@@ -158,7 +202,7 @@
         list: [],
         listQuery: {
           page: 0,
-          size:20,
+          size:10,
           limit: 5,
           tagname: ''
         },
@@ -168,6 +212,11 @@
         dialogFormVisible: false,
         createUserFormVisible: false,
         modifyPasswordVisible: false,
+        passwordType: 'password',
+        passwordTypeAgain: 'password',
+        btnConfirm: false,
+        passwordValidate: false,
+        pasAgainValidate: false,
         formLabelWidth: '100px',
         searchQuery: '',
         temp: {
@@ -191,7 +240,7 @@
         },
         modifyRules: {
           passwordNew: [{ required: true, trigger: 'blur', validator: validatePassword }],
-          passwordAgain: [{ required: true, trigger: 'blur', validator: validatePasswordAgain }]
+          passwordAgain: [{ required: true, trigger: 'blur', validator: validateModifyPasAg }]
         },
         loading: false,
         listLoading: true,
@@ -210,6 +259,20 @@
       this.getList()
     },
     methods: {
+      showPwd() {
+        if (this.passwordType === 'password') {
+          this.passwordType = ''
+        } else {
+          this.passwordType = 'password'
+        }
+      },
+      showPwdAgain() {
+        if (this.passwordTypeAgain === 'password') {
+          this.passwordTypeAgain = ''
+        } else {
+          this.passwordTypeAgain = 'password'
+        }
+      },
       logout() {
         this.$store.dispatch('FedLogOut').then(() => {
           location.reload()// In order to re-instantiate the vue-router object to avoid bugs
@@ -372,7 +435,14 @@
   $bg:#2d3a4b;
   $dark_gray:#889aa4;
   $light_gray:#eee;
-
+  .show-pwd {
+    position: absolute;
+    right: 10px;
+    top: 2px;
+    font-size: 16px;
+    cursor: pointer;
+    user-select: none;
+  }
   .userManage-container {
     position: fixed;
     height: 100%;

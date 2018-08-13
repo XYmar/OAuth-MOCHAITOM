@@ -28,7 +28,7 @@
     </ul>
     <div class="pagination-container" style="text-align: center;">
       <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange"
-                     :current-page="listQuery.page" :page-sizes="[10, 20, 30]" :page-size="listQuery.limit"
+                     :current-page="currentPage" :page-sizes="[10, 20, 30]" :page-size="listQuery.size"
                      layout="total, sizes, prev, pager, next, jumper" :total="total">
       </el-pagination>
     </div>
@@ -36,7 +36,7 @@
 </template>
 
 <script>
-import { getLogList, getLogAll} from '@/api/operationLog'
+import { getLogList, getLogAll } from '@/api/operationLog'
 
 export default {
   data() {
@@ -50,7 +50,9 @@ export default {
         limit: 10,
         tagname: ''
       },
-      total: null
+      total: 0, // 默认数据总数
+      pagesize: 10, // 每页的数据条数
+      currentPage: 1 // 默认开始页面
     }
   },
   created() {
@@ -73,11 +75,13 @@ export default {
       }
     },
     handleSizeChange(val) {
-      this.listQuery.limit = val
+      this.listQuery.size = val
+      this.pagesize = val
       this.getLog(this.userId)
     },
     handleCurrentChange(val) {
       this.listQuery.page = val - 1
+      this.currentPage = val
       this.getLog(this.userId)
     }
   },
@@ -117,6 +121,8 @@ export default {
           return '部署设计'
         } else if (obj === 8) {
           return '部署设计详情'
+        } else if (obj === 9) {
+          return '基线'
         } else {
           return ''
         }

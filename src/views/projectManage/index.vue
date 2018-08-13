@@ -72,8 +72,8 @@
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
         :current-page="currentPage"
-        :page-sizes="[20,50,100]"
-        :page-size="10"
+        :page-sizes="[10,20,30,50]"
+        :page-size="listQuery.limit"
         layout="total, sizes, prev, pager, next, jumper"
         :total="this.total"
         background
@@ -83,12 +83,12 @@
     </div>
     <!--分页-->
     <!--修改/新建项目-->
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" append-to-body>
-      <el-form :rules="rules" ref="dataForm" :model="temp" label-position="left" label-width="70px" style='width: 400px; margin-left:50px;'>
-        <el-form-item :label="$t('table.projectName')" prop="name">
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" append-to-body width="40%">
+      <el-form :rules="rules" ref="dataForm" :model="temp" style='width: 80%; margin:0 auto;'>
+        <el-form-item :label="$t('table.projectName')" prop="name" :label-width="formLabelWidth">
           <el-input v-model="temp.name"></el-input>
         </el-form-item>
-        <el-form-item :label="$t('table.projectDesc')" prop="description">
+        <el-form-item :label="$t('table.projectDesc')" prop="description" :label-width="formLabelWidth">
           <el-input v-model="temp.description"></el-input>
         </el-form-item>
       </el-form>
@@ -99,21 +99,27 @@
       </div>
     </el-dialog>
     <!--普通用户修改密码-->
-    <el-dialog title="修改密码" :visible.sync="modifyPasswordVisible" append-to-body>
-      <el-form :model="form" ref="modifyPassForm" :rules="modifyRules" style="width: 400px; margin-left:50px;">
+    <el-dialog title="修改密码" :visible.sync="modifyPasswordVisible" append-to-body width="40%">
+      <el-form :model="form" ref="modifyPassForm" :rules="modifyRules" style="width: 80%; margin:0 auto;">
         <!--<el-form-item label="原密码" :label-width="formLabelWidth">
           <el-input type="password" v-model="form.passwordOld" auto-complete="off"></el-input>
         </el-form-item>-->
         <el-form-item label="新密码" :label-width="formLabelWidth" prop="passwordNew">
-          <el-input type="password" v-model="form.passwordNew" auto-complete="off"></el-input>
+          <el-input :type="passwordType" v-model="form.passwordNew" auto-complete="off"></el-input>
+          <span class="show-pwd" @click="showPwd">
+            <svg-icon icon-class="eye" />
+          </span>
         </el-form-item>
         <el-form-item label="再次输入" :label-width="formLabelWidth" prop="passwordAgain">
-          <el-input type="password" v-model="form.passwordAgain" auto-complete="off"></el-input>
+          <el-input :type="passwordTypeAgain" v-model="form.passwordAgain" auto-complete="off"></el-input>
+          <span class="show-pwd" @click="showPwdAgain">
+            <svg-icon icon-class="eye" />
+          </span>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="modifyPasswordVisible = false">取 消</el-button>
-        <el-button type="primary" @click="modifyPassword">确 定</el-button>
+        <el-button :disabled="this.btnConfirm" type="primary" @click="modifyPassword">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -121,6 +127,7 @@
 
 <script>
   import PanThumb from '@/components/PanThumb'
+  import { isvalidPwd } from '@/utils/validate'
   import { projectList, projectList_user, createProject, updateProject, deleteProject } from '@/api/project'
   import { getUserId, updateUser } from '@/api/getUsers'
   import store from '../../store'
@@ -134,20 +141,34 @@
     name: 'login',
     data() {
       const validatePassword = (rule, value, callback) => {
-        if (value.length < 6) {
-          callback(new Error('请输入正确的密码,至少六位！'))
+        if (!isvalidPwd(value)) {
+          callback(new Error('密码必须是6-16位数字和字母的组合！'))
+          this.btnConfirm = true
+          this.passwordValidate = false
         } else {
           callback()
+          this.passwordValidate = true
+          if(this.passwordValidate && this.pasAgainValidate) {
+            this.btnConfirm = false
+          }
         }
-      }
 
+      }
       const validatePasswordAgain = (rule, value, callback) => {
-        if (value.length < 6) {
-          callback(new Error('请输入正确的密码,至少六位！'))
+        if (!isvalidPwd(value)) {
+          callback(new Error('密码必须是6-16位数字和字母的组合！'))
+          this.btnConfirm = true
+          this.pasAgainValidate = false
         } else if(this.form.passwordAgain !== this.form.passwordNew) {
+          this.btnConfirm = true
+          this.pasAgainValidate = false
           callback(new Error('两次密码输入不一致，请再次输入新密码！'))
         } else {
           callback()
+          this.pasAgainValidate = true
+          if(this.passwordValidate && this.pasAgainValidate) {
+            this.btnConfirm = false
+          }
         }
       }
       return {
@@ -158,7 +179,7 @@
         list: [],
         listQuery: {
           page: 0,
-          size:20,
+          size:10,
           limit: 5,
           tagname: ''
         },
@@ -168,6 +189,11 @@
         searchQuery: '',
         dialogFormVisible: false,
         modifyPasswordVisible: false,
+        passwordType: 'password',
+        passwordTypeAgain: 'password',
+        btnConfirm: false,
+        passwordValidate: false,
+        pasAgainValidate: false,
         formLabelWidth: '100px',
         temp: {
           id: '',
@@ -212,6 +238,20 @@
       // this.getUserInfo()
     },
     methods: {
+      showPwd() {
+        if (this.passwordType === 'password') {
+          this.passwordType = ''
+        } else {
+          this.passwordType = 'password'
+        }
+      },
+      showPwdAgain() {
+        if (this.passwordTypeAgain === 'password') {
+          this.passwordTypeAgain = ''
+        } else {
+          this.passwordTypeAgain = 'password'
+        }
+      },
       logout() {
         this.$store.dispatch('FedLogOut').then(() => {
           location.reload()// In order to re-instantiate the vue-router object to avoid bugs
@@ -515,7 +555,14 @@
   $bg:#2d3a4b;
   $dark_gray:#889aa4;
   $light_gray:#eee;
-
+  .show-pwd {
+    position: absolute;
+    right: 10px;
+    top: 2px;
+    font-size: 16px;
+    cursor: pointer;
+    user-select: none;
+  }
   .project-container {
     position: fixed;
     height: 100%;

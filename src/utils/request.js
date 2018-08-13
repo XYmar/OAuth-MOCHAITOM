@@ -73,7 +73,7 @@ service.interceptors.request.use(config => {
 
 // respone interceptor
 service.interceptors.response.use(
-  response => response,
+  /*response => response,*/
   response => {
 //判断是否超过刷新token
     console.log("时间比较-----------")
@@ -96,6 +96,8 @@ service.interceptors.response.use(
           location.reload();// 为了重新实例化vue-router对象 避免bug
         });
       })
+    } else {
+      return response
     }
   },
   /**
