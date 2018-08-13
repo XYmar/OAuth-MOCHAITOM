@@ -1,7 +1,7 @@
 <template>
   <div class="app-container calendar-list-container" id="components">
     <div class="filter-container">
-      <el-input @keyup.enter.native="handleFilter" style="width: 200px;" class="filter-item" placeholder="标题" v-model="searchQuery">
+      <el-input @keyup.enter.native="handleFilter" style="width: 240px;" class="filter-item" placeholder="标题" v-model="searchQuery">
       </el-input>
 
       <el-button class="filter-item pull-right" style="float: right;margin-left: 10px;" @click="handleCreate" type="primary"
@@ -40,7 +40,7 @@
               highlight-current-row
               style="width: 100%">
 
-      <el-table-column :label="$t('table.compName')" width="100">
+      <el-table-column :label="$t('table.compName')" min-width="100">
         <template slot-scope="scope">
           <span class="link-type" @click="handleUpdate(scope.row)">{{scope.row.name}}</span>
         </template>
@@ -65,21 +65,45 @@
           <span>{{scope.row.description}}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('table.actions')" width="280" class-name="small-padding fixed-width">
+      <el-table-column :label="$t('table.actions')" width="140" class-name="small-padding fixed-width" align="center">
         <template slot-scope="scope">
-          <el-button type="primary" size="mini" @click="handleUpdate(scope.row)" style="margin-left: 10px;">{{$t('table.edit')}}</el-button>
-          <el-button size="mini" type="success" @click="compCopy(scope.row)">复制</el-button>
+          <!--<el-button type="primary" size="mini" @click="handleUpdate(scope.row)" style="margin-left: 10px;">{{$t('table.edit')}}</el-button>-->
+          <el-dropdown trigger="click">
+            <!--<el-tooltip class="item" effect="dark" content="更多操作" placement="top">
+              <span class="el-dropdown-link">
+              <svg-icon icon-class="ellipsis"></svg-icon>
+            </span>
+            </el-tooltip>-->
+            <span class="el-dropdown-link">
+              <el-button type="success" plain>更多操作</el-button>
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item>
+                <span style="display:inline-block;padding:0 10px;" @click="handleUpdate(scope.row)">编辑</span>
+              </el-dropdown-item>
+              <el-dropdown-item divided>
+                <span style="display:inline-block;padding:0 10px;" @click="compCopy(scope.row)">复制</span>
+              </el-dropdown-item>
+              <el-dropdown-item divided>
+                <span style="display:inline-block;padding:0 10px;" @click="exportLink(scope.row)">导出</span>
+              </el-dropdown-item>
+              <el-dropdown-item divided>
+                <span style="display:inline-block;padding:0 10px;" @click="handleDelete(scope.row)">删除</span>
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+          <!--<el-button size="mini" type="success" @click="compCopy(scope.row)">复制</el-button>
           <a @click="exportLink(scope.row)">
             <el-button size="mini" type="info">导出</el-button>
           </a>
           <el-button size="mini" type="danger" @click="handleDelete(scope.row)">{{$t('table.delete')}}
-          </el-button>
+          </el-button>-->
         </template>
       </el-table-column>
 
     </el-table>
 
-    <div class="pagination-container">
+    <div class="pagination-container" style="text-align: center;">
       <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange"
                      :current-page="listQuery.page" :page-sizes="[10,20,30, 50]" :page-size="listQuery.limit"
                      layout="total, sizes, prev, pager, next, jumper" :total="total">
@@ -174,7 +198,6 @@
         <el-button type="primary" @click="updateData">{{$t('table.confirm')}}</el-button>
       </div>
     </el-dialog>
-
   </div>
 </template>
 
@@ -286,7 +309,7 @@
         this.listLoading = true
         compList(this.projectId).then(response => {
           this.list = response.data.data.content
-          this.total = response.data.total
+          this.total = response.data.data.totalElements
           this.listLoading = false
           /*this.oldList = this.list.map(v => v.id);
           this.newList = this.oldList.slice();

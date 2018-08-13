@@ -1,66 +1,78 @@
 <template>
   <el-row class="panel-group" :gutter="40">
-    <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
+    <el-col :xs="16" :sm="16" :lg="8" class="card-panel-col">
       <router-link to="/components/index">
-        <div class="card-panel" @click="handleSetLineChartData('messages')">
+        <div class="card-panel">
           <div class="card-panel-icon-wrapper icon-components1">
             <svg-icon icon-class="components1" class-name="card-panel-icon" />
           </div>
           <div class="card-panel-description">
             <div class="card-panel-text">组件</div>
-            <count-to class="card-panel-num" :startVal="0" :endVal="81212" :duration="3000"></count-to>
+            <count-to class="card-panel-num" :startVal="0" :endVal="compCounts" :duration="1600"></count-to>
           </div>
         </div>
       </router-link>
     </el-col>
-    <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
+    <el-col :xs="16" :sm="16" :lg="8" class="card-panel-col">
       <router-link to="/device/device">
-        <div class='card-panel' @click="handleSetLineChartData('newVisitis')">
+        <div class='card-panel'>
           <div class="card-panel-icon-wrapper icon-computer">
             <svg-icon icon-class="computer" class-name="card-panel-icon" />
           </div>
           <div class="card-panel-description">
             <div class="card-panel-text">设备</div>
-            <count-to class="card-panel-num" :startVal="0" :endVal="102400" :duration="2600"></count-to>
+            <count-to class="card-panel-num" :startVal="0" :endVal="deviceCounts" :duration="1600"></count-to>
           </div>
         </div>
       </router-link>
     </el-col>
-    <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
-      <div class="card-panel" @click="handleSetLineChartData('purchases')">
-        <div class="card-panel-icon-wrapper icon-money">
-          <svg-icon icon-class="money" class-name="card-panel-icon" />
+    <el-col :xs="16" :sm="16" :lg="8" class="card-panel-col">
+      <router-link to="/deployPlan/deployPlan">
+        <div class="card-panel">
+          <div class="card-panel-icon-wrapper icon-money">
+            <svg-icon icon-class="example" class-name="card-panel-icon" />
+          </div>
+          <div class="card-panel-description">
+            <div class="card-panel-text">部署设计</div>
+            <count-to class="card-panel-num" :startVal="0" :endVal="designCounts" :duration="1600"></count-to>
+          </div>
         </div>
-        <div class="card-panel-description">
-          <div class="card-panel-text">Purchases</div>
-          <count-to class="card-panel-num" :startVal="0" :endVal="9280" :duration="3200"></count-to>
-        </div>
-      </div>
-    </el-col>
-    <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
-      <div class="card-panel" @click="handleSetLineChartData('shoppings')">
-        <div class="card-panel-icon-wrapper icon-shoppingCard">
-          <svg-icon icon-class="shoppingCard" class-name="card-panel-icon" />
-        </div>
-        <div class="card-panel-description">
-          <div class="card-panel-text">Shoppings</div>
-          <count-to class="card-panel-num" :startVal="0" :endVal="13600" :duration="3600"></count-to>
-        </div>
-      </div>
+      </router-link>
     </el-col>
   </el-row>
 </template>
 
 <script>
 import CountTo from 'vue-count-to'
+import { getCompCounts, getDeviceCounts, getDeployDesignCounts } from '@/api/getCounts'
 
 export default {
   components: {
     CountTo
   },
+  data() {
+    return {
+      proId: '',
+      compCounts: 0,
+      deviceCounts: 0,
+      designCounts: 0
+    }
+  },
+  created() {
+    this.proId = this.$store.getters.projectId
+    this.initCounts(this.proId)
+  },
   methods: {
-    handleSetLineChartData(type) {
-      this.$emit('handleSetLineChartData', type)
+    initCounts(id) {
+      getCompCounts(id).then((res) => {
+        this.compCounts = res.data.data
+      })
+      getDeviceCounts(id).then((res) => {
+        this.deviceCounts = res.data.data
+      })
+      getDeployDesignCounts(id).then((res) => {
+        this.designCounts = res.data.data
+      })
     }
   }
 }

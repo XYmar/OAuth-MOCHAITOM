@@ -24,13 +24,13 @@
         </el-dropdown>
       </div>
     </el-header>
-    <div class="login-form">
+    <div class="login-form" id="project-table">
       <div class="title-container">
         <h3 class="title" style="margin-bottom:30px">
           项目管理
         </h3>
         <div>
-          <div class="searchContainer" style="display: inline-block;margin-bottom:10px;">
+          <div class="searchContainer" style="display: inline-block;margin-bottom:16px;">
             <el-input style="width: 200px;" class="filter-item" placeholder="项目名" v-model="searchQuery">
             </el-input>
           </div>
@@ -48,7 +48,7 @@
                 element-loading-text="给我一点时间"
                 fit
                 highlight-current-row
-                height="400"
+                height="65%"
                 style="width: 100%;border-radius:8px;">
         <el-table-column min-width="150px" :label="$t('table.projectName')">
           <template slot-scope="scope">
@@ -83,7 +83,7 @@
     </div>
     <!--分页-->
     <!--修改/新建项目-->
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" append-to-body>
       <el-form :rules="rules" ref="dataForm" :model="temp" label-position="left" label-width="70px" style='width: 400px; margin-left:50px;'>
         <el-form-item :label="$t('table.projectName')" prop="name">
           <el-input v-model="temp.name"></el-input>
@@ -99,7 +99,7 @@
       </div>
     </el-dialog>
     <!--普通用户修改密码-->
-    <el-dialog title="修改密码" :visible.sync="modifyPasswordVisible">
+    <el-dialog title="修改密码" :visible.sync="modifyPasswordVisible" append-to-body>
       <el-form :model="form" ref="modifyPassForm" :rules="modifyRules" style="width: 400px; margin-left:50px;">
         <!--<el-form-item label="原密码" :label-width="formLabelWidth">
           <el-input type="password" v-model="form.passwordOld" auto-complete="off"></el-input>
@@ -228,7 +228,6 @@
         if(this.role == 'admin') {
           projectList(this.listQuery).then(response => {
             this.list = response.data.data.content
-            this.total = response.data.total
             this.listLoading = false
             this.listLength = response.data.data.length
             this.total = response.data.data.totalElements
@@ -237,7 +236,6 @@
           // alert(this.userId)
           projectList_user(this.userId, this.listQuery).then(response => {
             this.list = response.data.data.content
-            this.total = response.data.total
             this.listLoading = false
             this.listLength = response.data.data.length
             this.total = response.data.data.totalElements
@@ -519,10 +517,12 @@
   $light_gray:#eee;
 
   .project-container {
+    position: fixed;
     height: 100%;
     width: 100%;
     background-color: $bg;
     .login-form {
+      height: 100%;
       position: absolute;
       left: 0;
       right: 0;
