@@ -5,7 +5,7 @@ import axios from 'axios'
 /*import { Confirm } from 'element-ui'*/
 import store from '@/store'
 import MessageBox from '../../static/tinymce4.7.5/tinymce.min'
-import { getToken, getRefreshToken, getIp, getPort, getExpire, getExpire2 } from '@/utils/auth'
+import { getToken, getRefreshToken, getIp, getPort, getExpire, getExpire2, removeExpire } from '@/utils/auth'
 // create an axios instance
 let ip_set = store.getters.ipconfig
 let port = store.getters.port
@@ -62,7 +62,24 @@ service.interceptors.request.use(config => {
   if (store.getters.token) {
     config.headers['Authorization'] = 'Bearer' + getToken() // 让每个请求携带token-- ['X-Token']为自定义key 请根据实际情况自行修改
   }
-
+  if (timeStamp && timeStamp < (new Date()) / 1000){      //目前是让过期就回到登录页面
+    console.log("超过刷新token了，重新登录----------");
+    /*this.$confirm('你已被登出，可以取消继续留在该页面，或者重新登录', '确定登出', {
+      confirmButtonText: '重新登录',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })*/
+    Vue.prototype.$confirm('你已被登出，可以取消继续留在该页面，或者重新登录', '确定登出', {
+      confirmButtonText: '重新登录',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }).then(() => {
+      removeExpire('timestamp')
+      store.dispatch('FedLogOut').then(() => {
+        location.reload();// 为了重新实例化vue-router对象 避免bug
+      });
+    })
+  }
 
   return config
 }, error => {
@@ -73,33 +90,25 @@ service.interceptors.request.use(config => {
 
 // respone interceptor
 service.interceptors.response.use(
-  /*response => response,*/
-  response => {
+  response => response,
+  /*response => {
 //判断是否超过刷新token
     console.log("时间比较-----------")
-    console.log(timeStamp)
+    // console.log(timeStamp)
     console.log(new Date() /1000)
-    /*if (refreshTimeStamp < (new Date() /1000)) {       //超过刷新token则重新登录*/
-    if (timeStamp < (new Date()) / 1000){      //目前是让过期就回到登录页面
-      console.log("超过刷新token了，重新登录----------");
-      /*this.$confirm('你已被登出，可以取消继续留在该页面，或者重新登录', '确定登出', {
-        confirmButtonText: '重新登录',
-        cancelButtonText: '取消',
-        type: 'warning'
-      })*/
-      Vue.prototype.$confirm('你已被登出，可以取消继续留在该页面，或者重新登录', '确定登出', {
-        confirmButtonText: '重新登录',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        store.dispatch('FedLogOut').then(() => {
-          location.reload();// 为了重新实例化vue-router对象 避免bug
-        });
-      })
-    } else {
-      return response
-    }
-  },
+    /!*if (refreshTimeStamp < (new Date() /1000)) { //超过刷新token则重新登录*!/
+  Vue.prototype.$confirm('你已被登出，可以取消继续留在该页面，或者重新登录', '确定登出', {
+    confirmButtonText: '重新登录',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    removeExpire('timestamp')
+    store.dispatch('FedLogOut').then(() => {
+      location.reload();// 为了重新实例化vue-router对象 避免bug
+    });
+  })
+  },*/
+
   /**
   * 下面的注释为通过response自定义code来标示请求状态，当code返回如下情况为权限有问题，登出并返回到登录页
   * 如通过xmlhttprequest 状态码标识 逻辑可写在下面error中
