@@ -137,6 +137,18 @@ service.interceptors.response.use(
   //       return response.data;
   //     }
   error => {
+    if(error.response.data.error_description&&error.response.data.error_description.indexOf('Access token expired') >= 0){
+      Vue.prototype.$confirm('你已被登出，可以取消继续留在该页面，或者重新登录', '确定登出', {
+        confirmButtonText: '重新登录',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        removeExpire('timestamp')
+        store.dispatch('FedLogOut').then(() => {
+          location.reload();// 为了重新实例化vue-router对象 避免bug
+        });
+      })
+    }
     console.log('err' + error)// for debug
     /*  Message({
       message: error.message,
