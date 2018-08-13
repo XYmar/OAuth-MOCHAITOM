@@ -39,7 +39,9 @@
       <el-table-column min-width="100px" label="内存利用率">
         <template slot-scope="scope">
           <span v-if="!scope.row.online">--</span>
-          <span v-else>{{Math.round((scope.row.ramsize - scope.row.freeRAMSize)/scope.row.ramsize*10000)/100}}%</span>
+          <span v-else-if="scope.row.ifChangeColor < 70">{{Math.round((scope.row.ramsize - scope.row.freeRAMSize)/scope.row.ramsize*10000)/100}}%</span>
+          <span v-else-if="scope.row.ifChangeColor >= 70 && scope.row.ifChangeColor < 85" style="color: #FF8C00;">{{Math.round((scope.row.ramsize - scope.row.freeRAMSize)/scope.row.ramsize*10000)/100}}%</span>
+          <span v-else-if="scope.row.ifChangeColor >= 85" style="color: #FF0000;">{{Math.round((scope.row.ramsize - scope.row.freeRAMSize)/scope.row.ramsize*10000)/100}}%</span>
         </template>
       </el-table-column>
       <el-table-column align="center" :label="$t('table.deviceState')">
@@ -389,6 +391,7 @@
                         that.list[j].cpuutilization = that.webResBody[i].cpuutilization;
                         that.list[j].ramsize = that.webResBody[i].ramsize;
                         that.list[j].freeRAMSize = that.webResBody[i].freeRAMSize;
+                        that.list[j].ifChangeColor = (that.list[j].ramsize - that.webResBody[i].freeRAMSize)/that.list[j].ramsize*100;
                         that.list[j].virtual = false;
                         listIfExist = true;
                         break;
@@ -404,7 +407,8 @@
                   tempList.cpuclock = that.webResBody[i].cpuclock;
                   tempList.cpuutilization = that.webResBody[i].cpuutilization;
                   tempList.ramsize = that.webResBody[i].ramsize;
-                  that.list[j].freeRAMSize = that.webResBody[i].freeRAMSize;
+                  tempList.freeRAMSize = that.webResBody[i].freeRAMSize;
+                  tempList.ifChangeColor = (that.list[j].ramsize - that.webResBody[i].freeRAMSize)/that.list[j].ramsize*100;
                   tempList.virtual = true;
                   tempList.online = true;
                   that.list.push(tempList);
