@@ -105,23 +105,23 @@
 
     <div class="pagination-container" style="text-align: center;">
       <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange"
-                     :current-page="listQuery.page" :page-sizes="[10,20,30, 50]" :page-size="listQuery.limit"
+                     :current-page="currentPage" :page-sizes="[10,20,30, 50]" :page-size="listQuery.limit"
                      layout="total, sizes, prev, pager, next, jumper" :total="total">
       </el-pagination>
     </div>
 
     <!-- 创建 -->
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" top="10vh" width="60%"
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" top="10vh" width="40%"
                v-if="dialogStatus=='create'">
-      <el-form :rules="rules" ref="dataForm" :model="temp" label-position="left" label-width="70px"
-               style='height:240px;overflow-y: auto;padding-right: 10%;padding-left: 10%;'>
+      <el-form :rules="componentRules" ref="dataForm" :model="temp" label-width="100px"
+               style='height:240px;overflow-y: auto;padding-right: 10%;padding-left: 10%;margin: 0 auto'>
         <el-form-item :label="$t('table.compName')" prop="name">
           <el-input v-model="temp.name"></el-input>
         </el-form-item>
         <el-form-item :label="$t('table.compVersion')" prop="version">
           <el-input v-model="temp.version"></el-input>
         </el-form-item>
-        <el-form-item :label="$t('table.compPath')" prop="path">
+        <el-form-item :label="$t('table.compPath')" prop="deployPath">
           <el-input v-model="temp.deployPath"></el-input>
         </el-form-item>
         <el-form-item :label="$t('table.compDesc')" prop="desc">
@@ -226,7 +226,7 @@
         total: null,
         listLoading: true,
         listQuery: {
-          page: 1,
+          page: 0,
           limit: 10,
           importance: undefined,
           title: undefined,
@@ -234,6 +234,9 @@
           sort: '+id',
           deviceName: undefined
         },
+        total:0,//默认数据总数
+        pagesize:10,//每页的数据条数
+        currentPage:1,//默认开始页面
         sortable: null,
         oldList: [],
         newList: [],
@@ -257,6 +260,11 @@
           type: [{required: true, message: 'type is required', trigger: 'change'}],
           timestamp: [{type: 'date', required: true, message: 'timestamp is required', trigger: 'change'}],
           title: [{required: true, message: 'title is required', trigger: 'blur'}]
+        },
+        componentRules: {
+          name: [{ required: true, message: '请输入组件名', trigger: 'blur' }],
+          version: [{ required: true, message: '请输入版本', trigger: 'blur' }],
+          deployPath: [{ required: true, message: '请输入相对路径', trigger: 'blur' }]
         },
         downloadLoading: false,
         options: {
@@ -307,7 +315,7 @@
     methods: {
       getList() {
         this.listLoading = true
-        compList(this.projectId).then(response => {
+        compList(this.projectId,this.listQuery).then(response => {
           this.list = response.data.data.content
           this.total = response.data.data.totalElements
           this.listLoading = false
@@ -322,10 +330,12 @@
       },
       handleSizeChange(val) {
         this.listQuery.limit = val
+        this.pagesize = val
         this.getList()
       },
       handleCurrentChange(val) {
-        this.listQuery.page = val
+        this.listQuery.page = val - 1
+        this.currentPage = val
         this.getList()
       },
       handleModifyStatus(row, status) {
@@ -369,31 +379,25 @@
               spinner: 'el-icon-loading'
             })
             let formData = new FormData();
-
             /*this.fileAll = this.$refs.uploader.uploader.files;
             console.log(this.fileAll,'所有文件')*/
-
             formData.append('name', this.temp.name);
             formData.append('version', this.temp.version);
             formData.append('deployPath', this.temp.deployPath);
             //formData.append('size', this.size);
             formData.append('description', this.temp.description);
-
             //开始上传后去掉暂停和删除按钮
             /*$(".uploader-file-actions").children(".uploader-file-pause").removeClass("uploader-file-pause");
             $(".uploader-file-actions").children(".uploader-file-remove").removeClass("uploader-file-remove");*/
-
-            formData.append('enctype', "multipart/form-data")
-
+            //formData.append('enctype', "multipart/form-data")
             /*for (var i = 0; i < this.fileAll.length; i++) {
               //判断数组里是文件夹还是文件
               formData.append('componentEntityFiles', this.fileAll[i].file);
-
             }*/
-
-            createComp(this.projectId, formData).then(() => {
+            // debugger
+            createComp(this.projectId, formData).then((res) => {
               createloading.close()
-              this.list.unshift(this.temp)
+              // this.list.unshift(this.temp)
               this.dialogFormVisible = false
               this.$notify({
                 title: '成功',
@@ -401,12 +405,15 @@
                 type: 'success',
                 duration: 2000
               })
-
               this.getList()
-
-              //console.log(document.getElementById('fileUp'));
-              //document.getElementById('fileUp').innerHTML = "";
-              //this.$refs.uploader.uploader.files = [];
+            }).catch((err) => {
+              createloading.close()
+              this.$notify({
+                title: '失败',
+                message: '创建失败',
+                type: 'error',
+                duration: 2000
+              })
             })
           }
         })

@@ -114,8 +114,8 @@
       </el-pagination>
     </div>-->
 
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form :rules="rules" ref="dataForm" :model="temp" label-position="left" label-width="70px" style='width: 400px; margin-left:50px;'>
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" width="40%">
+      <el-form :rules="rules" ref="dataForm" :model="temp" label-width="100px" style='width: 80%; margin:0 auto;'>
         <el-form-item :label="$t('table.deployPlanName')" prop="name">
           <el-input v-model="temp.name"></el-input>
         </el-form-item>
@@ -130,8 +130,8 @@
       </div>
     </el-dialog>
     <!--基线新建对话框-->
-    <el-dialog title="请填写基线信息" :visible.sync="baselineVisible">
-      <el-form :rules="baselineRules" ref="baselineForm" :model="baselineTemp" label-position="right" label-width="70px" style='width: 400px; margin-left:50px;'>
+    <el-dialog title="请填写基线信息" :visible.sync="baselineVisible" width="40%">
+      <el-form :rules="baselineRules" ref="baselineForm" :model="baselineTemp" label-position="right" label-width="100px" style='width: 80%; margin:0 auto;'>
         <el-form-item label="名称" prop="name">
           <el-input v-model="baselineTemp.name"></el-input>
         </el-form-item>
@@ -171,8 +171,8 @@
       </div>
     </el-dialog>
     <!--修改基线对话框-->
-    <el-dialog title="请填写基线信息" :visible.sync="modifyBaselineVisible">
-      <el-form :rules="baselineRules" ref="baselineForm" :model="modifyBaselineTemp" label-position="right" label-width="70px" style='width: 400px; margin-left:50px;'>
+    <el-dialog title="请填写基线信息" :visible.sync="modifyBaselineVisible" width="40%">
+      <el-form :rules="baselineRules" ref="baselineForm" :model="modifyBaselineTemp" label-position="right" label-width="70px" style='width: 80%; margin:0 auto;'>
         <el-form-item label="名称" prop="name">
           <el-input v-model="modifyBaselineTemp.name"></el-input>
         </el-form-item>
@@ -241,8 +241,8 @@
         },
         dialogStatus: '',
         textMap: {
-          update: 'Edit',
-          create: 'Create'
+          update: '编辑',
+          create: '新建'
         },
         dialogPvVisible: false,
         pvData: [],
@@ -346,8 +346,14 @@
                 type: 'success',
                 duration: 2000
               })
-
               this.getList()
+            }).catch(() => {
+              this.$notify({
+                title: '失败',
+                message: '创建失败',
+                type: 'error',
+                duration: 2000
+              })
             })
           }
         })
@@ -460,6 +466,13 @@
                 title: '成功',
                 message: '基线创建成功',
                 type: 'success',
+                duration: 2000
+              })
+            }).catch(() => {
+              this.$notify({
+                title: '失败',
+                message: '基线创建失败',
+                type: 'error',
                 duration: 2000
               })
             })
