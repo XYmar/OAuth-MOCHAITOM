@@ -33,7 +33,7 @@
           用户管理
         </h3>
         <div>
-          <div class="searchContainer" style="display: inline-block;margin-bottom:10px;">
+          <div class="searchContainer" style="display: inline-block;margin-bottom:16px;">
             <el-input style="width: 200px;" class="filter-item" placeholder="用户名" v-model="searchQuery">
             </el-input>
           </div>
@@ -49,7 +49,7 @@
                 element-loading-text="给我一点时间"
                 fit
                 highlight-current-row
-                height="400"
+                height="65%"
                 style="width: 100%;border-radius:8px;">
         <el-table-column min-width="150px" :label="$t('table.username')">
           <template slot-scope="scope">
@@ -64,9 +64,21 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-pagination
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :current-page="currentPage"
+        :page-sizes="[20,50,100]"
+        :page-size="10"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="this.total"
+        background
+        style="text-align: center;margin-top:20px"
+      >
+      </el-pagination>
     </div>
     <!--修改用户-->
-    <el-dialog title="修改用户" :visible.sync="dialogFormVisible">
+    <el-dialog title="修改用户" :visible.sync="dialogFormVisible" append-to-body>
       <el-form :rules="modifyRules" ref="modifyDataForm" :model="form" label-position="left" label-width="100px" style='width: 400px; margin-left:50px;'>
         <el-form-item label="新密码" prop="passwordNew">
           <el-input v-model="form.passwordNew" type="password"></el-input>
@@ -81,7 +93,7 @@
       </div>
     </el-dialog>
     <!--创建用户-->
-    <el-dialog title="添加用户" :visible.sync="createUserFormVisible">
+    <el-dialog title="添加用户" :visible.sync="createUserFormVisible" append-to-body>
       <el-form :rules="rules" ref="createDataForm" :model="createForm" label-position="left" label-width="100px" style='width: 400px; margin-left:50px;'>
         <el-form-item label="用户名" prop="username">
           <el-input v-model="createForm.username" type="text"></el-input>
@@ -144,6 +156,15 @@
         selectedId: '',
         tableKey: 0,
         list: [],
+        listQuery: {
+          page: 0,
+          size:20,
+          limit: 5,
+          tagname: ''
+        },
+        total: null,
+        pagesize:10,//每页的数据条数
+        currentPage:1,//默认开始页面
         dialogFormVisible: false,
         createUserFormVisible: false,
         modifyPasswordVisible: false,
@@ -210,9 +231,9 @@
       getList() {
         this.listLoading = true
         if(this.role == 'admin') {
-          UserList().then(response => {
-            this.list = response.data.data
-            this.total = response.data.total
+          UserList(this.listQuery).then(response => {
+            this.list = response.data.data.content
+            this.total = response.data.data.totalElements
             this.listLoading = false
             this.listLength = response.data.data.length
           })
@@ -325,6 +346,16 @@
           })
         })
       },
+      handleSizeChange(val) {
+        this.listQuery.size = val
+        this.pagesize = val
+        this.getList()
+      },
+      handleCurrentChange(val) {
+        this.listQuery.page = val - 1
+        this.currentPage = val
+        this.getList()
+      }
     },
     computed: {
       listA: function () {
@@ -343,6 +374,7 @@
   $light_gray:#eee;
 
   .userManage-container {
+    position: fixed;
     height: 100%;
     width: 100%;
     background-color: $bg;
@@ -351,6 +383,7 @@
       left: 0;
       right: 0;
       width: 60%;
+      height: 100%;
       padding: 0px 35px 15px 35px;
       margin: 10px auto;
     }

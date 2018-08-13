@@ -24,23 +24,23 @@
     >
       <el-table-column label="文件名" width="200">
         <template slot-scope="scope">
-          <span>
-            <svg-icon :icon-class="classifyIcon(scope.row)" style="font-size: 30px;margin-right: 10px;"></svg-icon>
+          <span @click="loadListFile(scope.row)">
+            <svg-icon :icon-class="classifyIcon(scope.row)" style="font-size: 30px;margin-right: 10px;cursor: pointer;"></svg-icon>
             <el-tooltip class="item" effect="dark" :content="scope.row.name" placement="top">
-              <span v-if="!scope.row.newFolder"class="link-type"
-                    @click="loadListFile(scope.row)"
+              <span v-if="!scope.row.newFolder" class="link-type"
                     style="position:relative;top:2px;display:inline-block;width:70%;white-space:nowrap;overflow:hidden;text-overflow: ellipsis">
                 {{scope.row.name}}
               </span>
             </el-tooltip>
-            <el-input @keyup.enter.native="newFoler"
-                      ref="newFolderInput"
-                      autofocus="autofocus"
-                      v-if="scope.row.newFolder"
-                      v-model="newFolderName"
-                      placeholder="按enter确定"
-                      style="width: 70%;display: inline-block;position: relative;top:-2px;">
-            </el-input>
+            <span v-if="scope.row.newFolder">
+              <el-input @keyup.enter.native="newFoler"
+                        ref="newFolderInput"
+                        autofocus="autofocus"
+                        v-model="newFolderName"
+                        placeholder="按enter确定"
+                        style="width: 70%;display: inline-block;position: relative;top:-2px;">
+              </el-input>
+            </span>
           </span>
         </template>
       </el-table-column>
@@ -51,7 +51,11 @@
       </el-table-column>-->
       <el-table-column min-width="150px" :label="$t('table.compSize')">
         <template slot-scope="scope">
-          <span>{{computedSize(scope.row.size)}}</span>
+          <span v-if="scope.row.type != null">{{computedSize(scope.row.size)}}</span>
+          <span v-if="scope.row.type == null&&scope.row.name">--</span>
+          <span v-if="scope.row.newFolder" style="cursor: pointer;" @click="cancelNewFolder">
+            <svg-icon icon-class="cancel"></svg-icon>
+          </span>
         </template>
       </el-table-column>
       <el-table-column min-width="150px" label="创建时间">
@@ -61,13 +65,18 @@
       </el-table-column>
       <el-table-column width="40px">
         <template slot-scope="scope">
-          <el-dropdown>
-            <span class="el-dropdown-link">
+          <el-dropdown v-if="scope.row.name" trigger="click">
+            <el-tooltip class="item" effect="dark" content="更多操作" placement="top">
+              <span class="el-dropdown-link">
               <svg-icon icon-class="ellipsis"></svg-icon>
             </span>
+            </el-tooltip>
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item>
                 <span style="display:inline-block;padding:0 10px;" @click="deleteFile(scope.row)">删除</span>
+              </el-dropdown-item>
+              <el-dropdown-item divided>
+                <span style="display:inline-block;padding:0 10px;" @click="exportFile(scope.row)">下载</span>
               </el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
@@ -114,7 +123,7 @@
 
 <script>
   /*eslint-disable*/
-  import { compList, createComp, updateComp, copyComp, importComp, deleteComp, compSingle, saveFolder, getCompFiles, saveFiles, deleteCompFiles} from '@/api/component'
+  import { compList, createComp, updateComp, copyComp, importComp, deleteComp, compSingle, saveFolder, getCompFiles, saveFiles, deleteCompFiles } from '@/api/component'
   export default {
     name: 'comFileManage',
     props: {
@@ -127,6 +136,8 @@
     },
     data() {
       return {
+        ip: '',
+        port: '',
         projectId:'',
         componentId: '',
         compName: '',
@@ -191,6 +202,8 @@
     },
     created() {
       this.initData()
+      this.ip = this.getCookie('ip')
+      this.port= this.getCookie('port')
     },
     methods: {
       initData() {
@@ -257,25 +270,39 @@
         }
       },
       addFolder() {
-        let newFolder = {
-          name: '',
-          newFolder: true
+        if(this.list.length === 0) {
+          let newFolder = {
+            name: '',
+            newFolder: true
+          }
+          this.list.splice(0, 0, newFolder);
+        } else if(this.list[0].name != ''){
+          let newFolder = {
+            name: '',
+            newFolder: true
+          }
+          this.list.splice(0, 0, newFolder);
         }
-        this.list.splice(0, 0, newFolder);
-        this.$nextTick(() => {
-          // this.$refs['newFolderInput'].onfocus
-        })
       },
       newFoler() {
-        let formData = new FormData();
-        formData.append('name',this.newFolderName)
-        formData.append('parentnodeid',this.parentNodeId)
-        saveFolder(this.componentId, formData).then(() => {
-          this.newFolderName = ''
-          this.getList()
-        }).catch(() => {
-          this.newFolderName = ''
-        })
+        if(this.newFolderName) {
+          this.list.splice(0, 1);
+          let formData = new FormData();
+          formData.append('name',this.newFolderName)
+          formData.append('parentnodeid',this.parentNodeId)
+          saveFolder(this.componentId, formData).then(() => {
+            this.newFolderName = ''
+            this.getList()
+          }).catch(() => {
+            this.newFolderName = ''
+          })
+        }
+      },
+      cancelNewFolder() {
+        if(!this.list[0].id) {
+          this.list.splice(0,1)  // 删除新建行
+          this.newFolderName = '' // 清空输入框
+        }
       },
       handleuploadFile() {
         this.uploadDialog = true
@@ -302,7 +329,6 @@
         })
       },
       deleteFile(row) {
-        alert(row.id)
         this.listLoading = true
         deleteCompFiles(row.id).then((res) => {
           this.listLoading = false
@@ -338,13 +364,17 @@
         } else {
           return
         }
+      },
+      exportFile(row) {
+        let url = 'http://' + this.ip + ':' + this.port + '/componentfiles/' + row.id + '/export'
+        window.open(url)
       }
     },
     computed: {
       classifyIcon () {
         return function (row) {
           let iconType = ''
-          if(!row.type) {
+          if(row.type == null) {
             iconType = 'folder'
           } else if(row.type === 'png' || row.type === 'jpg' || row.type === 'gif'){
             iconType = 'image'
@@ -374,6 +404,8 @@
     },
     watch: {
       selectCompId(newValue, oldValue) {
+        this.componentId = this.selectCompId,
+        this.parentNodeId = ''
         this.initData()
       }
     }

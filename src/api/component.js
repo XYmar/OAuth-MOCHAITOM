@@ -174,3 +174,10 @@ export function deleteCompFiles(id) {
     method: 'delete'
   })
 }
+// exportfiles
+export function exportCompFiles(id) {
+  return request({
+    url: '/componentfiles/' + id + '/export',
+    method: 'get'
+  })
+}
