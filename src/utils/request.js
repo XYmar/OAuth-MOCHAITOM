@@ -81,7 +81,7 @@ service.interceptors.response.use(
     console.log(timeStamp)
     console.log(new Date() /1000)
     /*if (refreshTimeStamp < (new Date() /1000)) {       //超过刷新token则重新登录*/
-    if (timeStamp < (new Date()) / 1000){      //目前是让过期就回到登录页面
+    if (timeStamp && timeStamp < (new Date()) / 1000){      //目前是让过期就回到登录页面
       console.log("超过刷新token了，重新登录----------");
       /*this.$confirm('你已被登出，可以取消继续留在该页面，或者重新登录', '确定登出', {
         confirmButtonText: '重新登录',
@@ -93,6 +93,7 @@ service.interceptors.response.use(
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
+        removeExpire('timeStamp')
         store.dispatch('FedLogOut').then(() => {
           location.reload();// 为了重新实例化vue-router对象 避免bug
         });
