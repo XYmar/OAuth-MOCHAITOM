@@ -114,14 +114,14 @@
 
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" width="40%">
-      <el-form :rules="rules" ref="dataForm" :model="temp" label-width="100px" style='width: 80%; margin:0 auto;'>
+      <el-form :rules="deviceRules" ref="dataForm" :model="temp" label-width="100px" style='width: 80%; margin:0 auto;'>
         <el-form-item :label="$t('table.deviceName')" prop="name">
           <el-input v-model="temp.name"></el-input>
         </el-form-item>
         <el-form-item :label="$t('table.deviceIP')" prop="ip">
           <el-input v-model="temp.ip"></el-input>
         </el-form-item>
-        <el-form-item :label="$t('table.devicePath')" prop="path">
+        <el-form-item :label="$t('table.devicePath')" prop="deployPath">
           <el-input v-model="temp.deployPath" placeholder="例如：D:/test/"></el-input>
         </el-form-item>
         <el-form-item :label="$t('table.deviceDesc')" prop="description">
@@ -272,10 +272,10 @@
         oldList: [],
         newList: [],
         temp: {
-          name: undefined,
-          ip: undefined,
-          deployPath: undefined,
-          description: undefined
+          name: '',
+          ip: '',
+          deployPath: '',
+          description: ''
         },
         disks: [],
         taskprocess: [],
@@ -296,6 +296,11 @@
           type: [{ required: true, message: 'type is required', trigger: 'change' }],
           timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
           title: [{ required: true, message: 'title is required', trigger: 'blur' }]
+        },
+        deviceRules: {
+          name: [{ required: true, message: '请输入组件名', trigger: 'blur' }],
+          ip: [{ required: true, message: '请输入ip', trigger: 'blur' }],
+          deployPath: [{ required: true, message: '请输入部署路径', trigger: 'blur' }]
         },
         downloadLoading: false
       }
