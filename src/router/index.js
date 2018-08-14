@@ -293,6 +293,7 @@ export const asyncRouterMap = [
   {
     path: '/softPackage',
     component: Layout,
+    hidden: true,
     children: [{ path: 'index', component: _import('softPackage/index'), name: 'softPackage', meta: { title: 'softPackage', icon: 'package' }}]
   },
   {
@@ -324,7 +325,8 @@ export const asyncRouterMap = [
   {
     path: '/project',
     component: Layout,
-    children: [{ path: 'project', component: _import('project/project'), name: 'project', meta: { title: 'project', icon: 'excel' }}]
+    hidden: true,
+    children: [{ path: 'project', component: _import('project/project'), name: 'project', meta: { title: 'project', icon: '工程' }}]
   },
   {
     path: '/deploy',
@@ -334,6 +336,7 @@ export const asyncRouterMap = [
   {
     path: '/baseline',
     component: Layout,
+    hidden: true,
     children: [{ path: 'baseline', component: _import('baseline/baseline'), name: 'baseline', meta: { title: 'baseline', icon: 'example' }}]
   },
   {
@@ -345,6 +348,7 @@ export const asyncRouterMap = [
   {
     path: '/comps',
     component: Layout,
+    hidden: true,
     children: [{ path: 'comps', component: _import('fileManager/comps'), name: 'compd', meta: { title: 'files', icon: 'table', noCache: true }}]
   },
   {
