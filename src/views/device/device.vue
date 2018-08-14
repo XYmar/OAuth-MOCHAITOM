@@ -27,13 +27,21 @@
       <el-table-column min-width="80px" label="CPU">
         <template slot-scope="scope">
           <span v-if="!scope.row.online">--</span>
-          <span v-else>{{Math.round(scope.row.cpuclock/1000*100)/100}}GHZ</span>
+          <span v-else>{{Math.round(scope.row.cpuclock/1000*100)/100}}GHz</span>
         </template>
       </el-table-column>
-      <el-table-column min-width="80px" :label="$t('table.memorySize')">
+      <el-table-column min-width="100px" label="CPU利用率">
         <template slot-scope="scope">
           <span v-if="!scope.row.online">--</span>
-          <span v-else>{{Math.round(scope.row.ramsize/1024*100)/100}}G</span>
+          <span v-else>{{scope.row.cpuutilization}}%</span>
+        </template>
+      </el-table-column>
+      <el-table-column min-width="100px" label="内存利用率">
+        <template slot-scope="scope">
+          <span v-if="!scope.row.online">--</span>
+          <span v-else-if="scope.row.ifChangeColor < 70">{{Math.round((scope.row.ramsize - scope.row.freeRAMSize)/scope.row.ramsize*10000)/100}}%</span>
+          <span v-else-if="scope.row.ifChangeColor >= 70 && scope.row.ifChangeColor < 85" style="color: #FF8C00;">{{Math.round((scope.row.ramsize - scope.row.freeRAMSize)/scope.row.ramsize*10000)/100}}%</span>
+          <span v-else-if="scope.row.ifChangeColor >= 85" style="color: #FF0000;">{{Math.round((scope.row.ramsize - scope.row.freeRAMSize)/scope.row.ramsize*10000)/100}}%</span>
         </template>
       </el-table-column>
       <el-table-column align="center" :label="$t('table.deviceState')">
@@ -380,7 +388,10 @@
                       if(that.webResBody[i].inetAddress === that.list[j].ip){      //查找在线设备
                         that.list[j].online = true;
                         that.list[j].cpuclock = that.webResBody[i].cpuclock;
+                        that.list[j].cpuutilization = that.webResBody[i].cpuutilization;
                         that.list[j].ramsize = that.webResBody[i].ramsize;
+                        that.list[j].freeRAMSize = that.webResBody[i].freeRAMSize;
+                        that.list[j].ifChangeColor = (that.list[j].ramsize - that.webResBody[i].freeRAMSize)/that.list[j].ramsize*100;
                         that.list[j].virtual = false;
                         listIfExist = true;
                         break;
@@ -394,7 +405,10 @@
                   tempList.name = that.webResBody[i].inetAddress;
                   tempList.ip = that.webResBody[i].inetAddress;
                   tempList.cpuclock = that.webResBody[i].cpuclock;
+                  tempList.cpuutilization = that.webResBody[i].cpuutilization;
                   tempList.ramsize = that.webResBody[i].ramsize;
+                  tempList.freeRAMSize = that.webResBody[i].freeRAMSize;
+                  tempList.ifChangeColor = (that.list[j].ramsize - that.webResBody[i].freeRAMSize)/that.list[j].ramsize*100;
                   tempList.virtual = true;
                   tempList.online = true;
                   that.list.push(tempList);
