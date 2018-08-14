@@ -11,7 +11,7 @@
 
       <el-table-column align="center" :label="$t('table.deviceName')" width="130">
         <template slot-scope="scope">
-          <span>{{scope.row.name}}</span>
+          <span class="link-type" @click="handleUpdate(scope.row)">{{scope.row.name}}</span>
         </template>
       </el-table-column>
       <el-table-column width="140px" align="center" :label="$t('table.deviceIP')">
