@@ -130,7 +130,7 @@ export default {
     confirm: '确 定',
     deviceName: '设备名',
     deviceIP: 'IP',
-    devicePath: '路径',
+    devicePath: '部署路径',
     deviceState: '状态',
     deviceTitle: '设备名',
     username: '用户名',
