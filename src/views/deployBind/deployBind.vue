@@ -27,7 +27,7 @@
                   <span>{{scope.row.ip}}</span>
                 </template>
               </el-table-column>
-              <el-table-column width="140px" align="center" :label="$t('table.deviceState')">
+              <el-table-column width="100px" align="center" :label="$t('table.deviceState')">
                 <template slot-scope="scope">
                   <span class="el-tag el-tag--danger" v-if="scope.row.online == false">离线</span>
                   <span class="el-tag el-tag--primary" v-else>在线</span>
@@ -48,7 +48,7 @@
 
                     </div>
 
-                    <div style="height: 425px;overflow-y: auto;margin-top: 20px;" id="compTab">
+                    <div style="height: 425px;overflow-y: auto;margin-top: 0;" id="compTab">
                       <el-table :key='tableKey' :data="listB" v-loading="listLoading" element-loading-text="给我一点时间" border fit
                                 highlight-current-row
                                 style="width: 100%;"
@@ -82,7 +82,18 @@
 
                       </el-table>
                     </div>
-
+                    <el-pagination
+                      @size-change="handleSizeChange2"
+                      @current-change="handleCurrentChange2"
+                      :current-page="currentPage2"
+                      :page-sizes="[10,20,30]"
+                      :page-size="listQuery2.limit"
+                      layout="total, sizes, prev, pager, next, jumper"
+                      :total="total2"
+                      background
+                      style="text-align: center;margin-top:20px"
+                    >
+                    </el-pagination>
                     <div style="margin-top: 20px;">
                       <el-button size="mini" type="success" style="float:right;" @click="submit()">绑定</el-button>
                     </div>
@@ -163,9 +174,18 @@
           limit: 5,
           tagname: ''
         },
+        listQuery2: {
+          page: 0,
+          size:10,
+          limit: 10,
+          tagname: ''
+        },
         total: null,
         pagesize:10,//每页的数据条数
         currentPage:1,//默认开始页面
+        total2: null,
+        pagesize2:10,//每页的数据条数
+        currentPage2:1,//默认开始页面
         listLoading: true,
 
         deployPlanId: '',       //所选部署设计的id
@@ -207,7 +227,7 @@
         this.listLoading = true
         getDevices(this.proId, this.listQuery).then(response => {
           this.list = response.data.data.content
-          this.total = response.data.total
+          this.total = response.data.totalElements
           this.listLoading = false
           for(let i=0;i<this.list.length;i++){
             this.list[i].online = false;
@@ -283,6 +303,57 @@
         this.currentPage = val
         this.getList()
       },
+      handleSizeChange2(val) {
+        // this.listQuery2.size = val
+        this.listQuery2.limit = val
+        this.pagesize2 = val
+        compList(this.proId,this.listQuery2).then(response => {
+          this.listComp = response.data.data.content
+          this.total2 = response.data.totalElements
+          this.listLoading = false
+          for(var j=0;j<this.listComp.length;j++){
+            this.listComp[j].isBind = false;
+          }
+          //this.listComp.isBind = false;
+          this.bindCompsId.splice(0, this.bindCompsId.length);
+          //为是否绑定赋值
+          for(var i=0;i<this.listBind.length;i++){
+            for(var j=0;j<this.listComp.length;j++){
+              if(this.listBind[i].componentEntity.id == this.listComp[j].id){//判断id是否相等
+                this.listComp[j].isBind = true;
+                console.log(this.listComp[j].name);
+                this.bindCompsId.push(this.listComp[j].id);
+                break;
+              }
+            }
+          }
+        })
+      },
+      handleCurrentChange2(val) {
+        this.listQuery2.page = val - 1
+        this.currentPage2 = val
+        compList(this.proId,this.listQuery2).then(response => {
+          this.listComp = response.data.data.content
+          this.total = response.data.totalElements
+          this.listLoading = false
+          for(var j=0;j<this.listComp.length;j++){
+            this.listComp[j].isBind = false;
+          }
+          //this.listComp.isBind = false;
+          this.bindCompsId.splice(0, this.bindCompsId.length)
+          //为是否绑定赋值
+          for(var i=0;i<this.listBind.length;i++){
+            for(var j=0;j<this.listComp.length;j++){
+              if(this.listBind[i].componentEntity.id == this.listComp[j].id){//判断id是否相等
+                this.listComp[j].isBind = true;
+                console.log(this.listComp[j].name)
+                this.bindCompsId.push(this.listComp[j].id);
+                break;
+              }
+            }
+          }
+        })
+      },
       showPop(){
         //this.ifShow = true;
         //console.log(this.ifShow);
@@ -312,9 +383,9 @@
          /* console.log(this.listBind.length);
           console.log(this.listBind);*/
 
-          compList(this.proId).then(response => {
+          compList(this.proId,this.listQuery2).then(response => {
             this.listComp = response.data.data.content
-            this.total = response.data.total
+            this.total2 = response.data.totalElements
             this.listLoading = false
             for(var j=0;j<this.listComp.length;j++){
               this.listComp[j].isBind = false;

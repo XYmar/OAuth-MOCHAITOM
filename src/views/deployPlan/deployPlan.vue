@@ -11,7 +11,7 @@
 
       <el-table-column align="center" :label="$t('table.deployPlanName')" width="200">
         <template slot-scope="scope">
-          <span>{{scope.row.name}}</span>
+          <span class="link-type" @click="handleUpdate(scope.row)">{{scope.row.name}}</span>
         </template>
       </el-table-column>
       <el-table-column min-width="80px" align="center" :label="$t('table.deployPlanDesc')">
@@ -115,11 +115,11 @@
     </div>-->
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" width="40%">
-      <el-form :rules="deployRules" ref="dataForm" :model="temp" label-width="100px" style='width: 80%; margin:0 auto;'>
+      <el-form :rules="rules" ref="dataForm" :model="temp" label-width="100px" style='width: 80%; margin:0 auto;'>
         <el-form-item :label="$t('table.deployPlanName')" prop="name">
           <el-input v-model="temp.name"></el-input>
         </el-form-item>
-        <el-form-item :label="$t('table.deployPlanDesc')" prop="description">
+        <el-form-item :label="$t('table.deployPlanDesc')" prop="desc">
           <el-input v-model="temp.description"></el-input>
         </el-form-item>
       </el-form>
@@ -251,14 +251,12 @@
           timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
           title: [{ required: true, message: 'title is required', trigger: 'blur' }]
         },
-        deployRules: {
-          name: [{ required: true, message: '请输入部署设计名称', trigger: 'blur' }]
-        },
         baselineRules: {
           name: [{ required: true, message: '请输入基线名', trigger: 'blur' }]
         },
         downloadLoading: false,
-        searchQuery: ''
+        searchQuery: '',
+        errorMessage: '操作失败！'
       }
     },
     created() {
@@ -350,10 +348,14 @@
                 duration: 2000
               })
               this.getList()
-            }).catch(() => {
+            }).catch((error) => {
+              this.errorMessage = '操作失败！'
+              if(error.response.data.message){
+                this.errorMessage = error.response.data.message
+              }
               this.$notify({
-                title: '失败',
-                message: '创建失败',
+                title: '创建失败',
+                message: this.errorMessage,
                 type: 'error',
                 duration: 2000
               })
@@ -388,15 +390,19 @@
               this.dialogFormVisible = false
               this.$notify({
                 title: '成功',
-                message: '更新成功',
+                message: '修改成功',
                 type: 'success',
                 duration: 2000
               })
               this.getList()
-            }).catch(() =>{
+            }).catch((error) =>{
+              this.errorMessage = '操作失败！'
+              if(error.response.data.message){
+                this.errorMessage = error.response.data.message
+              }
               this.$notify({
-                title: '失败',
-                message: '修改失败',
+                title: '修改失败',
+                message: this.errorMessage,
                 type: 'error',
                 duration: 2000
               })
@@ -440,6 +446,13 @@
             })
             this.getList()
             this.setProjectNum(this.listLength)
+          }).catch(() => {
+            this.$notify({
+              title: '失败',
+              message: '删除失败！',
+              type: 'error',
+              duration: 2000
+            })
           })
         }).catch(() => {
           this.$message({
@@ -471,10 +484,14 @@
                 type: 'success',
                 duration: 2000
               })
-            }).catch(() => {
+            }).catch((error) => {
+              this.errorMessage = '操作失败！'
+              if(error.response.data.message){
+                this.errorMessage = error.response.data.message
+              }
               this.$notify({
                 title: '失败',
-                message: '基线创建失败',
+                message: this.errorMessage,
                 type: 'error',
                 duration: 2000
               })
@@ -494,7 +511,7 @@
         }).catch(() => {
           this.$notify({
             title: '失败',
-            message: '删除失败',
+            message: '基线删除失败',
             type: 'error',
             duration: 2000
           })
@@ -524,10 +541,14 @@
             type: 'success',
             duration: 2000
           })
-        }).catch(() => {
+        }).catch((error) => {
+          this.errorMessage = '操作失败！'
+          if(error.response.data.message){
+            this.errorMessage = error.response.data.message
+          }
           this.$notify({
-            title: '失败',
-            message: '修改失败',
+            title: '修改失败',
+            message: this.errorMessage,
             type: 'error',
             duration: 2000
           })
