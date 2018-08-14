@@ -207,10 +207,10 @@
         <el-button type="primary" @click="compMonitor()">组件进程监控</el-button>
       </div>-->
     </el-dialog>
-    <el-dialog title="请填写路径" :visible.sync="reportDialogVisible">
-      <el-form :rules="rules" ref="dataForm" :model="temp" label-position="left" label-width="70px" style='width: 400px; margin-left:50px;'>
-        <el-form-item label="路径" prop="name">
-          <el-input v-model="reportPath"></el-input>
+    <el-dialog title="请填写路径" :visible.sync="reportDialogVisible" width="40%">
+      <el-form :rules="pathRules" ref="dataForm" :model="pathTemp"  label-width="100px" style='width: 80%; margin:0 auto;'>
+        <el-form-item label="部署路径" prop="reportPath">
+          <el-input v-model="pathTemp.reportPath"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -240,6 +240,19 @@
       waves
     },
     data() {
+      const validateIP = (rule, value, callback) => {
+        //ip地址
+        let exp = /^(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])$/;
+        let reg = value.match(exp);
+
+        if(value.length==0){
+          callback(new Error("请输入IP！"));
+        }else if (reg == null) {
+          callback(new Error('IP地址不合法！'));
+        }else {
+          callback()
+        }
+      }
       return {
         tableKey: 0,
         list: [],
@@ -277,9 +290,12 @@
           deployPath: '',
           description: ''
         },
+        pathTemp: {
+          reportPath: ''
+        },
         disks: [],
         taskprocess: [],
-        reportPath: '',
+        // reportPath: '',
         dialogFormVisible: false,
         diskDialogVisible: false,
         processDialogVisible: false,
@@ -299,8 +315,11 @@
         },
         deviceRules: {
           name: [{ required: true, message: '请输入组件名', trigger: 'blur' }],
-          ip: [{ required: true, message: '请输入ip', trigger: 'blur' }],
+          ip: [{ required: true, trigger: 'blur', validator: validateIP }],
           deployPath: [{ required: true, message: '请输入部署路径', trigger: 'blur' }]
+        },
+        pathRules: {
+          reportPath: [{ required: true, message: '请填写部署路径', trigger: 'blur' }]
         },
         downloadLoading: false
       }
@@ -646,12 +665,16 @@
         })
       },
       handleReport(row) {
+        console.log("0")
         this.reportDialogVisible = true
         this.reportData.name = row.name
         this.reportData.ip = row.ip
+        console.log("1")
       },
       reportDevice() {
-        this.reportData.deployPath = this.reportPath
+        console.log("A")
+        this.reportData.deployPath = this.pathTemp.reportPath
+        console.log("B")
         let qs = require('qs')
         let RpData = qs.stringify({
           "name": this.reportData.name,
