@@ -60,7 +60,7 @@
                         </el-table-column>
                         <el-table-column :label="$t('table.compName')" width="140" align="center">
                           <template slot-scope="scope">
-                            <span @click="handleUpdate(scope.row)">{{scope.row.name}}</span>
+                            <span>{{scope.row.name}}</span>
                           </template>
                         </el-table-column>
                         <el-table-column width="100px" align="center" :label="$t('table.compVersion')">
@@ -111,7 +111,7 @@
               :page-sizes="[20,50,100]"
               :page-size="10"
               layout="total, sizes, prev, pager, next, jumper"
-              :total="this.total"
+              :total="total"
               background
               style="text-align: center;margin-top:20px"
             >
@@ -227,14 +227,14 @@
         this.listLoading = true
         getDevices(this.proId, this.listQuery).then(response => {
           this.list = response.data.data.content
-          this.total = response.data.totalElements
+          this.total = response.data.data.totalElements
           this.listLoading = false
           for(let i=0;i<this.list.length;i++){
             this.list[i].online = false;
             this.list[i].virtual = false;
           }
           this.listLength = response.data.data.length
-          this.total = response.data.data.totalElements
+          // this.total = response.data.data.totalElements
           this.getList2()
         })
       },
@@ -309,7 +309,7 @@
         this.pagesize2 = val
         compList(this.proId,this.listQuery2).then(response => {
           this.listComp = response.data.data.content
-          this.total2 = response.data.totalElements
+          this.total2 = response.data.data.totalElements
           this.listLoading = false
           for(var j=0;j<this.listComp.length;j++){
             this.listComp[j].isBind = false;
@@ -334,7 +334,7 @@
         this.currentPage2 = val
         compList(this.proId,this.listQuery2).then(response => {
           this.listComp = response.data.data.content
-          this.total = response.data.totalElements
+          this.total2 = response.data.data.totalElements
           this.listLoading = false
           for(var j=0;j<this.listComp.length;j++){
             this.listComp[j].isBind = false;
@@ -377,7 +377,7 @@
         //查询已绑定信息
         getDeployComLists(this.deployPlanId, this.deviceCHId).then(response => {
           this.listBind = response.data.data
-          this.total = response.data.total
+          // this.total = response.data.total
           this.listLoading = false
 
          /* console.log(this.listBind.length);
@@ -385,7 +385,7 @@
 
           compList(this.proId,this.listQuery2).then(response => {
             this.listComp = response.data.data.content
-            this.total2 = response.data.totalElements
+            this.total2 = response.data.data.totalElements
             this.listLoading = false
             for(var j=0;j<this.listComp.length;j++){
               this.listComp[j].isBind = false;
@@ -534,6 +534,7 @@
       getDeployComList(row) {
         getDeployComLists(this.deployPlanId, row.id).then((res) => {
           this.bindedDeviceList = res.data.data
+          console.log(this.bindedDeviceList,1111111111)
         })
       }
     },
