@@ -321,7 +321,8 @@
         pathRules: {
           reportPath: [{ required: true, message: '请填写部署路径', trigger: 'blur' }]
         },
-        downloadLoading: false
+        downloadLoading: false,
+        errorMessage: '操作失败！'
       }
     },
     filters: {
@@ -502,10 +503,14 @@
                 duration: 2000
               })
               this.getList()
-            }).catch(() =>{
+            }).catch((error) =>{
+              this.errorMessage = '操作失败！'
+              if(error.response.data.message){
+                this.errorMessage = error.response.data.message
+              }
               this.$notify({
-                title: '失败',
-                message: '创建失败',
+                title: '创建设备失败',
+                message: this.errorMessage,
                 type: 'error',
                 duration: 2000
               })
@@ -548,10 +553,14 @@
                 duration: 2000
               })
               this.getList()
-            }).catch(() =>{
+            }).catch((error) =>{
+              this.errorMessage = '操作失败！'
+              if(error.response.data.message){
+                this.errorMessage = error.response.data.message
+              }
               this.$notify({
-                title: '失败',
-                message: '修改失败',
+                title: '修改设备失败',
+                message: this.errorMessage,
                 type: 'error',
                 duration: 2000
               })
@@ -654,6 +663,18 @@
         getProcess(row.id).then((res) => {
           this.taskprocess = res.data.data
           this.listLoading = false
+        }).catch((error) => {
+          this.listLoading = false
+          this.errorMessage = '获取进程失败！'
+          if(error.response.data.message){
+            this.errorMessage = error.response.data.message
+          }
+          this.$notify({
+            title: '失败',
+            message: this.errorMessage,
+            type: 'error',
+            duration: 2000
+          })
         })
       },
       handleDisk(row) {
@@ -662,6 +683,18 @@
         getDisks(row.id).then((res) => {
           this.disks = res.data.data
           this.listLoading = false
+        }).catch((error) => {
+          this.listLoading = false
+          this.errorMessage = '获取硬盘信息失败！'
+          if(error.response.data.message){
+            this.errorMessage = error.response.data.message
+          }
+          this.$notify({
+            title: '失败',
+            message: this.errorMessage,
+            type: 'error',
+            duration: 2000
+          })
         })
       },
       handleReport(row) {
