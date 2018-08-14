@@ -240,6 +240,19 @@
       waves
     },
     data() {
+      const validateIP = (rule, value, callback) => {
+        //ip地址
+        let exp = /^(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])$/;
+        let reg = value.match(exp);
+
+        if(value.length==0){
+          callback(new Error("请输入IP！"));
+        }else if (reg == null) {
+          callback(new Error('IP地址不合法！'));
+        }else {
+          callback()
+        }
+      }
       return {
         tableKey: 0,
         list: [],
@@ -299,7 +312,7 @@
         },
         deviceRules: {
           name: [{ required: true, message: '请输入组件名', trigger: 'blur' }],
-          ip: [{ required: true, message: '请输入ip', trigger: 'blur' }],
+          ip: [{ required: true, trigger: 'blur', validator: validateIP }],
           deployPath: [{ required: true, message: '请输入部署路径', trigger: 'blur' }]
         },
         downloadLoading: false
