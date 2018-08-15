@@ -201,11 +201,13 @@
             name: this.list[i].componentEntity.name,
             /*x: this.childX,
             y: this.stepY*i,*/
-            info: this.list[i]
+            info: this.list[i],
+            id: this.list[i].componentEntity.id
           }
           this.linksItem = {
             source: this.centerDevice.name,
-            target: this.list[i].componentEntity.name
+            target: this.list[i].componentEntity.id,
+            // id: this.list[i].componentEntity.id
           }
           this.dataList.push(this.dataItem)
           this.linksList.push(this.linksItem)

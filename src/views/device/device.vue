@@ -56,14 +56,17 @@
           <!--<el-button size="mini" @click="handleDisk(scope.row)" type="success">{{$t('table.disk')}}</el-button>-->
           <el-button type="primary" size="mini" v-if="scope.row.online && !scope.row.virtual" @click="handleProcess(scope.row)">{{$t('table.deviceProcess')}}</el-button>
           <el-button size="mini" type="success" v-if="scope.row.online && !scope.row.virtual" @click="handleDisk(scope.row)">{{$t('table.disk')}}</el-button>
-          <router-link :to='{name:"connectvnc",params:{id:scope.row.id, ip:scope.row.ip}}'>
+          <!--<router-link :to='{name:"connectvnc",params:{id:scope.row.id, ip:scope.row.ip}}'>
             <el-button size="mini" type="primary" v-if="!scope.row.virtual && scope.row.online" style="margin-left: 10px">
               远程
             </el-button>
-          </router-link>
+          </router-link>-->
+          <el-button size="mini" type="warning" v-if="!scope.row.virtual && scope.row.online" @click="handleRouter(scope.row)">
+            远程
+          </el-button>
           <el-button type="primary" disabled="disabled" v-if="!scope.row.online || scope.row.virtual" size="mini">{{$t('table.deviceProcess')}}</el-button>
           <el-button size="mini" disabled="disabled" v-if="!scope.row.online || scope.row.virtual" type="success">{{$t('table.disk')}}</el-button>
-          <el-button type="primary" disabled="disabled" v-if="!scope.row.online || scope.row.virtual" size="mini">远程</el-button>
+          <el-button type="warning" disabled="disabled" v-if="!scope.row.online || scope.row.virtual" size="mini">远程</el-button>
         </template>
       </el-table-column>
       <el-table-column align="center" :label="$t('table.actions')" width="140" class-name="small-padding fixed-width">
@@ -72,8 +75,8 @@
           <el-button size="mini" v-if="!scope.row.virtual" type="success" @click="copyDevice(scope.row)">{{$t('table.copy')}}</el-button>
           <el-button size="mini" v-if="!scope.row.virtual" type="danger" @click="deleteDevice(scope.row)">{{$t('table.delete')}}</el-button>
           <el-button type="primary" size="mini" v-if="scope.row.virtual" @click="handleReport(scope.row)">{{$t('table.report')}}</el-button>-->
-          <el-dropdown trigger="click">
-            <span class="el-dropdown-link" v-if="!scope.row.virtual">
+          <el-dropdown trigger="click" v-if="!scope.row.virtual">
+            <span class="el-dropdown-link">
               <el-button type="success" plain>更多操作</el-button>
             </span>
             <el-dropdown-menu slot="dropdown">
@@ -208,7 +211,7 @@
       </div>-->
     </el-dialog>
     <el-dialog title="请填写路径" :visible.sync="reportDialogVisible" width="40%">
-      <el-form :rules="pathRules" ref="dataForm" :model="pathTemp"  label-width="100px" style='width: 80%; margin:0 auto;'>
+      <el-form :rules="pathRules" ref="reportForm" :model="pathTemp"  label-width="100px" style='width: 80%; margin:0 auto;'>
         <el-form-item label="部署路径" prop="reportPath">
           <el-input v-model="pathTemp.reportPath"></el-input>
         </el-form-item>
@@ -321,7 +324,8 @@
         pathRules: {
           reportPath: [{ required: true, message: '请填写部署路径', trigger: 'blur' }]
         },
-        downloadLoading: false
+        downloadLoading: false,
+        errorMessage: '操作失败！'
       }
     },
     filters: {
@@ -502,10 +506,14 @@
                 duration: 2000
               })
               this.getList()
-            }).catch(() =>{
+            }).catch((error) =>{
+              this.errorMessage = '操作失败！'
+              if(error.response.data.message){
+                this.errorMessage = error.response.data.message
+              }
               this.$notify({
-                title: '失败',
-                message: '创建失败',
+                title: '创建设备失败',
+                message: this.errorMessage,
                 type: 'error',
                 duration: 2000
               })
@@ -548,10 +556,14 @@
                 duration: 2000
               })
               this.getList()
-            }).catch(() =>{
+            }).catch((error) =>{
+              this.errorMessage = '操作失败！'
+              if(error.response.data.message){
+                this.errorMessage = error.response.data.message
+              }
               this.$notify({
-                title: '失败',
-                message: '修改失败',
+                title: '修改设备失败',
+                message: this.errorMessage,
                 type: 'error',
                 duration: 2000
               })
@@ -654,6 +666,18 @@
         getProcess(row.id).then((res) => {
           this.taskprocess = res.data.data
           this.listLoading = false
+        }).catch((error) => {
+          this.listLoading = false
+          this.errorMessage = '获取进程失败！'
+          if(error.response.data.message){
+            this.errorMessage = error.response.data.message
+          }
+          this.$notify({
+            title: '失败',
+            message: this.errorMessage,
+            type: 'error',
+            duration: 2000
+          })
         })
       },
       handleDisk(row) {
@@ -662,45 +686,60 @@
         getDisks(row.id).then((res) => {
           this.disks = res.data.data
           this.listLoading = false
-        })
-      },
-      handleReport(row) {
-        console.log("0")
-        this.reportDialogVisible = true
-        this.reportData.name = row.name
-        this.reportData.ip = row.ip
-        console.log("1")
-      },
-      reportDevice() {
-        console.log("A")
-        this.reportData.deployPath = this.pathTemp.reportPath
-        console.log("B")
-        let qs = require('qs')
-        let RpData = qs.stringify({
-          "name": this.reportData.name,
-          "ip":  this.reportData.ip,
-          "deployPath": this.reportData.deployPath,
-          "description": ''
-        })
-        reportDevices(this.proId, RpData).then((res) => {
-          this.reportData.name = ''
-          this.reportData.ip = ''
-          this.reportData.deployPath = ''
-          this.reportDialogVisible = false
-          this.$notify({
-            title: '成功',
-            message: '上报成功',
-            type: 'success',
-            duration: 2000
-          })
-          this.getList()
-        }).catch(() =>{
+        }).catch((error) => {
+          this.listLoading = false
+          this.errorMessage = '获取硬盘信息失败！'
+          if(error.response.data.message){
+            this.errorMessage = error.response.data.message
+          }
           this.$notify({
             title: '失败',
-            message: '上报失败',
+            message: this.errorMessage,
             type: 'error',
             duration: 2000
           })
+        })
+      },
+      handleReport(row) {
+        this.reportDialogVisible = true
+        this.reportData.name = row.name
+        this.reportData.ip = row.ip
+        this.$nextTick(() => {
+          this.$refs['reportForm'].clearValidate()
+        })
+      },
+      reportDevice() {
+        this.$refs['reportForm'].validate((valid) => {
+          if (valid) {
+            this.reportData.deployPath = this.pathTemp.reportPath
+            let qs = require('qs')
+            let RpData = qs.stringify({
+              "name": this.reportData.name,
+              "ip": this.reportData.ip,
+              "deployPath": this.reportData.deployPath,
+              "description": ''
+            })
+            reportDevices(this.proId, RpData).then((res) => {
+              this.reportData.name = ''
+              this.reportData.ip = ''
+              this.reportData.deployPath = ''
+              this.reportDialogVisible = false
+              this.$notify({
+                title: '成功',
+                message: '上报成功',
+                type: 'success',
+                duration: 2000
+              })
+              this.getList()
+            }).catch(() => {
+              this.$notify({
+                title: '失败',
+                message: '上报失败',
+                type: 'error',
+                duration: 2000
+              })
+            })
+          }
         })
       },
 
@@ -801,6 +840,15 @@
             // for show the changes, you can delete in you code
             const tempIndex = this.newList.splice(evt.oldIndex, 1)[0]
             this.newList.splice(evt.newIndex, 0, tempIndex)
+          }
+        })
+      },
+      handleRouter(row) {
+        this.$router.push({
+          name: 'connectvnc',
+          params: {
+            id: row.id,
+            ip: row.ip
           }
         })
       },

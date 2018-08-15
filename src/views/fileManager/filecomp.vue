@@ -229,6 +229,14 @@
           this.listLoading = false
           // this.parentNodeId = ''
           // (this.parentNodeId)
+        }).catch(() => {
+          this.listLoading = false
+          this.$notify({
+            title: '失败',
+            message: '加载出错！',
+            type: 'error',
+            duration: 2000
+          })
         })
         /*compList(this.projectId).then(response => {
           this.list = response.data.data.content
@@ -261,9 +269,17 @@
               parentNodeId: row.id,
               folder: true
             })
-            console.log(this.breadcrumbList)
+            // console.log(this.breadcrumbList)
             /*this.parentNodeId = ''
             alert(this.parentNodeId)*/
+          }).catch(() => {
+            this.listLoading = false
+            this.$notify({
+              title: '失败',
+              message: '加载出错！',
+              type: 'error',
+              duration: 2000
+            })
           })
         } else {
           return
@@ -295,6 +311,12 @@
             this.getList()
           }).catch(() => {
             this.newFolderName = ''
+            this.$notify({
+              title: '失败',
+              message: '新建失败',
+              type: 'error',
+              duration: 2000
+            })
           })
         }
       },
@@ -324,8 +346,14 @@
           this.getList()
           this.listLoading = false
           this.uploadDialog = false
-        }).catch(() => {
+        }).catch((error) => {
           this.listLoading = false
+          this.$notify({
+            title: '失败',
+            message: '上传失败',
+            type: 'error',
+            duration: 2000
+          })
         })
       },
       deleteFile(row) {
@@ -406,6 +434,11 @@
       selectCompId(newValue, oldValue) {
         this.componentId = this.selectCompId,
         this.parentNodeId = ''
+        this.initData()
+      },
+      selectCompName(newValue, oldValue) {
+        this.componentId = this.selectCompId,
+          this.parentNodeId = ''
         this.initData()
       }
     }

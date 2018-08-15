@@ -8,11 +8,11 @@
                  icon="el-icon-edit">{{$t('table.add')}}
       </el-button>
 
-      <router-link to="/componentTypes/index">
+      <!--<router-link to="/componentTypes/index">
         <el-button class="filter-item pull-right" style="float: right;margin-left: 10px;" type="primary"
                    icon="el-icon-edit">组件分类
         </el-button>
-      </router-link>
+      </router-link>-->
 
       <el-upload style="float: right;"
                  class="upload-demo"
@@ -122,7 +122,7 @@
           <el-input v-model="temp.version"></el-input>
         </el-form-item>
         <el-form-item :label="$t('table.compPath')" prop="deployPath">
-          <el-input v-model="temp.deployPath"></el-input>
+          <el-input v-model="temp.deployPath" placeholder="/test/，必须以斜杠开头，斜杠结尾"></el-input>
         </el-form-item>
         <el-form-item :label="$t('table.compDesc')" prop="desc">
           <el-input v-model="temp.description"></el-input>
@@ -187,7 +187,7 @@
             </uploader>
           </el-form-item>-->
           </div>
-
+          <!--文件管理模块-->
           <div style="height: 450px;overflow: auto;width: 60%;float: right;padding:5px 0 10px 10px;border-left:1px solid #ccc;margin-top: -44px">
             <!--<label style="width: 100%;font-size: 14px;">组件详细信息</label>-->
             <comFileManage :selectCompId="selectedId" :selectCompName="selectdName"></comFileManage>
@@ -223,7 +223,6 @@
         tableKey: 0,
         list: [],
         singleComp: null,
-        total: null,
         listLoading: true,
         listQuery: {
           page: 0,
@@ -297,7 +296,8 @@
         userData:{
           username: '',
           password: ''
-        }
+        },
+        errorMessage: '操作失败'
       }
     },
     components: {
@@ -406,11 +406,15 @@
                 duration: 2000
               })
               this.getList()
-            }).catch((err) => {
+            }).catch((error) => {
               createloading.close()
+              this.errorMessage = '操作失败！'
+              if(error.response.data.message){
+                this.errorMessage = error.response.data.message
+              }
               this.$notify({
                 title: '失败',
-                message: '创建失败',
+                message: this.errorMessage,
                 type: 'error',
                 duration: 2000
               })
@@ -563,17 +567,24 @@
           })
 
           this.getList()
+        }).catch(() => {
+          this.$notify({
+            title: '失败',
+            message: '复制失败',
+            type: 'error',
+            duration: 2000
+          })
         })
       },
       updateData() {
         this.$refs['dataForm'].validate((valid) => {
           if (valid) {
-            const updateloading = Loading.service({
+            /*const updateloading = Loading.service({
               lock: true,
               text: 'Loading',
               spinner: 'el-icon-loading',
               fullscreen: true
-            })
+            })*/
             let id = this.selectedId;
 
             let formData = new FormData();
@@ -614,7 +625,7 @@
                   break
                 }
               }*/
-              updateloading.close()
+              // updateloading.close()
               this.dialogFormVisible = false
               this.$notify({
                 title: '成功',
@@ -623,10 +634,14 @@
                 duration: 2000
               })
               this.getList()
-            }).catch(() => {
+            }).catch((error) => {
+              this.errorMessage = '操作失败！'
+              if(error.response.data.message){
+                this.errorMessage = error.response.data.message
+              }
               this.$notify({
                 title: '失败',
-                message: '更新失败',
+                message: this.errorMessage,
                 type: 'error',
                 duration: 2000
               })
@@ -711,8 +726,13 @@
           this.getList()
 
         })
-          .catch(err => {
-            console.log(err);
+          .catch(error => {
+            this.$notify({
+              title: '失败',
+              message: '导入失败',
+              type: 'error',
+              duration: 2000
+            })
           })
       },
 

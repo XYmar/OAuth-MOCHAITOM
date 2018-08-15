@@ -206,11 +206,11 @@
         },
         dialogStatus: '',
         textMap: {
-          update: 'Edit',
-          create: 'Create'
+          update: '编辑',
+          create: '新建'
         },
         rules: {
-          name: [{ required: true, message: 'name is required', trigger: 'blur' }],
+          name: [{ required: true, message: '请输入工程名！', trigger: 'blur' }],
           // description: [{ required: true, message: 'description is required', trigger: 'blur' }]
         },
         modifyRules: {
@@ -225,7 +225,8 @@
           password: ''
         },
         token: '',
-        role: ''
+        role: '',
+        errorMessage: '操作失败！'
       }
     },
     created() {
@@ -317,6 +318,17 @@
                 duration: 2000
               })
               this.getList()
+            }).catch(error => {
+              this.errorMessage = '操作失败！'
+              if(error.response.data.message){
+                this.errorMessage = error.response.data.message
+              }
+              this.$notify({
+                title: '失败',
+                message: this.errorMessage,
+                type: 'error',
+                duration: 2000
+              })
             })
           }
         })
@@ -372,10 +384,14 @@
                 type: 'success',
                 duration: 2000
               })
-            }).catch(() => {
+            }).catch((error) => {
+              this.errorMessage = '操作失败！'
+              if(error.response.data.message){
+                this.errorMessage = error.response.data.message
+              }
               this.$notify({
                 title: '失败',
-                message: '更新失败',
+                message: this.errorMessage,
                 type: 'error',
                 duration: 2000
               })
