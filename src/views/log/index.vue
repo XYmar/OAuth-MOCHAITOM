@@ -56,11 +56,44 @@
       </el-table-column>
     </el-table>
 
+    <el-dialog title="部署详情" :visible.sync="dialogTableVisible" width="60%">
+
+      <el-table :key='tableKey' :data="deployDetail" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row
+                style="width: 100%">
+        <el-table-column align="center" width="140px" label="主机IP">
+          <template slot-scope="scope">
+            <span>{{scope.row.hostName}}</span>
+          </template>
+        </el-table-column>
+        <el-table-column align="center" width="160px" label="组件名称">
+          <template slot-scope="scope">
+            <span>{{scope.row.componentName}}</span>
+          </template>
+        </el-table-column>
+        <el-table-column align="center" width="120px" label="组件版本">
+          <template slot-scope="scope">
+            <span>{{scope.row.componentVersion}}</span>
+          </template>
+        </el-table-column>
+        <el-table-column align="center" min-width="220px" label="目标路径">
+          <template slot-scope="scope">
+            <span>{{scope.row.targetFilePath}}</span>
+          </template>
+        </el-table-column>
+        <el-table-column align="center" width="120px" label="部署状态">
+          <template slot-scope="scope">
+            <span v-if="scope.row.complete" style="color: limegreen;">成功</span>
+            <span v-else  style="color: red;">失败</span>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-dialog>
+
   </div>
 </template>
 
 <script>
-  import { logList, logSearchList } from '@/api/log'
+  import { logList, logDetail, logSearchList } from '@/api/log'
   import waves from '@/directive/waves' // 水波纹指令
   import { parseTime } from '@/utils'
 
@@ -74,7 +107,9 @@
       return {
         tableKey: 0,
         list: [],
+        deployDetail: [],
         listLoading: true,
+        dialogTableVisible: false,
         proId: '',
         listQuery: {
           page: 0,
@@ -209,6 +244,20 @@
         this.listQuery.page = val - 1
         this.currentPage = val
         this.getList()
+      },
+      deployDetails: function (row) {
+        let ifexist = false;      //设备是否部署，false为未部署*/
+
+        let id = row.id;
+        let i = 0;
+        this.dialogTableVisible = true;
+        this.listLoading = true
+        logDetail(id, this.listQuery).then(response => {
+          this.deployDetail = response.data.data.content
+          this.listLoading = false
+          this.listLength = response.data.data.length
+          this.total = response.data.data.totalElements
+        })
       },
       searchAll: function() {
         console.log(this.value4)
