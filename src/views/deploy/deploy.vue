@@ -10,7 +10,7 @@
               style="width: 100%">
       <!-- <el-table :data="list" row-key="id"  v-loading.body="listLoading" border fit highlight-current-row style="width: 100%">-->
 
-      <el-table-column align="center" :label="$t('table.deviceName')" width="100">
+      <el-table-column align="center" :label="$t('table.deviceName')" width="130">
         <template slot-scope="scope">
           <span>{{scope.row.name}}</span>
         </template>
@@ -20,7 +20,7 @@
           <span>{{scope.row.ip}}</span>
         </template>
       </el-table-column>
-      <el-table-column min-width="100px" :label="$t('table.devicePath')">
+      <el-table-column min-width="100px" align="center" :label="$t('table.devicePath')">
         <template slot-scope="scope">
           <span>{{scope.row.deployPath}}</span>
         </template>
@@ -36,16 +36,21 @@
           <el-progress :percentage="scope.row.progress"></el-progress>
         </template>
       </el-table-column>
-      <el-table-column width="145px" align="center" :label="$t('table.deployDetail')">
+      <el-table-column min-width="100px" align="center" label="部署速度">
         <template slot-scope="scope">
-          <!--<el-button size="mini" type="primary">查看</el-button>-->
+          <span>{{scope.row.speed}}kb/s</span>
+        </template>
+      </el-table-column>
+      <!--<el-table-column width="145px" align="center" :label="$t('table.deployDetail')">
+        <template slot-scope="scope">
+          &lt;!&ndash;<el-button size="mini" type="primary">查看</el-button>&ndash;&gt;
           <el-button type="text"  @click="deployDetails(scope.row)">查看</el-button>
 
         </template>
-      </el-table-column>
+      </el-table-column>-->
       <el-table-column align="center" :label="$t('table.actions')" width="145" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button size="mini" type="success" :id="scope.row.online"
+          <el-button size="mini" type="success" :id="scope.row.online" :state="scope.row.state"
                      @click="deployDevice(scope.row)">部署</el-button>
         </template>
       </el-table-column>
@@ -75,6 +80,8 @@
       </el-table>
     </el-dialog>
 
+    <p id="callback"></p>
+    <p id="onlineheartbeatmessages2"></p>
   </div>
 </template>
 
@@ -82,10 +89,10 @@
   import { getDevices } from '@/api/device'
   import { doDeploy } from '@/api/deploy'
   import waves from '@/directive/waves' // 水波纹指令
+  import service from '@/utils/request'
   import Stomp from 'stompjs'
   import SockJS from 'sockjs-client'
   import Vue from 'vue'
-  import service from '@/utils/request'
 
   /* eslint-disable */
   export default {
@@ -98,6 +105,12 @@
         tableKey: 0,
         list: null,
         total: null,
+        listQuery: {
+          page: 0,
+          size:20,
+          limit: 5,
+          tagname: ''
+        },
         searchQuery: '',
         userData:{
           username: '',
@@ -111,76 +124,102 @@
         completedDeatils: [],  //部署成功的文件
         deployDetailInfo: {},   //部署详情
         deployDetailInfo2: [],   //部署详情
-        deviceDeployDetail: []  //某设备的部署详情
-
+        deviceDeployDetail: [],  //某设备的部署详情
+        webResBody: [],
+        webProgressBody: []
       }
     },
     created() {
       this.userData.username = this.getCookie('username')
       this.userData.password = this.getCookie('password')
       this.proId = this.getCookie('projectId')
+
       this.deployPlanId = this.$route.params.id
-      // alert(this.deployPlanId)
       this.getList()
+
     },
     methods: {
-      getList() {
+      getList() {    //获取设备信息
         this.listLoading = true
-        getDevices(this.proId).then(response => {
-          this.list = response.data.data
+        getDevices(this.proId, this.listQuery).then(response => {
+          this.list = response.data.data.content
+          this.total = response.data.data.totalElements
           this.listLoading = false
           for(let i=0;i<this.list.length;i++){
-            this.list[i].online = true;
+            this.list[i].online = false;
+            this.list[i].virtual = false;
+            this.list[i].speed = 0;
+            this.list[i].state = 0;
           }
+          this.listLength = response.data.data.length
+          // this.total = response.data.data.totalElements
           this.getList2()
         })
       },
-
       getList2() {
         let url = service.defaults.baseURL + '/OMS';
         let socket = new SockJS(url);
         let stompClient = Stomp.over(socket);
         let that = this;
         stompClient.connect({}, function (frame) {
+          /*stompClient.subscribe('/topic/deployprogress/' + that.deployPlanId, function (response) {
+            let progressBody = response.body;
+            let progressBody2 = progressBody.replace(/[\\]/g, '');
+            that.webProgressBody = JSON.parse(progressBody2);
+
+            console.log(that.webProgressBody);
+            if(that.webProgressBody.length > 0){
+              for(let i=0;i<that.webProgressBody.length;i++){
+                if(that.list.length > 0){
+                  for(let j=0;j<that.list.length;j++){
+                    if(that.webProgressBody[i].hostName === that.list[j].ip){      //查找在线设备
+                      that.list[j].progress = that.webProgressBody[i].progress;
+                      break;
+                    }
+                  }
+                }
+              }
+            }
+
+            $("#onlineheartbeatmessages2").html(response.body);
+          });*/
           stompClient.subscribe('/topic/onlineheartbeatmessages', function (response) {
             let resBody = response.body;
             let resBody2 = resBody.replace(/[\\]/g, '');
             that.webResBody = JSON.parse(resBody2);
-            $("#onlineheartbeatmessages").html(resBody);
+           // $("#onlineheartbeatmessages").html(resBody);
 
             if(that.list.length > 0){
               for(let i=0;i<that.list.length;i++){
                 that.list[i].online = false;
+
+                if(that.list[i].online === false && that.list[i].virtual === true){
+                  that.list.splice(i,1);
+                  i--;
+                }
               }
             }
 
+            console.log("设备")
+            console.log(that.webResBody)
             if(that.webResBody.length > 0){
               for(let i=0;i<that.webResBody.length;i++){
                 let listIfExist = false;
+                let tempList = [];
                 if(that.list.length > 0){
                   for(let j=0;j<that.list.length;j++){
-                    //if(that.list[j].virtual !== true){       //虚拟设备不需要再赋值  或者在每次查之前把虚拟且离线的设备删除
+                    if(that.list[j].virtual !== true){       //虚拟设备不需要再赋值  或者在每次查之前把虚拟且离线的设备删除
                       if(that.webResBody[i].inetAddress === that.list[j].ip){      //查找在线设备
                         that.list[j].online = true;
-                        /*that.list[j].cpuclock = that.webResBody[i].cpuclock;
-                        that.list[j].ramsize = that.webResBody[i].ramsize;*/
-                        //that.list[j].virtual = false;
+                        that.list[j].cpuclock = that.webResBody[i].cpuclock;
+                        that.list[j].ramsize = that.webResBody[i].ramsize;
+                        that.list[j].virtual = false;
                         listIfExist = true;
                         break;
                       }
-                    //}
+                    }
                   }
                 }
-                /*if(!listIfExist){       //添加虚拟设备
-                  console.log(that.webResBody[i].inetAddress);
-                  tempList.name = that.webResBody[i].inetAddress;
-                  tempList.ip = that.webResBody[i].inetAddress;
-                  tempList.cpuclock = that.webResBody[i].cpuclock;
-                  tempList.ramsize = that.webResBody[i].ramsize;
-                  tempList.virtual = true;
-                  tempList.online = true;
-                  that.list.push(tempList);
-                }*/
               }
             }
 
@@ -188,69 +227,108 @@
               for (let i = 0; i < that.list.length; i++) {
                 Vue.set(that.list, i, that.list[i]);
               }
-              console.log("设备----------");
-              console.log(that.list);
+              /*console.log("设备----------");
+              console.log(that.list);*/
             }
           });
+
+          stompClient.subscribe('/topic/deployprogress/' + that.deployPlanId, function (response) {
+            let progressBody = response.body;
+            let progressBody2 = progressBody.replace(/[\\]/g, '');
+            that.webProgressBody.push(JSON.parse(progressBody2));
+
+            if(that.webProgressBody.length > 0){
+              for(let i=0;i<that.webProgressBody.length;i++){
+                if(that.list.length > 0){
+                  for(let j=0;j<that.list.length;j++){
+                    if(that.webProgressBody[i].hostName == that.list[j].ip){      //查找此设备
+                      that.list[j].progress = parseFloat(that.webProgressBody[i].progress.toFixed(2));
+                      that.list[j].speed = parseFloat(that.webProgressBody[i].speed.toFixed(2));
+                      that.list[j].state = that.webProgressBody[i].state;
+                    }
+                  }
+                }
+              }
+            }
+
+            $("#onlineheartbeatmessages2").html(response.body);
+          });
         });
+
       },
+
       deployDevice: function (row) {
-        let username = this.getCookie('username');
-        let password = this.getCookie('password');
         let id = row.id;
-        //alert(id);
-        let qs = require('qs');
         let online = false;
+        let thisState;
+
         for (let i = 0; i < this.list.length; i++) {
           if (this.list[i].id === id) {
             online = this.list[i].online;
+            thisState = this.list[i].state;
             break;
+
           }
         }
-        if (online) {
-          let msg = "您确定部署吗？";
-          this.$confirm('确认部署吗？', '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning'
-          }).then(() => {
-            // alert(this.deployPlanId)
-            doDeploy(this.deployPlanId, id).then(() => {
-              this.dialogFormVisible = false
-              this.$notify({
-                title: '成功',
-                message: '开始部署',
-                type: 'success',
-                duration: 2000
-              })
-              setInterval(() => {
-                this.getList()
-              }, 10 * 1000);
 
-              this.setProjectNum(this.listLength)
-            }).catch(err => {
-              if(err.response.data.data.length != 0){
+        if (online) {
+          if(thisState !== 1){      //部署状态为1时表示正在部署
+            let msg = "您确定部署吗？";
+            if (confirm(msg) === true) {
+              let data = {
+                'deployMethod': 'TCP'
+              }
+              let qs = require('qs')
+              let deployData = qs.stringify(data);
+              doDeploy(this.deployPlanId, id, deployData).then(() => {
+                this.dialogFormVisible = false
                 this.$notify({
-                  title: '失败',
-                  message: err.response.data.data,
-                  type: 'error',
+                  title: '成功',
+                  message: '开始部署',
+                  type: 'success',
                   duration: 2000
                 })
-              }
-            })
-          }).catch(() => {
+                /*setInterval(() => {
+                  this.getList()
+                }, 10 * 1000);*/
+
+                this.setProjectNum(this.listLength)
+
+              }).catch(err => {
+                console.log("提示---------");
+                console.log(err.response.data.data);
+                if(err.response.data.data.length != 0){
+                  this.$notify({
+                    title: '失败',
+                    message: err.response.data.data,
+                    type: 'error',
+                    duration: 2000
+                  })
+                }
+              })
+
+
+            } else {
+              return false;
+            }
+          }else{
             this.$message({
-              type: 'info',
-              message: '已取消删除'
+              message: '此设备正在部署!',
+              type: 'warning'
             })
-          })
+          }
+
         } else {
           this.$message({
             message: '设备离线!',
             type: 'warning'
           })
         }
+
+
+
       },
+
       deployDetails: function (row) {
 
         this.deviceDeployDetail.splice(0, this.deviceDeployDetail.length);    //清空某设备的部署详情数组
@@ -368,7 +446,62 @@
 
         console.log(this.deviceDeployDetail);
 
-      }
+      },
+      /*getDeployProgress: function () {
+        // "/topic/deployprogress/" + this.deployPlanId
+        let url = service.defaults.baseURL + '/OMS';
+        let socket = new SockJS(url);
+        let stompClient = Stomp.over(socket);
+        let that = this;
+        stompClient.connect({}, function (frame) {
+          stompClient.subscribe("/topic/deployprogress/" + this.deployPlanId, function (response) {
+            let resBody = response.body;
+            let resBody2 = resBody.replace(/[\\]/g, '');
+            that.webResBody = JSON.parse(resBody2);
+            $("#onlineheartbeatmessages2").html(resBody);
+
+            /!*if(that.list.length > 0){
+              for(let i=0;i<that.list.length;i++){
+                that.list[i].online = false;
+
+                if(that.list[i].online === false && that.list[i].virtual === true){
+                  that.list.splice(i,1);
+                  i--;
+                }
+              }
+            }
+
+            if(that.webResBody.length > 0){
+              for(let i=0;i<that.webResBody.length;i++){
+                let listIfExist = false;
+                let tempList = [];
+                if(that.list.length > 0){
+                  for(let j=0;j<that.list.length;j++){
+                    if(that.list[j].virtual !== true){       //虚拟设备不需要再赋值  或者在每次查之前把虚拟且离线的设备删除
+                      if(that.webResBody[i].inetAddress === that.list[j].ip){      //查找在线设备
+                        that.list[j].online = true;
+                        that.list[j].cpuclock = that.webResBody[i].cpuclock;
+                        that.list[j].ramsize = that.webResBody[i].ramsize;
+                        that.list[j].virtual = false;
+                        listIfExist = true;
+                        break;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+            if(that.list.length > 0) {
+              for (let i = 0; i < that.list.length; i++) {
+                Vue.set(that.list, i, that.list[i]);
+              }
+              /!*console.log("设备----------");
+              console.log(that.list);*!/
+            }*!/
+          });
+        });
+      }*/
     },
     computed: {
       listA: function () {
@@ -380,6 +513,7 @@
             return item.name.toLowerCase().indexOf(self.searchQuery.toLowerCase()) !== -1;
           })
         }
+
       },
       listenProjectId () {
         return this.$store.state.app.projectId
