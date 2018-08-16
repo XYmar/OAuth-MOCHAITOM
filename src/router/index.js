@@ -357,5 +357,11 @@ export const asyncRouterMap = [
     component: Layout,
     hidden: true,
     children: [{ path: 'newfiles/:id', component: _import('fileManager/index'), name: 'files', meta: { title: 'files', icon: 'table' }}]
+  },
+  {
+    path: '/monitor',
+    component: Layout,
+    hidden: true,
+    children: [{ path: 'monitor/:id', component: _import('monitor/monitor'), name: 'monitor', meta: { title: 'monitor', icon: 'table' }}]
   }
 ]

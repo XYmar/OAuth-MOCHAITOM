@@ -419,7 +419,7 @@
                         that.list[j].cpuutilization = that.webResBody[i].cpuutilization;
                         that.list[j].ramsize = that.webResBody[i].ramsize;
                         that.list[j].freeRAMSize = that.webResBody[i].freeRAMSize;
-                        that.list[j].ifChangeColor = (that.webResBody[j].ramsize - that.webResBody[i].freeRAMSize)/that.webResBody[j].ramsize*100;
+                        that.list[j].ifChangeColor = (that.webResBody[i].ramsize - that.webResBody[i].freeRAMSize)/that.webResBody[i].ramsize*100;
                         that.list[j].virtual = false;
                         listIfExist = true;
                         break;

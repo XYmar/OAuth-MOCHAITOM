@@ -40,3 +40,10 @@ export function deployplanDetailsList(deploymentDesignId) {
     method: 'get'
   })
 }
+
+export function deployplanDevice(deploymentDesignId) {
+  return request({
+    url: '/deploymentdesigns/' + deploymentDesignId + '/devices',
+    method: 'get'
+  })
+}

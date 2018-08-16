@@ -94,6 +94,9 @@
                 </el-popover>-->
                 <span style="display:inline-block;padding:0 10px;" @click="checkBaselines(scope.row)">基线详情</span>
               </el-dropdown-item>
+              <el-dropdown-item divided>
+                <span style="display:inline-block;padding:0 10px;" @click="handleMonitor(scope.row)">在线监控</span>
+              </el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
         </template>
@@ -555,6 +558,15 @@
             type: 'error',
             duration: 2000
           })
+        })
+      },
+      handleMonitor(row) {
+        this.$router.push({
+          name: 'monitor',
+          params: {
+            name: row.name,
+            id: row.id
+          }
         })
       }
     },

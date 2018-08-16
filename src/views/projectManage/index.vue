@@ -37,7 +37,7 @@
 
           <el-button size="mini" type="primary"
                      v-if="this.role == 'editor'"
-                     @click="handleCreate"
+                     @click="handleCreate($event)"
                      style="float:right;margin-top:2px;">添加
           </el-button>
         </div>
@@ -294,7 +294,7 @@
           description: ''
         }
       },
-      handleCreate() {
+      handleCreate(event) {
         this.resetTemp()
         this.dialogStatus = 'create'
         this.dialogFormVisible = true
