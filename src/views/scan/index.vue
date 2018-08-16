@@ -448,6 +448,7 @@
     },
     created() {
       this.projectId = this.getCookie('projectId')
+      alert(this.projectId)
       this.userData.username = this.getCookie('username')
       this.userData.password = this.getCookie('password')
       //日历

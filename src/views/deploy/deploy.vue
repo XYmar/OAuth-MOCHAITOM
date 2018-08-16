@@ -10,7 +10,7 @@
               style="width: 100%">
       <!-- <el-table :data="list" row-key="id"  v-loading.body="listLoading" border fit highlight-current-row style="width: 100%">-->
 
-      <el-table-column align="center" :label="$t('table.deviceName')" width="130">
+      <el-table-column align="center" :label="$t('table.deviceName')" min-width="120">
         <template slot-scope="scope">
           <span>{{scope.row.name}}</span>
         </template>
@@ -20,7 +20,7 @@
           <span>{{scope.row.ip}}</span>
         </template>
       </el-table-column>
-      <el-table-column min-width="100px" align="center" :label="$t('table.devicePath')">
+      <el-table-column width="120px" align="center" :label="$t('table.devicePath')">
         <template slot-scope="scope">
           <span>{{scope.row.deployPath}}</span>
         </template>
@@ -31,12 +31,12 @@
           <span class="el-tag el-tag--primary" v-else>在线</span>
         </template>
       </el-table-column>
-      <el-table-column width="210px" align="center" :label="$t('table.deployProgress')">
+      <el-table-column width="280px" align="left" :label="$t('table.deployProgress')">
         <template slot-scope="scope">
-          <el-progress :percentage="scope.row.progress"></el-progress>
+          <el-progress :percentage="computedProgress(scope.row.progress)"></el-progress>
         </template>
       </el-table-column>
-      <el-table-column min-width="100px" align="center" label="部署速度">
+      <el-table-column width="100px" align="center" label="部署速度">
         <template slot-scope="scope">
           <span>{{scope.row.speed}}kb/s</span>
         </template>
@@ -517,6 +517,15 @@
       },
       listenProjectId () {
         return this.$store.state.app.projectId
+      },
+      computedProgress() {
+        return function(num) {
+          if(num == 0 || !num) {
+            return 0
+          } else {
+            return Math.round(num)
+          }
+        }
       }
     },
     watch: {

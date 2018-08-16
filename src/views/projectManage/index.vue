@@ -37,7 +37,7 @@
 
           <el-button size="mini" type="primary"
                      v-if="this.role == 'editor'"
-                     @click="handleCreate"
+                     @click="handleCreate($event)"
                      style="float:right;margin-top:2px;">添加
           </el-button>
         </div>
@@ -63,7 +63,7 @@
         <el-table-column align="center" :label="$t('table.actions')" width="230" class-name="small-padding fixed-width">
           <template slot-scope="scope">
             <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">{{$t('table.edit')}}</el-button>
-            <el-button size="mini" type="danger" @click="handleDelete(scope.row)">{{$t('table.delete')}}
+            <el-button size="mini" type="danger" @click="handleDelete(scope.row)" :loading="delLoading">{{$t('table.delete')}}
             </el-button>
           </template>
         </el-table-column>
@@ -94,8 +94,8 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">{{$t('table.cancel')}}</el-button>
-        <el-button v-if="dialogStatus=='create'" type="primary" @click="createData">{{$t('table.confirm')}}</el-button>
-        <el-button v-else type="primary" @click="updateData">{{$t('table.confirm')}}</el-button>
+        <el-button v-if="dialogStatus=='create'" type="primary" @click="createData" :loading="creProLoading">{{$t('table.confirm')}}</el-button>
+        <el-button v-else type="primary" @click="updateData" :loading="creProLoading">{{$t('table.confirm')}}</el-button>
       </div>
     </el-dialog>
     <!--普通用户修改密码-->
@@ -219,6 +219,9 @@
         },
         loading: false,
         listLoading: true,
+        creProLoading: false,
+        ediuserLoading: false,
+        delLoading: false,
         showDialog: false,
         userData:{
           username: '',
@@ -291,7 +294,7 @@
           description: ''
         }
       },
-      handleCreate() {
+      handleCreate(event) {
         this.resetTemp()
         this.dialogStatus = 'create'
         this.dialogFormVisible = true
@@ -302,6 +305,7 @@
       createData() {        //创建项目
         let qs = require('qs');
         this.$refs['dataForm'].validate((valid) => {
+          this.creProLoading = true
           if (valid) {
             let data = {
               'name': this.temp.name,
@@ -309,6 +313,7 @@
             };
             let proData = qs.stringify(data);
             createProject(proData, this.userId).then(() => {
+              this.creProLoading = false
               this.list.unshift(this.temp)
               this.dialogFormVisible = false
               this.$notify({
@@ -319,6 +324,7 @@
               })
               this.getList()
             }).catch(error => {
+              this.creProLoading = false
               this.errorMessage = '操作失败！'
               if(error.response.data.message){
                 this.errorMessage = error.response.data.message
@@ -347,6 +353,7 @@
         let qs = require('qs');
         this.$refs['dataForm'].validate((valid) => {
           if (valid) {
+            this.creProLoading = true
             let data = {
               'name': this.temp.name,
               'description': this.temp.description
@@ -370,6 +377,7 @@
             console.log(id);*/
             let proData = qs.stringify(data);
             updateProject(proData, id).then(() => {
+              this.creProLoading = false
               for (const v of this.list) {
                 if (v.id === this.temp.id) {
                   const index = this.list.indexOf(v)
@@ -385,6 +393,7 @@
                 duration: 2000
               })
             }).catch((error) => {
+              this.creProLoading = false
               this.errorMessage = '操作失败！'
               if(error.response.data.message){
                 this.errorMessage = error.response.data.message
@@ -401,12 +410,14 @@
       },
       handleDelete(row) {
         let id = row.id;
+        this.delLoading = true
         this.$confirm('确认删除吗？', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
           deleteProject(id).then(() => {
+            this.delLoading = false
             this.$notify({
               title: '成功',
               message: '删除成功',
@@ -415,6 +426,7 @@
             })
             this.getList()
           }).catch(() => {
+            this.delLoading = false
             this.$notify({
               title: '失败',
               message: '删除失败',
@@ -423,6 +435,7 @@
             })
           })
         }).catch(() => {
+          this.delLoading = false
           this.$message({
             type: 'info',
             message: '已取消删除'
@@ -475,6 +488,7 @@
       },
       handleSelect(row) {
         this.$store.commit('SET_PROJECTID',row.id)
+        // let proName = URLEncoder.encode(row.name, 'utf-8')
         this.$store.commit('SET_PROJECTNAME',row.name)
         this.$router.push({path:'/dashboard/dashboard'})
       },
@@ -496,6 +510,12 @@
           return item.name.toLowerCase().indexOf(self.searchQuery.toLowerCase()) !== -1;
         })
       }
+    },
+    mounted() {
+      history.pushState(null, null, document.URL);
+      window.addEventListener('popstate', function () {
+        history.pushState(null, null, document.URL);
+      })
     }
   }
 </script>

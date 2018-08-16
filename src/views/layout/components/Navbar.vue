@@ -217,7 +217,7 @@
       this.userData.username = this.getCookie('username')
       this.userData.password = this.getCookie('password')
       this.userId = this.getCookie('userId')
-      this.selectedProName = this.getCookie('projectName')
+      this.selectedProName = decodeURI(this.getCookie('projectName'))
       //this.getList()
     },
     computed: {
@@ -225,8 +225,6 @@
         return this.$store.state.app.projectNum
       },
       listenProExist(){
-        console.log("哈哈哈哈哈哈哈哈-------------")
-        console.log(this.$store.state.app.projectExist);
         return this.$store.state.app.projectExist
 
       },
