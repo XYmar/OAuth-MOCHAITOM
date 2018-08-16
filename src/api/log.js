@@ -1,12 +1,12 @@
 import request from '../utils/request'
 
-export function logList() {
+export function logList(proId, listQuery) {
   return request({
-    url: '/deploylogs',
+    url: '/projects/' + proId + '/deploylog',
     method: 'get',
-    auth: {
-      username: 'admin',
-      password: 'admin'
+    params: {
+      size: listQuery.size,
+      page: listQuery.page
     }
   })
 }
