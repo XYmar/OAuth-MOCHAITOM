@@ -20,7 +20,7 @@
           <span>{{scope.row.ip}}</span>
         </template>
       </el-table-column>
-      <el-table-column min-width="100px" :label="$t('table.devicePath')">
+      <el-table-column min-width="100px" align="center" :label="$t('table.devicePath')">
         <template slot-scope="scope">
           <span>{{scope.row.deployPath}}</span>
         </template>
@@ -36,7 +36,7 @@
           <el-progress :percentage="scope.row.progress"></el-progress>
         </template>
       </el-table-column>
-      <el-table-column min-width="100px" label="部署速度">
+      <el-table-column min-width="100px" align="center" label="部署速度">
         <template slot-scope="scope">
           <span>{{scope.row.speed}}kb/s</span>
         </template>
