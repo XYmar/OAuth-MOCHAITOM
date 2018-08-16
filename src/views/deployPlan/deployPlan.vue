@@ -121,11 +121,11 @@
     </div>-->
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" width="40%">
-      <el-form :rules="rules" ref="dataForm" :model="temp" label-width="100px" style='width: 80%; margin:0 auto;'>
+      <el-form :rules="deployRules" ref="dataForm" :model="temp" label-width="100px" style='width: 80%; margin:0 auto;'>
         <el-form-item :label="$t('table.deployPlanName')" prop="name">
           <el-input v-model="temp.name"></el-input>
         </el-form-item>
-        <el-form-item :label="$t('table.deployPlanDesc')" prop="desc">
+        <el-form-item :label="$t('table.deployPlanDesc')" prop="description">
           <el-input v-model="temp.description"></el-input>
         </el-form-item>
       </el-form>
@@ -256,6 +256,9 @@
           type: [{ required: true, message: 'type is required', trigger: 'change' }],
           timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
           title: [{ required: true, message: 'title is required', trigger: 'blur' }]
+        },
+        deployRules: {
+          name: [{ required: true, message: '请输入部署设计名称', trigger: 'blur' }]
         },
         baselineRules: {
           name: [{ required: true, message: '请输入基线名', trigger: 'blur' }]
