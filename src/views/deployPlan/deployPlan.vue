@@ -24,9 +24,9 @@
           <!--<router-link class="pan-btn tiffany-btn" :to='{name:"deployPlanDetail",params:{id:scope.row.id}}'>查看</router-link>
           <router-link class="pan-btn light-blue-btn" :to='{name:"deploy",params:{id:scope.row.id}}'>部署</router-link>
           <router-link class="pan-btn green-btn" :to='{name:"deployBind",params:{id:scope.row.id}}'>设计</router-link>-->
-          <router-link :to='{name:"deployPlanDetail",params:{id:scope.row.id}}'><el-button type="primary">查看</el-button></router-link>
-          <router-link :to='{name:"deploy",params:{id:scope.row.id}}'><el-button type="success">部署</el-button></router-link>
-          <router-link :to='{name:"deployBind",params:{id:scope.row.id}}'><el-button type="warning">设计</el-button></router-link>
+          <router-link :to='{name:"deployPlanDetail",params:{id:scope.row.id}}'><el-button size="mini" type="primary">查看</el-button></router-link>
+          <router-link :to='{name:"deployBind",params:{id:scope.row.id}}'><el-button size="mini" type="warning">设计</el-button></router-link>
+          <router-link :to='{name:"deploy",params:{id:scope.row.id}}'><el-button size="mini" type="success">部署</el-button></router-link>
         </template>
       </el-table-column>
       <el-table-column align="center" :label="$t('table.actions')" width="200" class-name="small-padding fixed-width">
