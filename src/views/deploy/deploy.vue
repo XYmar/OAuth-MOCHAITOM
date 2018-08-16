@@ -273,8 +273,11 @@
 
         if (online) {
           if(thisState !== 1){      //部署状态为1时表示正在部署
-            let msg = "您确定部署吗？";
-            if (confirm(msg) === true) {
+            this.$confirm('确认部署吗？', '提示', {
+              confirmButtonText: '确定',
+              cancelButtonText: '取消',
+              type: 'warning'
+            }).then(() => {
               let data = {
                 'deployMethod': 'TCP'
               }
@@ -306,11 +309,12 @@
                   })
                 }
               })
-
-
-            } else {
-              return false;
-            }
+              }).catch(() => {
+              this.$message({
+                type: 'info',
+                message: '已取消部署'
+              })
+            })
           }else{
             this.$message({
               message: '此设备正在部署!',
