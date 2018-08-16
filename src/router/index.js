@@ -29,24 +29,25 @@ import Layout from '../views/layout/Layout'
 **/
 export const constantRouterMap = [
   { path: '/login', component: _import('login/index'), hidden: true },
-  { path: '/projectManage', component: _import('projectManage/index'), hidden: true },
+  { path: '/projectManage', component: _import('projectManage/index'), hidden: true, meta: { allowBack: false }},
   { path: '/user_manage', component: _import('user_manage/index'), hidden: true },
   { path: '/register', component: _import('register/index'), hidden: true },
   { path: '/authredirect', component: _import('login/authredirect'), hidden: true },
   { path: '/404', component: _import('errorPage/404'), hidden: true },
   { path: '/401', component: _import('errorPage/401'), hidden: true },
-  {
+  /* {
     path: '',
     component: Layout,
     redirect: 'projectManage',
     hidden: true,
+    meta: { allowBack: false },
     children: [{
       path: 'projectManage',
       component: _import('projectManage/index'),
       name: 'projectManage',
       meta: { title: 'projectManage', noCache: true }
     }]
-  },
+  },*/
   {
     path: '/dashboard',
     component: Layout,
