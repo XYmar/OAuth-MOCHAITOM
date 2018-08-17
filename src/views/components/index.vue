@@ -214,6 +214,18 @@
       waves
     },
     data() {
+      const validatePath = (rule, value, callback) => {
+        let pattern = /^(\/([a-zA-Z]+))*\/$/;
+
+        if(value.length==0){
+          callback(new Error("请输入路径！"));
+        }else if (!(value.match(pattern))) {
+          callback(new Error('路径格式不正确!'));
+        }else {
+          callback()
+        }
+      }
+
       return {
         projectId: '',
         selectedId: '',
@@ -263,7 +275,7 @@
         componentRules: {
           name: [{ required: true, message: '请输入组件名', trigger: 'blur' }],
           version: [{ required: true, message: '请输入版本', trigger: 'blur' }],
-          deployPath: [{ required: true, message: '请输入相对路径', trigger: 'blur' }]
+          deployPath: [{ required: true, trigger: 'blur', validator: validatePath }]
         },
         downloadLoading: false,
         options: {
