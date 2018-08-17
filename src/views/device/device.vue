@@ -256,6 +256,18 @@
           callback()
         }
       }
+      const validatePath = (rule, value, callback) => {
+        let pattern = /^([a-zA-Z]:(\\))([a-zA-Z]*)|(\/([a-zA-Z]+))*\/$/;
+
+        if(value.length==0){
+          callback(new Error("请输入路径！"));
+        }else if (!(value.match(pattern))) {
+          callback(new Error('路径格式不正确!'));
+        }else {
+          callback()
+        }
+      }
+
       return {
         tableKey: 0,
         list: [],
@@ -319,7 +331,7 @@
         deviceRules: {
           name: [{ required: true, message: '请输入组件名', trigger: 'blur' }],
           ip: [{ required: true, trigger: 'blur', validator: validateIP }],
-          deployPath: [{ required: true, message: '请输入部署路径', trigger: 'blur' }]
+          deployPath: [{ required: true, trigger: 'blur', validator: validatePath }]
         },
         pathRules: {
           reportPath: [{ required: true, message: '请填写部署路径', trigger: 'blur' }]
