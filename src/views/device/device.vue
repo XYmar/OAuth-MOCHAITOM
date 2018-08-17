@@ -374,27 +374,6 @@
             that.webResBody = JSON.parse(resBody2);
             $("#onlineheartbeatmessages").html(resBody);
 
-            /*if(that.list.length > 0){
-              for(let i=0;i<that.list.length;i++){
-                that.list[i].online = false;
-                if(that.webResBody.length > 0){
-                  for(let j=0;j<that.webResBody.length;j++){
-                    console.log("判断-------");
-                    console.log(that.list[i].ip);
-                    console.log(that.webResBody[j].inetAddress);
-                    if(that.list[i].ip === that.webResBody[j].inetAddress){
-                      console.log("在线");
-                      that.list[i].online = true;
-                      break;
-                    }else {
-                      that.list[i].online = false;
-                    }
-                  }
-                }
-                Vue.set(that.list, i, that.list[i]);
-              }
-            }*/
-
             if(that.list.length > 0){
               for(let i=0;i<that.list.length;i++){
                 that.list[i].online = false;
