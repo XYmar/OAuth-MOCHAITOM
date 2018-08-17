@@ -47,3 +47,13 @@ export function deployplanDevice(deploymentDesignId) {
     method: 'get'
   })
 }
+
+export function getDeployDetailByDevice(deploymentDesignId, deviceid) {
+  return request({
+    url: '/deploymentdesigns/' + deploymentDesignId + '/deploymentdesigndetail',
+    method: 'get',
+    params: {
+      deviceId: deviceid
+    }
+  })
+}
