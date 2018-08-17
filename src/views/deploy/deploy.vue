@@ -10,12 +10,12 @@
               style="width: 100%">
       <!-- <el-table :data="list" row-key="id"  v-loading.body="listLoading" border fit highlight-current-row style="width: 100%">-->
 
-      <el-table-column align="center" :label="$t('table.deviceName')" min-width="120">
+      <el-table-column align="center" :label="$t('table.deviceName')" width="140">
         <template slot-scope="scope">
           <span>{{scope.row.name}}</span>
         </template>
       </el-table-column>
-      <el-table-column width="150px" align="center" :label="$t('table.deviceIP')">
+      <el-table-column width="140px" align="center" :label="$t('table.deviceIP')">
         <template slot-scope="scope">
           <span>{{scope.row.ip}}</span>
         </template>
@@ -31,7 +31,7 @@
           <span class="el-tag el-tag--primary" v-else>在线</span>
         </template>
       </el-table-column>
-      <el-table-column width="280px" align="left" :label="$t('table.deployProgress')">
+      <el-table-column width="180px" align="center" :label="$t('table.deployProgress')">
         <template slot-scope="scope">
           <el-progress :percentage="computedProgress(scope.row.progress)"></el-progress>
         </template>
@@ -41,6 +41,13 @@
           <span>{{scope.row.speed}}kb/s</span>
         </template>
       </el-table-column>
+      <el-table-column min-width="140px" align="center" label="文件详情">
+        <template slot-scope="scope">
+          <span v-if="scope.row.fileState === 0" style="color: #FF0000;">{{scope.row.descript}}</span>
+          <span v-else-if="scope.row.fileState === 1 || scope.row.fileState === 2" style="color: limegreen;">{{scope.row.descript}}</span>
+          <span v-else>{{scope.row.descript}}</span>
+        </template>
+      </el-table-column>
       <!--<el-table-column width="145px" align="center" :label="$t('table.deployDetail')">
         <template slot-scope="scope">
           &lt;!&ndash;<el-button size="mini" type="primary">查看</el-button>&ndash;&gt;
@@ -48,7 +55,7 @@
 
         </template>
       </el-table-column>-->
-      <el-table-column align="center" :label="$t('table.actions')" width="145" class-name="small-padding fixed-width">
+      <el-table-column align="center" :label="$t('table.actions')" width="130" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button size="mini" type="success" :id="scope.row.online" :state="scope.row.state" class="deployBtn" :disabled="!scope.row.online"
                      @click="deployDevice(scope.row)">部署</el-button>
@@ -149,6 +156,7 @@
             this.list[i].virtual = false;
             this.list[i].speed = 0;
             this.list[i].state = 0;
+            this.list[i].descript = '--';
           }
           this.listLength = response.data.data.length
           // this.total = response.data.data.totalElements
@@ -161,27 +169,6 @@
         let stompClient = Stomp.over(socket);
         let that = this;
         stompClient.connect({}, function (frame) {
-          /*stompClient.subscribe('/topic/deployprogress/' + that.deployPlanId, function (response) {
-            let progressBody = response.body;
-            let progressBody2 = progressBody.replace(/[\\]/g, '');
-            that.webProgressBody = JSON.parse(progressBody2);
-
-            console.log(that.webProgressBody);
-            if(that.webProgressBody.length > 0){
-              for(let i=0;i<that.webProgressBody.length;i++){
-                if(that.list.length > 0){
-                  for(let j=0;j<that.list.length;j++){
-                    if(that.webProgressBody[i].hostName === that.list[j].ip){      //查找在线设备
-                      that.list[j].progress = that.webProgressBody[i].progress;
-                      break;
-                    }
-                  }
-                }
-              }
-            }
-
-            $("#onlineheartbeatmessages2").html(response.body);
-          });*/
           stompClient.subscribe('/topic/onlineheartbeatmessages', function (response) {
             let resBody = response.body;
             let resBody2 = resBody.replace(/[\\]/g, '');
@@ -244,6 +231,8 @@
                       that.list[j].progress = parseFloat(that.webProgressBody[i].progress.toFixed(2));
                       that.list[j].speed = parseFloat(that.webProgressBody[i].speed.toFixed(2));
                       that.list[j].state = that.webProgressBody[i].state;
+                      that.list[j].fileState = that.webProgressBody[i].state;
+                      that.list[j].descript = that.webProgressBody[i].description;
                     }
                   }
                 }
@@ -286,7 +275,7 @@
                 this.dialogFormVisible = false
                 this.$notify({
                   title: '成功',
-                  message: '开始部署',
+                  message: '部署结束',
                   type: 'success',
                   duration: 2000
                 })
