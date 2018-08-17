@@ -173,7 +173,7 @@
         </el-table-column>
       </el-table>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="baselineDetailVisible = false">关闭</el-button>
+        <!--<el-button @click="baselineDetailVisible = false">关闭</el-button>-->
       </div>
     </el-dialog>
     <!--修改基线对话框-->

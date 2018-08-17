@@ -78,7 +78,7 @@
 <script>
   import { isvalidUsername, isvalidPwd } from '@/utils/validate'
   import { addUser, UserIfExist } from '../../api/getUsers'
-  // import service from '@/utils/request'
+  import service from '@/utils/request'
 
   /* import LangSelect from '@/components/LangSelect'*/
   /* import SocialSign from './socialsignin'*/
@@ -191,6 +191,7 @@
               'username': this.loginForm.username,
               'password': this.loginForm.password
             }
+            service.defaults.baseURL = 'http://' + this.loginForm.ipConfig + ':' + this.loginForm.port
             let datapost = qs.stringify(data)
             addUser(datapost).then(() => {
               this.$notify({
