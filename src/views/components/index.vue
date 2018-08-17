@@ -781,7 +781,7 @@
       },
 
       showHistory: function(){
-        compListHistory(this.projectId).then(response => {
+        compListHistory(this.projectId, this.listQuery).then(response => {
           this.list = response.data.data.content
           this.total = response.data.total
           this.listLoading = false
@@ -819,7 +819,7 @@
 
       showNow: function(){
         this.listLoading = true
-        compList(this.projectId).then(response => {
+        compList(this.projectId,this.listQuery).then(response => {
           this.list = response.data.data.content
           this.total = response.data.total
           this.listLoading = false

@@ -13,13 +13,14 @@ export function compList(proId, listQuery) {
   })
 }
 
-export function compListHistory(proId) {
+export function compListHistory(proId, listQuery) {
   return request({
     url: '/projects/' + proId + '/component',
     method: 'get',
     params: {
-      // isShowHistory: false,
-      deleted: true
+      deleted: true,
+      size: listQuery.limit,
+      page: listQuery.page
     }
   })
 }
