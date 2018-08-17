@@ -50,7 +50,7 @@
       </el-table-column>-->
       <el-table-column align="center" :label="$t('table.actions')" width="145" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button size="mini" type="success" :id="scope.row.online" :state="scope.row.state"
+          <el-button size="mini" type="success" :id="scope.row.online" :state="scope.row.state" class="deployBtn" :disabled="!scope.row.online"
                      @click="deployDevice(scope.row)">部署</el-button>
         </template>
       </el-table-column>
@@ -86,8 +86,7 @@
 </template>
 
 <script>
-  import { getDevices } from '@/api/device'
-  import { doDeploy } from '@/api/deploy'
+  import { doDeploy, getDeployDevice } from '@/api/deploy'
   import waves from '@/directive/waves' // 水波纹指令
   import service from '@/utils/request'
   import Stomp from 'stompjs'
@@ -141,8 +140,8 @@
     methods: {
       getList() {    //获取设备信息
         this.listLoading = true
-        getDevices(this.proId, this.listQuery).then(response => {
-          this.list = response.data.data.content
+        getDeployDevice(this.deployPlanId, this.listQuery).then(response => {
+          this.list = response.data.data
           this.total = response.data.data.totalElements
           this.listLoading = false
           for(let i=0;i<this.list.length;i++){
@@ -322,15 +321,7 @@
             })
           }
 
-        } else {
-          this.$message({
-            message: '设备离线!',
-            type: 'warning'
-          })
         }
-
-
-
       },
 
       deployDetails: function (row) {
