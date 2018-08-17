@@ -50,7 +50,7 @@
       </el-table-column>-->
       <el-table-column align="center" :label="$t('table.actions')" width="145" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button size="mini" type="success" :id="scope.row.online" :state="scope.row.state"
+          <el-button size="mini" type="success" :id="scope.row.online" :state="scope.row.state" class="deployBtn" :disabled="!scope.row.online"
                      @click="deployDevice(scope.row)">部署</el-button>
         </template>
       </el-table-column>
@@ -86,8 +86,7 @@
 </template>
 
 <script>
-  import { getDevices } from '@/api/device'
-  import { doDeploy } from '@/api/deploy'
+  import { doDeploy, getDeployDevice } from '@/api/deploy'
   import waves from '@/directive/waves' // 水波纹指令
   import service from '@/utils/request'
   import Stomp from 'stompjs'
@@ -141,8 +140,8 @@
     methods: {
       getList() {    //获取设备信息
         this.listLoading = true
-        getDevices(this.proId, this.listQuery).then(response => {
-          this.list = response.data.data.content
+        getDeployDevice(this.deployPlanId, this.listQuery).then(response => {
+          this.list = response.data.data
           this.total = response.data.data.totalElements
           this.listLoading = false
           for(let i=0;i<this.list.length;i++){
@@ -273,8 +272,11 @@
 
         if (online) {
           if(thisState !== 1){      //部署状态为1时表示正在部署
-            let msg = "您确定部署吗？";
-            if (confirm(msg) === true) {
+            this.$confirm('确认部署吗？', '提示', {
+              confirmButtonText: '确定',
+              cancelButtonText: '取消',
+              type: 'warning'
+            }).then(() => {
               let data = {
                 'deployMethod': 'TCP'
               }
@@ -306,11 +308,12 @@
                   })
                 }
               })
-
-
-            } else {
-              return false;
-            }
+              }).catch(() => {
+              this.$message({
+                type: 'info',
+                message: '已取消部署'
+              })
+            })
           }else{
             this.$message({
               message: '此设备正在部署!',
@@ -318,15 +321,7 @@
             })
           }
 
-        } else {
-          this.$message({
-            message: '设备离线!',
-            type: 'warning'
-          })
         }
-
-
-
       },
 
       deployDetails: function (row) {

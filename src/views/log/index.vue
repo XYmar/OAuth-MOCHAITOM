@@ -28,60 +28,99 @@
 
     <el-table :key='tableKey' :data="list" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row
               style="width: 100%">
-      <el-table-column min-width="120px" align="center" :label="$t('table.deviceIP')">
+      <el-table-column width="220px" align="center" label="部署设计名称">
         <template slot-scope="scope">
-          <span>{{scope.row.ip}}</span>
+          <span>{{scope.row.name}}</span>
         </template>
       </el-table-column>
-      <el-table-column min-width="120px" align="center" :label="$t('table.componentsName')">
+      <el-table-column width="180px" align="center" label="部署方式">
         <template slot-scope="scope">
-          <span>{{scope.row.componentEntity.name}}</span>
+          <span>{{scope.row.deployMethod}}</span>
         </template>
       </el-table-column>
-      <el-table-column width="180px" align="center" :label="$t('table.startTime')">
+      <el-table-column width="200px" align="center" label="类型">
+        <template slot-scope="scope">
+          <span v-if="scope.row.deployType == 0">部署设计</span>
+          <span v-else>部署快照</span>
+        </template>
+      </el-table-column>
+      <el-table-column min-width="140px" align="center" label="部署时间">
          <template slot-scope="scope">
-           <span>{{scope.row.createTime | parseTime('{y}-{m}-{d} {h}:{i}')}}</span>
+           <span>{{scope.row.createTime}}</span>
          </template>
        </el-table-column>
-      <el-table-column width="180px" align="center" :label="$t('table.endTime')">
+      <el-table-column width="160px" align="center" label="部署详情">
         <template slot-scope="scope">
-          <span>{{scope.row.finishTime | parseTime('{y}-{m}-{d} {h}:{i}')}}</span>
-        </template>
-      </el-table-column>
-      <el-table-column width="120px" align="center" :label="$t('table.fileSize')">
-        <template slot-scope="scope">
-          <span>{{scope.row.componentEntity.displaySize}}</span>
-        </template>
-      </el-table-column>
-      <el-table-column width="150px" align="center" label="部署状态" prop="state">
-        <template slot-scope="scope">
-          <span class="el-tag el-tag--danger" v-if="scope.row.state == 0">部署异常</span>
-          <span class="el-tag el-tag--primary" v-else-if="scope.row.state == 1">部署进行中</span>
-          <span class="el-tag el-tag--success" v-else>部署完成</span>
+          <el-button type="text"  @click="deployDetails(scope.row)">查看</el-button>
         </template>
       </el-table-column>
     </el-table>
+    <el-pagination
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+      :current-page="currentPage"
+      :page-sizes="[20,50,100]"
+      :page-size="10"
+      layout="total, sizes, prev, pager, next, jumper"
+      :total="this.total"
+      background
+      style="text-align: center;margin-top:20px"
+    >
+    </el-pagination>
+    <el-dialog title="部署详情" :visible.sync="dialogTableVisible" width="60%">
+
+      <el-table :key='tableKey' :data="deployDetail" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row
+                style="width: 100%">
+        <el-table-column align="center" width="140px" label="主机IP">
+          <template slot-scope="scope">
+            <span>{{scope.row.hostName}}</span>
+          </template>
+        </el-table-column>
+        <el-table-column align="center" width="160px" label="组件名称">
+          <template slot-scope="scope">
+            <span>{{scope.row.componentName}}</span>
+          </template>
+        </el-table-column>
+        <el-table-column align="center" width="120px" label="组件版本">
+          <template slot-scope="scope">
+            <span>{{scope.row.componentVersion}}</span>
+          </template>
+        </el-table-column>
+        <el-table-column align="center" min-width="220px" label="目标路径">
+          <template slot-scope="scope">
+            <span>{{scope.row.targetFilePath}}</span>
+          </template>
+        </el-table-column>
+        <el-table-column align="center" width="120px" label="部署状态">
+          <template slot-scope="scope">
+            <span v-if="scope.row.complete" style="color: limegreen;">成功</span>
+            <span v-else  style="color: red;">失败</span>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <el-pagination
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :current-page="currentPage"
+        :page-sizes="[20,50,100]"
+        :page-size="10"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="this.total"
+        background
+        style="text-align: center;margin-top:20px"
+      >
+      </el-pagination>
+    </el-dialog>
 
   </div>
 </template>
 
 <script>
-  import { logList, logSearchList } from '@/api/log'
+  import { logList, logDetail, logSearchList } from '@/api/log'
   import waves from '@/directive/waves' // 水波纹指令
   import { parseTime } from '@/utils'
 
-  const calendarTypeOptions = [
-    { key: 'CN', display_name: 'China' },
-    { key: 'US', display_name: 'USA' },
-    { key: 'JP', display_name: 'Japan' },
-    { key: 'EU', display_name: 'Eurozone' }
-  ]
-
-  // arr to obj ,such as { CN : "China", US : "USA" }
-  const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
-    acc[cur.key] = cur.display_name
-    return acc
-  }, {})
   /* eslint-disable */
   export default {
     name: 'usermanage',
@@ -92,20 +131,21 @@
       return {
         tableKey: 0,
         list: [],
-        total: null,
+        deployDetail: [],
         listLoading: true,
+        dialogTableVisible: false,
+        proId: '',
         listQuery: {
-          page: 1,
-          limit: 20,
-          importance: undefined,
-          title: undefined,
-          type: undefined,
-          sort: '+id',
-          username: undefined
+          page: 0,
+          size:20,
+          limit: 5,
+          tagname: ''
         },
+        total: null,
+        pagesize:10,//每页的数据条数
+        currentPage:1,//默认开始页面
         importanceOptions: [1, 2, 3],
         depolyStatusOptions: ['部署成功', '进行中', '部署异常'],
-        calendarTypeOptions,
         sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
         statusOptions: ['published', 'draft', 'deleted'],
         showReviewer: false,
@@ -180,6 +220,7 @@
       }
     },
     created() {
+      this.proId = this.getCookie('projectId')
       this.getList()
     },
     methods: {
@@ -211,10 +252,35 @@
       },
       getList() {
         this.listLoading = true
-        logList(this.listQuery).then(response => {
-          this.list = response.data.data
-          this.total = response.data.total
+        logList(this.proId, this.listQuery).then(response => {
+          this.list = response.data.data.content
           this.listLoading = false
+          this.listLength = response.data.data.length
+          this.total = response.data.data.totalElements
+        })
+      },
+      handleSizeChange(val) {
+        this.listQuery.size = val
+        this.pagesize = val
+        this.getList()
+      },
+      handleCurrentChange(val) {
+        this.listQuery.page = val - 1
+        this.currentPage = val
+        this.getList()
+      },
+      deployDetails: function (row) {
+        let ifexist = false;      //设备是否部署，false为未部署*/
+
+        let id = row.id;
+        let i = 0;
+        this.dialogTableVisible = true;
+        this.listLoading = true
+        logDetail(id, this.listQuery).then(response => {
+          this.deployDetail = response.data.data.content
+          this.listLoading = false
+          this.listLength = response.data.data.length
+          this.total = response.data.data.totalElements
         })
       },
       searchAll: function() {
@@ -303,6 +369,15 @@
           this.listLoading = false
         })
 
+      },
+      formatJson(filterVal, jsonData) {
+        return jsonData.map(v => filterVal.map(j => {
+          if (j === 'timestamp') {
+            return parseTime(v[j])
+          } else {
+            return v[j]
+          }
+        }))
       }
     }
   }

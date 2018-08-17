@@ -7,3 +7,13 @@ export function doDeploy(deployPlanId, id, data) {
     data
   })
 }
+export function getDeployDevice(deployPlanId, listQuery) {
+  return request({
+    url: 'deploymentdesigns/' + deployPlanId + '/devices',
+    method: 'get',
+    params: {
+      size: listQuery.size,
+      page: listQuery.page
+    }
+  })
+}

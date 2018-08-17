@@ -58,7 +58,7 @@
                           width="55"
                           align="center">
                         </el-table-column>
-                        <el-table-column :label="$t('table.compName')" width="140" align="center">
+                        <el-table-column :label="$t('table.compName')" width="160" align="center">
                           <template slot-scope="scope">
                             <span>{{scope.row.name}}</span>
                           </template>
@@ -68,11 +68,16 @@
                             <span>{{scope.row.version}}</span>
                           </template>
                         </el-table-column>
-                        <el-table-column min-width="100px" align="center" :label="$t('table.compSize')">
+                        <el-table-column min-width="90px" align="center" :label="$t('table.compPath')">
+                          <template slot-scope="scope">
+                            <span>{{scope.row.deployPath}}</span>
+                          </template>
+                        </el-table-column>
+                        <!--<el-table-column min-width="100px" align="center" :label="$t('table.compSize')">
                           <template slot-scope="scope">
                             <span>{{Math.round(scope.row.size/1024/1024*100)/100}}M</span>
                           </template>
-                        </el-table-column>
+                        </el-table-column>-->
                         <el-table-column label="解绑" width="80" align="center">
                           <template slot-scope="scope">
                             <!--<span>{{scope.row.isBind}}</span>-->

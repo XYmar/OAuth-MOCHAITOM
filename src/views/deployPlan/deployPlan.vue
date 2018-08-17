@@ -24,9 +24,9 @@
           <!--<router-link class="pan-btn tiffany-btn" :to='{name:"deployPlanDetail",params:{id:scope.row.id}}'>查看</router-link>
           <router-link class="pan-btn light-blue-btn" :to='{name:"deploy",params:{id:scope.row.id}}'>部署</router-link>
           <router-link class="pan-btn green-btn" :to='{name:"deployBind",params:{id:scope.row.id}}'>设计</router-link>-->
-          <router-link :to='{name:"deployPlanDetail",params:{id:scope.row.id}}'><el-button type="primary">查看</el-button></router-link>
-          <router-link :to='{name:"deploy",params:{id:scope.row.id}}'><el-button type="success">部署</el-button></router-link>
-          <router-link :to='{name:"deployBind",params:{id:scope.row.id}}'><el-button type="warning">设计</el-button></router-link>
+          <router-link :to='{name:"deployPlanDetail",params:{id:scope.row.id}}'><el-button size="mini" type="primary">查看</el-button></router-link>
+          <router-link :to='{name:"deployBind",params:{id:scope.row.id}}'><el-button size="mini" type="warning">设计</el-button></router-link>
+          <router-link :to='{name:"deploy",params:{id:scope.row.id}}'><el-button size="mini" type="success">部署</el-button></router-link>
         </template>
       </el-table-column>
       <el-table-column align="center" :label="$t('table.actions')" width="200" class-name="small-padding fixed-width">
@@ -121,11 +121,11 @@
     </div>-->
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" width="40%">
-      <el-form :rules="rules" ref="dataForm" :model="temp" label-width="100px" style='width: 80%; margin:0 auto;'>
+      <el-form :rules="deployRules" ref="dataForm" :model="temp" label-width="100px" style='width: 80%; margin:0 auto;'>
         <el-form-item :label="$t('table.deployPlanName')" prop="name">
           <el-input v-model="temp.name"></el-input>
         </el-form-item>
-        <el-form-item :label="$t('table.deployPlanDesc')" prop="desc">
+        <el-form-item :label="$t('table.deployPlanDesc')" prop="description">
           <el-input v-model="temp.description"></el-input>
         </el-form-item>
       </el-form>
@@ -256,6 +256,9 @@
           type: [{ required: true, message: 'type is required', trigger: 'change' }],
           timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
           title: [{ required: true, message: 'title is required', trigger: 'blur' }]
+        },
+        deployRules: {
+          name: [{ required: true, message: '请输入部署设计名称', trigger: 'blur' }]
         },
         baselineRules: {
           name: [{ required: true, message: '请输入基线名', trigger: 'blur' }]
