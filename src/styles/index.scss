@@ -207,24 +207,24 @@ code {
 .fileList .el-table__header tr{
   height: 50px;
 }
-.uploadDialog .el-dialog{
+/*.uploadDialog .el-dialog{
   position: absolute;
   left: unset;
   bottom: 0;
   right: 0;
-}
+}*/
 .manage-uploader .uploader-file{
   .uploader-file-name {
     width:40%;
   }
   .uploader-file-size {
-    width:15%;
+    width:17%;
   }
   .uploader-file-meta {
     width: 1%;
   }
   .uploader-file-status {
-    width: 20%
+    width: 18%
   }
   .uploader-file-actions {
     width:24%;
