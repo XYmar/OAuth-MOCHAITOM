@@ -22,7 +22,7 @@
                  :show-file-list="false"
                  multiple>
 
-        <el-button class="filter-item" type="primary" style="margin-left: 10px;" v-waves icon="el-icon-download">导入</el-button>
+        <!--<el-button class="filter-item" type="primary" style="margin-left: 10px;" v-waves icon="el-icon-download">导入</el-button>-->
 
       </el-upload>
 
@@ -695,7 +695,7 @@
       exportLink(row) {
 
         let id = row.id;
-        this.exportUrl = this.getIP() + 'components/' + id + '/export';
+        this.exportUrl = this.getIP() + 'components/' + id + '/exportfiles';
 
         console.log(this.exportUrl);
         window.open(this.exportUrl);

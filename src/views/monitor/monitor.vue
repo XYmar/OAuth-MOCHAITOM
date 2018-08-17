@@ -25,7 +25,7 @@
     </div>
     <div style="width:65%;float: right;margin-top: 10px;margin-bottom: 10px;">
       <el-table :data="fileInfo" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row
-                style="width: 100%;height:600px">
+                style="width: 100%;height:600px;overflow-y: scroll">
         <!-- <el-table :data="list" row-key="id"  v-loading.body="listLoading" border fit highlight-current-row style="width: 100%">-->
         <el-table-column align="center" width="40">
           <template slot-scope="scope">
@@ -54,7 +54,7 @@
         </el-table-column>
         <el-table-column align="center" label="状态" width="80">
           <template slot-scope="scope">
-            <span class="link-type" v-if="scope.row.correct || scope.row.unknown || scope.row.modifyed || scope.row.missing">
+            <span class="link-type">
               <svg-icon :icon-class="computedIcon(scope.row)"></svg-icon>
             </span>
           </template>
@@ -270,6 +270,7 @@
           if (row.unknown) {
             return 'unknown'
           }
+          return ''
         }
       }
     }

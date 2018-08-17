@@ -363,5 +363,11 @@ export const asyncRouterMap = [
     component: Layout,
     hidden: true,
     children: [{ path: 'monitor/:id', component: _import('monitor/monitor'), name: 'monitor', meta: { title: 'monitor', icon: 'table' }}]
+  },
+  {
+    path: '/monitor1',
+    component: Layout,
+    hidden: true,
+    children: [{ path: 'monitor1/:id', component: _import('monitor/monitor1'), name: 'monitor1', meta: { title: 'monitor1', icon: 'table' }}]
   }
 ]
