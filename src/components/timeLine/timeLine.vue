@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <div class="page-header">
-      <h3 id="timeline">操作日志</h3>
+      <h3 id="timeline" style="font-size: 28px;">操作日志</h3>
     </div>
     <ul class="timeline">
       <li class="timeline-inverted" v-for="(item, index) in logList">
