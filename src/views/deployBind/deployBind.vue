@@ -1,7 +1,7 @@
 <template>
   <div class="app-container calendar-list-container">
 
-    <split-pane v-on:resize="resize" split="vertical" class="splicClass">
+    <split-pane v-on:resize="resize" split="vertical" class="splicClass" style="position: absolute;top: 125px;bottom: 0;width: 84%;">
       <template slot="paneL">
         <div class="left-container">
           <div class="filter-container" style="margin-top:8px;padding-left: 6px;">
@@ -129,8 +129,8 @@
       <template slot="paneR">
         <div>
           <!--<div id="deviceComp" style="width: 100%;height:440px;"></div>-->
-          <div class='chart-container'>
-            <deployBindER height='480px' width='550px' :detaillist="bindedDeviceList"></deployBindER>
+          <div class='chart-container' id="ERDiv">
+            <deployBindER id="ER" :detaillist="bindedDeviceList"></deployBindER>
           </div>
         </div>
       </template>
@@ -214,7 +214,8 @@
         repeatCompsId: [],
         repeatCompsName: [],
 
-        delBindId: ''
+        delBindId: '',
+        ERDiv: null
 
       }
     },
@@ -556,7 +557,15 @@
           return item.name.toLowerCase().indexOf(self.searchQuery2.toLowerCase()) !== -1;
         })
       }
+    },
+    mounted() {
+      console.log("宽高----------")
+      this.ERDiv = document.getElementById("ERDiv");
+      console.log(ERDiv.clientHeight);
+      document.getElementById("ER").style.height = (this.ERDiv.clientHeight) * 9 / 10;
+      document.getElementById("ER").style.width = (this.ERDiv.clientWidth) * 95 / 100;
     }
+
   }
 </script>
 
