@@ -4,6 +4,37 @@
       <el-table :data="deviceList" v-loading="listLoading" element-loading-text="给我一点时间" fit highlight-current-row
                 style="width: 100%;height:600px"
       >
+        <el-table-column align="center" width="40" type="expand">
+          <template>
+            <el-table :data="deviceDetail" stripe>
+              <el-table-column>
+                <template slot-scope="scope">
+                  <span><svg-icon icon-class="组件"></svg-icon></span>
+                </template>
+              </el-table-column>
+              <el-table-column label="组件名">
+                <template slot-scope="scope">
+                  <span class="link-type" @dblclick="handleSelectComp(scope.row)">{{scope.row.componentEntity.name}}</span>
+                </template>
+              </el-table-column>
+              <el-table-column label="路径">
+                <template slot-scope="scope">
+                  <span>{{scope.row.componentEntity.deployPath}}</span>
+                </template>
+              </el-table-column>
+              <el-table-column label="描述">
+                <template slot-scope="scope">
+                  <span>{{scope.row.componentEntity.description}}</span>
+                </template>
+              </el-table-column>
+              <!--<el-table-column prop="correct" label="状态" align="center" width="80px">
+                <template slot-scope="scope">
+                  <svg-icon icon-class="correct"></svg-icon>
+                </template>
+              </el-table-column>-->
+            </el-table>
+          </template>
+        </el-table-column>
         <el-table-column align="center" width="40">
           <template slot-scope="scope">
             <span><svg-icon icon-class="设备"></svg-icon></span>
@@ -23,12 +54,15 @@
     </div>
     <div style="width:65%;float: right;margin-top: 10px;margin-bottom: 10px;">
       <el-table :data="deviceDetail" v-loading="listLoading" element-loading-text="给我一点时间" fit highlight-current-row
-                style="width: 100%;height:600px;overflow-y: scroll">
+                style="width: 100%;height:600px;overflow-y: scroll"
+                :row-key="getRowKeys"
+                :expand-row-keys="expands"
+      >
         <el-table-column align="center" width="40" type="expand">
           <template slot-scope="props">
             <el-tabs>
               <el-tab-pane label="正确">
-                <el-table :data="props.row.correctFiles">
+                <el-table :data="props.row.correctFiles" stripe>
                   <el-table-column label="文件名称" prop="fileName">
                   </el-table-column>
                   <el-table-column label="路径" prop="deployPath">
@@ -73,7 +107,7 @@
                 </el-table>
               </el-tab-pane>
               <el-tab-pane label="未知">
-                <el-table :data="props.row.modifyedFiles">
+                <el-table :data="props.row.unknownFiles">
                   <el-table-column label="文件名称" prop="fileName">
                     <!--<template props="fileName">
                       &lt;!&ndash;<span>{{scope.row.deployPath}}</span>&ndash;&gt;
@@ -125,14 +159,44 @@
         </el-table-column>-->
       </el-table>
       <div class="btn-group" style="float:right;margin-top: 20px;padding-bottom: 20px;height: 80px;">
-        <el-button class="pan-btn light-blue-btn" style="width:150px" @click="scanAll">
+        <!--<el-button class="pan-btn light-blue-btn" style="width:150px" @click="scanAll">
           <svg-icon icon-class="circle"></svg-icon>
           完整扫描
-        </el-button>
-        <el-button class="pan-btn light-blue-btn" style="width:150px" @click="scanQuick">
+        </el-button>-->
+        <el-dropdown split-button type="primary" style="margin-right: 10px;">
+          完整扫描
+          <el-dropdown-menu slot="dropdown" style="width:120px;">
+            <el-dropdown-item>
+              <span @click="scanAllByDevice">
+                扫描设备
+              </span>
+            </el-dropdown-item>
+            <el-dropdown-item>
+              <span  @click="scanAllByComp">
+                扫描组件
+              </span>
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
+        <el-dropdown split-button type="primary" style="margin-right: 10px;">
+          快速扫描
+          <el-dropdown-menu slot="dropdown" style="width:120px;">
+            <el-dropdown-item>
+              <span @click="scanQuickByDevice">
+                扫描设备
+              </span>
+            </el-dropdown-item>
+            <el-dropdown-item>
+              <span  @click="scanQuickByComp">
+                扫描组件
+              </span>
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
+        <!--<el-button class="pan-btn light-blue-btn" style="width:150px" @click="scanQuick">
           <svg-icon icon-class="lightning"></svg-icon>
           快速扫描
-        </el-button>
+        </el-button>-->
       </div>
     </div>
   </div>
@@ -141,20 +205,27 @@
 <script>
   /*eslint-disable*/
   import { deployplanDevice, getDeployDetailByDevice } from '@/api/deployplan'
-  import { scanDevice } from '@/api/scan'
+  import { scanDevice, scanComp } from '@/api/scan'
 
   export default {
     name: 'monitor1',
     data() {
       return {
         listLoading: false,
+        isExpand:false,
         deployPlanId: '',
         deployplanName: '',
         deviceList: [],
         selectedDeviceId: '',
+        selectedCompId: '',
         deviceDetail: [],
         fileInfo: [],
-        fileResult: []
+        fileResult: [],
+        getRowKeys(row) {
+          return row.componentEntity.id;
+        },
+        // 要展开的行，数值的元素是row的key值
+        expands: []
       }
     },
     created() {
@@ -170,13 +241,18 @@
         })
       },
       getDetailByDevice(row) {
+        // this.isExpand = false
         this.selectedDeviceId = row.id
         getDeployDetailByDevice(this.deployPlanId, row.id).then((res) => {
           this.deviceDetail = res.data.data
         })
       },
-      scanAll() {
+      handleSelectComp(row) {
+        this.selectedCompId = row.componentEntity.id
+      },
+      scanAllByDevice() {
         scanDevice(this.deployPlanId, this.selectedDeviceId).then((res) => {
+          this.isExpand = false
           const compResult = res.data.data
           for (var i = 0; i < compResult.length; i++) {
             for (var j = 0; j < this.deviceDetail.length; j++) {
@@ -231,6 +307,7 @@
                 this.deviceDetail[j].modifyedFiles = modifyedFiles
                 this.deviceDetail[j].unknownFiles = unknownFiles
                 this.deviceDetail[j].missingFiles = missingFiles
+                this.expands.push(this.deviceDetail[j].componentEntity.id)
               }
             }
           }
@@ -302,7 +379,30 @@
           })
         })
       },
-      scanQuick() {
+      scanAllByComp() {
+        scanComp(this.deployPlanId, this.selectedDeviceId, this.selectedCompId).then((res) => {
+          this.deviceDetail = []
+          this.deviceDetail.push(res.data.data)
+          console.log('组件扫描')
+          console.log(this.deviceDetail)
+          this.$notify({
+            title: '成功',
+            message: '扫描成功',
+            type: 'success',
+            duration: 2000
+          })
+        }).catch(() => {
+          this.$notify({
+            title: '失败',
+            message: '扫描失败',
+            type: 'error',
+            duration: 2000
+          })
+        })
+      },
+      scanQuickByDevice() {
+      },
+      scanQuickByComp() {
       },
       handleScanDevice(row) {
       }
