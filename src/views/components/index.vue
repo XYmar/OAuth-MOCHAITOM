@@ -161,7 +161,7 @@
 
         <el-form :rules="rules" ref="dataForm" :model="temp" label-position="left" label-width="70px"
                  style='width: 100%;height: 100%'>
-          <div style="height: 90%;overflow-y: auto;width: 40%;float: left;padding-right: 16px;">
+          <div style="height: 90%;overflow-y: auto;width: 40%;float: left;padding-right: 16px;position: relative;">
             <el-form-item :label="$t('table.compName')" prop="name">
               <el-input v-model="temp.name"></el-input>
             </el-form-item>
@@ -174,6 +174,10 @@
             <el-form-item :label="$t('table.compDesc')" prop="desc">
               <el-input v-model="temp.description"></el-input>
             </el-form-item>
+            <div class="button-container">
+              <el-button @click="dialogFormVisible = false" style="margin-right: 10px">{{$t('table.cancel')}}</el-button>
+              <el-button type="primary" @click="updateData">{{$t('table.confirm')}}</el-button>
+            </div>
             <!--去除修改组件时的文件上传模块-->
             <!--<el-form-item :label="$t('table.compUpload')" prop="fileAll">
             <uploader :options="options"
@@ -198,10 +202,10 @@
             <comFileManage :selectCompId="selectedId" :selectCompName="selectdName"></comFileManage>
           </div>
         </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false" style="margin-right: 10px">{{$t('table.cancel')}}</el-button>
-        <el-button type="primary" @click="updateData">{{$t('table.confirm')}}</el-button>
-      </div>
+      <!--<div slot="footer" class="dialog-footer">-->
+        <!--<el-button @click="dialogFormVisible = false" style="margin-right: 10px">{{$t('table.cancel')}}</el-button>-->
+        <!--<el-button type="primary" @click="updateData">{{$t('table.confirm')}}</el-button>-->
+      <!--</div>-->
     </el-dialog>
   </div>
 </template>
@@ -220,7 +224,7 @@
     },
     data() {
       const validatePath = (rule, value, callback) => {
-        let pattern = /^(\/([a-zA-Z]+))*\/$/;
+        let pattern = /^(\/([a-zA-Z0-9]+))*\/$/;
 
         if(value.length==0){
           callback(new Error("请输入路径！"));
@@ -936,6 +940,11 @@
 
   .el-dialog {
     margin-top: 10vh;
+  }
+  .button-container{
+    position: absolute;
+    bottom: 0;
+    right: 15px;
   }
 
 </style>
