@@ -185,3 +185,11 @@ export function exportCompFiles(id) {
     method: 'get'
   })
 }
+// uploadFoldder
+export function uploadFolder(id, data) {
+  return request({
+    url: '/components/' + id + '/componentfiles/uploadfolder',
+    method: 'post',
+    data
+  })
+}

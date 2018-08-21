@@ -15,6 +15,20 @@
           <svg-icon icon-class="upload1"></svg-icon>
           <span style="font-size: 14px;margin-left: 6px;">上传文件</span>
         </span>
+        <span>
+          <el-dropdown trigger="click">
+            <el-tooltip class="item" effect="dark" content="更多操作" placement="top">
+              <span class="el-dropdown-link">
+                <svg-icon icon-class="ellipsis"></svg-icon>
+              </span>
+            </el-tooltip>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item>
+                <span style="display:inline-block;padding:0 10px;" @click="handleUploadFolder()">上传文件夹</span>
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </span>
       </div>
     </div>
     <el-table :key='tableKey' :data="list" v-loading="listLoading" element-loading-text="给我一点时间" fit
@@ -46,7 +60,7 @@
       </el-table-column>
       <!--<el-table-column width="150px" :label="$t('table.compVersion')">
         <template slot-scope="scope">
-          <span>{{scope.row.version}}</span>
+                <span>{{scope.row.version}}</span>
         </template>
       </el-table-column>-->
       <el-table-column min-width="150px" :label="$t('table.compSize')">
@@ -104,26 +118,52 @@
                 :file-status-text="statusText"
                 :started="started"
                 ref="uploader"
+                v-loading="uploading"
+                class="manage-uploader">
+        <uploader-unsupport></uploader-unsupport>
+          <uploader-drop>
+            <p>拖拽文件到此处或</p>
+            <uploader-btn>选择文件</uploader-btn>
+            <!--<uploader-btn :directory="true">选择文件夹</uploader-btn>-->
+          </uploader-drop>
+          <uploader-list ref="uploaderList"></uploader-list>
+        </uploader>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="uploadDialog = false">取 消</el-button>
+        <el-button type="primary" @click="uploadFile">确 定</el-button>
+      </span>
+    </el-dialog>
+    <el-dialog
+      class="uploadDialog"
+      title="提示"
+      :visible.sync="uploadFolderDialog"
+      append-to-body
+      width="30%">
+      <uploader :options="options"
+                :autoStart="autoStart"
+                :file-status-text="statusText"
+                :started="started"
+                ref="uploaderFolder"
+                v-loading="uploading"
                 class="manage-uploader">
         <uploader-unsupport></uploader-unsupport>
         <uploader-drop>
           <p>拖拽文件到此处或</p>
-          <uploader-btn>选择文件</uploader-btn>
-          <!--<uploader-btn :directory="true">选择文件夹</uploader-btn>-->
+          <uploader-btn :directory="true">选择文件夹</uploader-btn>
         </uploader-drop>
         <uploader-list ref="uploaderList"></uploader-list>
       </uploader>
       <span slot="footer" class="dialog-footer">
-    <el-button @click="uploadDialog = false">取 消</el-button>
-    <el-button type="primary" @click="uploadFile">确 定</el-button>
-  </span>
+        <el-button @click="uploadFolderDialog = false">取 消</el-button>
+        <el-button type="primary" @click="upload_Folder">确 定</el-button>
+      </span>
     </el-dialog>
   </div>
 </template>
 
 <script>
   /*eslint-disable*/
-  import { compList, createComp, updateComp, copyComp, importComp, deleteComp, compSingle, saveFolder, getCompFiles, saveFiles, deleteCompFiles } from '@/api/component'
+  import { compList, createComp, updateComp, copyComp, importComp, deleteComp, compSingle, saveFolder, getCompFiles, saveFiles, deleteCompFiles, uploadFolder } from '@/api/component'
   export default {
     name: 'comFileManage',
     props: {
@@ -144,6 +184,7 @@
         parentNodeId: '',
         newFolderName: '',
         uploadDialog: false,
+        uploadFolderDialog: false,
         fileList: [],
         breadcrumbList: [],
         tableKey: 0,
@@ -151,6 +192,7 @@
         singleComp: null,
         total: null,
         listLoading: true,
+        uploading: false,
         listQuery: {
           page: 1,
           limit: 10,
@@ -332,8 +374,15 @@
           this.$refs.uploader.uploader.cancel() //清空文件上传列表
         })
       },
+      handleUploadFolder() {
+        this.uploadFolderDialog = true
+        this.$nextTick(() => {
+          this.$refs.uploaderFolder.uploader.cancel() //清空文件上传列表
+        })
+      },
       uploadFile() {
         this.listLoading = true
+        this.uploading = true
         let formData = new FormData()
         formData.append('parentnodeid', this.parentNodeId)
         this.fileAll = this.$refs.uploader.uploader.files
@@ -342,12 +391,42 @@
           formData.append('files', this.fileAll[i].file)
         }
         saveFiles(this.componentId, formData).then((res) => {
+          this.uploading = false
           this.$refs.uploader.uploader.cancel()
           this.getList()
           this.listLoading = false
           this.uploadDialog = false
         }).catch((error) => {
           this.listLoading = false
+          this.uploading = false
+          this.$notify({
+            title: '失败',
+            message: '上传失败',
+            type: 'error',
+            duration: 2000
+          })
+        })
+      },
+      upload_Folder(){
+        this.listLoading = true
+        this.uploading = true
+        let formData = new FormData()
+        formData.append('parentnodeid', this.parentNodeId)
+        this.fileAll = this.$refs.uploaderFolder.uploader.files
+        for (var i = 0; i < this.fileAll.length; i++) {
+          //判断数组里是文件夹还是文件
+          formData.append('files', this.fileAll[i].file)
+        }
+        uploadFolder(this.componentId, formData).then(() => {
+          this.$refs.uploaderFolder.uploader.cancel()
+          this.getList()
+          this.listLoading = false
+          this.uploading = false
+          this.uploadFolderDialog = false
+        }).catch((error) => {
+          this.listLoading = false
+          this.uploading = false
+          this.uploadFolderDialog = false
           this.$notify({
             title: '失败',
             message: '上传失败',
