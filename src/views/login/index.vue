@@ -158,10 +158,10 @@ export default {
 
           this.$store.dispatch('LoginByUsername', formData).then(() => {
             this.loading = false
-            getUserId().then((res) => {
+            /*getUserId().then((res) => {
               this.setCookie('userId', res.data.data.id)
-              this.$router.push({ path: '/projectManage' })
-            })
+            })*/
+            this.$router.push({ path: '/projectManage' })
           }).catch(() => {
             this.loading = false
             this.$notify({

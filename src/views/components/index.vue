@@ -152,11 +152,16 @@
     </el-dialog>
 
     <!-- 修改 -->
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" top="7vh" width="86%" v-else>
+    <el-dialog :title="textMap[dialogStatus]"
+               :visible.sync="dialogFormVisible"
+               top="7vh" width="86%"
+               class="filesDialog"
+               v-else
+    >
 
         <el-form :rules="rules" ref="dataForm" :model="temp" label-position="left" label-width="70px"
-                 style='width: 100%;'>
-          <div style="height: 500px;overflow-y: auto;width: 40%;float: left;padding-right: 16px;">
+                 style='width: 100%;height: 100%'>
+          <div style="height: 90%;overflow-y: auto;width: 40%;float: left;padding-right: 16px;">
             <el-form-item :label="$t('table.compName')" prop="name">
               <el-input v-model="temp.name"></el-input>
             </el-form-item>
@@ -188,7 +193,7 @@
           </el-form-item>-->
           </div>
           <!--文件管理模块-->
-          <div style="height: 450px;overflow: auto;width: 60%;float: right;padding:5px 0 10px 10px;border-left:1px solid #ccc;margin-top: -44px">
+          <div style="height: 100%;overflow: auto;width: 60%;float: right;padding:5px 0 10px 10px;border-left:1px solid #ccc;margin-top: -44px">
             <!--<label style="width: 100%;font-size: 14px;">组件详细信息</label>-->
             <comFileManage :selectCompId="selectedId" :selectCompName="selectdName"></comFileManage>
           </div>

@@ -127,6 +127,9 @@ code {
 }
 
 //main-container全局样式
+.main-container{
+  position: relative;
+}
 .app-container {
   padding: 20px;
 }
@@ -213,6 +216,12 @@ code {
   bottom: 0;
   right: 0;
 }*/
+.filesDialog .el-dialog {
+  height: 70%;
+  .el-dialog__body {
+    height: 85%;
+  }
+}
 .manage-uploader .uploader-file{
   .uploader-file-name {
     width:40%;
@@ -228,5 +237,12 @@ code {
   }
   .uploader-file-actions {
     width:24%;
+  }
+}
+
+.deviceList .el-table__expanded-cell {
+  padding: 4px 4px 4px 40px;
+  td{
+    border-bottom: none;
   }
 }

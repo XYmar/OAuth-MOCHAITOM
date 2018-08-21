@@ -6,7 +6,8 @@ export function deployplanList(projectId, listQuery) {
     method: 'get',
     params: {
       size: listQuery.size,
-      page: listQuery.page
+      page: listQuery.page,
+      deleted: false
     }
   })
 }

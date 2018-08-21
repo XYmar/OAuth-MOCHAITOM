@@ -1,7 +1,7 @@
 <template>
-  <div class="app-container calendar-list-container">
+  <div class="app-container calendar-list-container" style="position: absolute;top: 125px;bottom: 0;width: 100%;height: 88%">
 
-    <split-pane v-on:resize="resize" split="vertical" class="splicClass" style="position: absolute;top: 125px;bottom: 0;width: 84%;">
+    <split-pane v-on:resize="resize" split="vertical" class="splicClass" style="height: 96%">
       <template slot="paneL">
         <div class="left-container">
           <div class="filter-container" style="margin-top:8px;padding-left: 6px;">
@@ -126,10 +126,10 @@
 
         </div>
       </template>
-      <template slot="paneR">
-        <div>
+      <template slot="paneR" id="ERDiv">
+        <div style="height: 100%;">
           <!--<div id="deviceComp" style="width: 100%;height:440px;"></div>-->
-          <div class='chart-container' id="ERDiv">
+          <div class='chart-container' style="height: 100%">
             <deployBindER id="ER" :detaillist="bindedDeviceList"></deployBindER>
           </div>
         </div>
@@ -559,11 +559,11 @@
       }
     },
     mounted() {
-      console.log("宽高----------")
+      /*console.log("宽高----------")
       this.ERDiv = document.getElementById("ERDiv");
       console.log(ERDiv.clientHeight);
       document.getElementById("ER").style.height = (this.ERDiv.clientHeight) * 9 / 10;
-      document.getElementById("ER").style.width = (this.ERDiv.clientWidth) * 95 / 100;
+      document.getElementById("ER").style.width = (this.ERDiv.clientWidth) * 95 / 100;*/
     }
 
   }
@@ -573,7 +573,6 @@
   .splicClass{
     min-height: 530px;
     position: relative;
-    max-height: 530px;
     border: 1px solid lightgrey;
   }
   div.isBinded {

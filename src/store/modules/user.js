@@ -139,7 +139,7 @@ const user = {
         const decodeRefreshToken = jwt.decode(refreshToken)
         // const dateNow = (new Date())/1000
         console.log(decodeToken, '22233')
-        // setUserId(decodeToken.userId)
+        setUserId(decodeToken.userId)
         setExpire(decodeToken.exp)
         setExpire2(decodeRefreshToken.exp)   //refreshToken
         // console.log(dateNow)
