@@ -30,3 +30,12 @@ export default {
   }
 }
 </script>
+<style scoped>
+  .dashboard-container{
+    position: absolute;
+    top: 85px;
+    bottom: 0;
+    width: 100%;
+    height: 90%;
+  }
+</style>

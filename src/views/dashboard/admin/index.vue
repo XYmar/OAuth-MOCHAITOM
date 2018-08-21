@@ -78,6 +78,7 @@ export default {
 
 <style rel="stylesheet/scss" lang="scss" scoped>
 .dashboard-editor-container {
+  min-height: 100%;
   padding: 32px;
   background-color: rgb(240, 242, 245);
   .chart-wrapper {
