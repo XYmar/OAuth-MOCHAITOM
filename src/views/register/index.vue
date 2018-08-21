@@ -1,5 +1,5 @@
 <template>
-  <div class="login-container">
+  <div class="login-container1">
     <el-form class="login-form" autoComplete="on" :model="loginForm" :rules="loginRules" ref="loginForm" label-position="left">
       <div class="title-container">
         <h3 class="title">{{$t('login.register')}}</h3>
@@ -11,7 +11,7 @@
           </span>
           <el-input name="ipConfig" type="text" v-model="loginForm.ipConfig" autoComplete="on" placeholder="IP地址" />
         </el-form-item>
-        <span class="colon">:</span>
+        <!--<span class="colon">:</span>-->
         <el-form-item prop="port" class="portform">
           <span class="svg-container">
             <svg-icon icon-class="port" />
@@ -86,7 +86,7 @@
   /*eslint-disable*/
   export default {
     /* components: { LangSelec },*/
-    name: 'login',
+    name: 'register',
     data() {
       const validateUsername = (rule, value, callback) => {
         if (!isvalidUsername(value)) {
@@ -258,7 +258,7 @@
   $light_gray:#eee;
 
   /* reset element-ui css */
-  .login-container {
+  .login-container1{
     .el-input {
       display: inline-block;
       height: 47px;
@@ -273,7 +273,7 @@
         height: 47px;
         &:-webkit-autofill {
           -webkit-box-shadow: 0 0 0px 1000px $bg inset !important;
-          -webkit-text-fill-color: $bg !important;
+          -webkit-text-fill-color: $light_gray !important;
         }
       }
     }
@@ -281,7 +281,8 @@
       border: 1px solid rgba(255, 255, 255, 0.1);
       background: rgba(0, 0, 0, 0.1);
       border-radius: 5px;
-      color: #454545;
+      // color: #454545;
+      color: $light_gray;
     }
     .ipContainer {
       .el-form-item.ipform{
@@ -291,15 +292,16 @@
       .ipform .el-input{
         width:60%;
       }
-      .colon {
+      /*.colon {
         display: inline-block;
         text-align: center;
-        width: 3%;
+        min-width: 3%;
         color:#fff;
-      }
+      }*/
       .el-form-item.portform{
         width:40%;
         display: inline-block;
+        float: right;
       }
       .portform .el-input{
         width:40%
@@ -325,7 +327,7 @@
   $dark_gray:#889aa4;
   $light_gray:#eee;
 
-  .login-container {
+  .login-container1 {
     position: fixed;
     height: 100%;
     width: 100%;
@@ -346,6 +348,14 @@
         &:first-of-type {
           margin-right: 16px;
         }
+      }
+    }
+    .ipContainer {
+      .colon {
+        display: inline-block;
+        text-align: center;
+        // width: 3%;
+        color:#fff;
       }
     }
     .svg-container {
