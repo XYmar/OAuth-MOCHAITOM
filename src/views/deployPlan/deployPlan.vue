@@ -19,13 +19,13 @@
           <span>{{scope.row.description}}</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" width="240px" label="部署操作">
+      <el-table-column align="center" width="200px" label="部署操作">
         <template slot-scope="scope">
           <!--<router-link class="pan-btn tiffany-btn" :to='{name:"deployPlanDetail",params:{id:scope.row.id}}'>查看</router-link>
           <router-link class="pan-btn light-blue-btn" :to='{name:"deploy",params:{id:scope.row.id}}'>部署</router-link>
           <router-link class="pan-btn green-btn" :to='{name:"deployBind",params:{id:scope.row.id}}'>设计</router-link>-->
-          <router-link :to='{name:"deployPlanDetail",params:{id:scope.row.id}}'><el-button size="mini" type="primary">查看</el-button></router-link>
-          <router-link :to='{name:"deployBind",params:{id:scope.row.id}}'><el-button size="mini" type="warning">设计</el-button></router-link>
+          <!--<router-link :to='{name:"deployPlanDetail",params:{id:scope.row.id}}'><el-button size="mini" type="primary">查看</el-button></router-link>-->
+          <router-link :to='{name:"deployBind",params:{id:scope.row.id}}'><el-button size="mini" type="primary">设计</el-button></router-link>
           <router-link :to='{name:"deploy",params:{id:scope.row.id}}'><el-button size="mini" type="success">部署</el-button></router-link>
         </template>
       </el-table-column>
@@ -94,11 +94,11 @@
                 </el-popover>-->
                 <span style="display:inline-block;padding:0 10px;" @click="checkBaselines(scope.row)">基线详情</span>
               </el-dropdown-item>
+              <!--<el-dropdown-item divided>-->
+                <!--<span style="display:inline-block;padding:0 10px;" @click="handleMonitor(scope.row)">在线监控</span>-->
+              <!--</el-dropdown-item>-->
               <el-dropdown-item divided>
-                <span style="display:inline-block;padding:0 10px;" @click="handleMonitor(scope.row)">在线监控</span>
-              </el-dropdown-item>
-              <el-dropdown-item divided>
-                <span style="display:inline-block;padding:0 10px;" @click="handleMonitor1(scope.row)">在线监控1</span>
+                <span style="display:inline-block;padding:0 10px;" @click="handleMonitor1(scope.row)">在线监控</span>
               </el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
@@ -577,7 +577,7 @@
       },
       handleMonitor1(row) {
         this.$router.push({
-          name: 'monitor1',
+          name: 'monitor',
           params: {
             name: row.name,
             id: row.id

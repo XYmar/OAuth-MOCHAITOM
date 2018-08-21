@@ -219,7 +219,14 @@ code {
 .filesDialog .el-dialog {
   height: 70%;
   .el-dialog__body {
+    height: 95%;
+  }
+}
+.processDialog .el-dialog {
+  height: 70%;
+  .el-dialog__body {
     height: 85%;
+    overflow-y: scroll;
   }
 }
 .manage-uploader .uploader-file{

@@ -162,7 +162,7 @@
         <el-button @click="diskDialogVisible = false">{{$t('table.close')}}</el-button>
       </div>
     </el-dialog>
-    <el-dialog title="进程" :visible.sync="processDialogVisible">
+    <el-dialog title="进程" :visible.sync="processDialogVisible" class="processDialog">
       <el-table :key='tableKey' :data="taskprocess" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row
                 stripe
                 style="width: 100%"
@@ -699,6 +699,12 @@
           this.$refs['reportForm'].clearValidate()
         })
       },
+      resetReport() {
+        this.reportData.name = ''
+        this.reportData.ip = ''
+        this.reportData.deployPath = ''
+        this.pathTemp.reportPath = ''
+      },
       reportDevice() {
         this.$refs['reportForm'].validate((valid) => {
           if (valid) {
@@ -711,9 +717,10 @@
               "description": ''
             })
             reportDevices(this.proId, RpData).then((res) => {
-              this.reportData.name = ''
-              this.reportData.ip = ''
-              this.reportData.deployPath = ''
+              // this.reportData.name = ''
+              // this.reportData.ip = ''
+              // this.reportData.deployPath = ''
+              this.resetReport()
               this.reportDialogVisible = false
               this.$notify({
                 title: '成功',
@@ -723,6 +730,7 @@
               })
               this.getList()
             }).catch(() => {
+              this.resetReport()
               this.$notify({
                 title: '失败',
                 message: '上报失败',

@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container calendar-list-container" style="position: absolute;top: 125px;bottom: 0;width: 100%;height: 88%">
+  <div class="app-container calendar-list-container" style="position: absolute;top: 85px;bottom: 0;width: 100%;height: 90%">
 
     <split-pane v-on:resize="resize" split="vertical" class="splicClass" style="height: 96%">
       <template slot="paneL">
