@@ -193,3 +193,27 @@ export function uploadFolder(id, data) {
     data
   })
 }
+// moveFileTo
+export function movefileTo(FileId, targetId, data) {
+  return request({
+    url: '/componentfiles/' + FileId + '/moveto',
+    method: 'patch',
+    data
+  })
+}
+// copyFileTo
+export function copyFileTo(FileId, targetId, data) {
+  return request({
+    url: '/componentfiles/' + FileId + '/copyto',
+    method: 'patch',
+    data
+  })
+}
+// renameFile
+export function renameFile(FileId, data) {
+  return request({
+    url: '/componentfiles/' + FileId + '/rename',
+    method: 'patch',
+    data
+  })
+}
