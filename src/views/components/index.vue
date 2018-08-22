@@ -110,45 +110,37 @@
       </el-pagination>
     </div>
 
-    <!-- 创建 -->
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" top="10vh" width="40%"
-               v-if="dialogStatus=='create'">
+    <!--创建-->
+    <el-dialog :title="textMap[dialogStatus]"
+               :visible.sync="dialogFormVisible"
+               top="10vh" width="86%"
+               class="filesDialog"
+               v-if="dialogStatus == 'create'"
+    >
       <el-form :rules="componentRules" ref="dataForm" :model="temp" label-width="100px"
-               style='height:240px;overflow-y: auto;padding-right: 10%;padding-left: 10%;margin: 0 auto'>
-        <el-form-item :label="$t('table.compName')" prop="name">
-          <el-input v-model="temp.name"></el-input>
-        </el-form-item>
-        <el-form-item :label="$t('table.compVersion')" prop="version">
-          <el-input v-model="temp.version"></el-input>
-        </el-form-item>
-        <el-form-item :label="$t('table.compPath')" prop="deployPath">
-          <el-input v-model="temp.deployPath" placeholder="/test/，必须以斜杠开头，斜杠结尾"></el-input>
-        </el-form-item>
-        <el-form-item :label="$t('table.compDesc')" prop="desc">
-          <el-input v-model="temp.description"></el-input>
-        </el-form-item>
-        <!--去除新建组件时的文件上传模块-->
-        <!--<el-form-item :label="$t('table.compUpload')" prop="files">
-          <uploader :options="options"
-                    :autoStart="autoStart"
-                    :file-status-text="statusText"
-                    :started="started"
-                    ref="uploader"
-                    class="uploader-example">
-            <uploader-unsupport></uploader-unsupport>
-            <uploader-drop>
-              <p>拖拽文件到此处或</p>
-              <uploader-btn>选择文件</uploader-btn>
-              <uploader-btn :directory="true">选择文件夹</uploader-btn>
-            </uploader-drop>
-            <uploader-list></uploader-list>
-          </uploader>
-        </el-form-item>-->
+               style='width: 100%;height: 100%'>
+        <div style="height: 90%;overflow-y: auto;width: 40%;float: left;padding-right: 16px;position: relative;">
+          <el-form-item :label="$t('table.compName')" prop="name">
+            <el-input v-model="temp.name"></el-input>
+          </el-form-item>
+          <el-form-item :label="$t('table.compVersion')" prop="version">
+            <el-input v-model="temp.version"></el-input>
+          </el-form-item>
+          <el-form-item :label="$t('table.compPath')" prop="deployPath">
+            <el-input v-model="temp.deployPath" placeholder="/test/，必须以斜杠开头，斜杠结尾"></el-input>
+          </el-form-item>
+          <el-form-item :label="$t('table.compDesc')" prop="desc">
+            <el-input v-model="temp.description"></el-input>
+          </el-form-item>
+          <div class="button-container">
+            <el-button @click="dialogFormVisible = false">{{$t('table.cancel')}}</el-button>
+            <el-button type="primary" @click="createData">{{$t('table.confirm')}}</el-button>
+          </div>
+        </div>
+        <div style="height: 100%;overflow: auto;width: 60%;float: right;padding:5px 0 10px 10px;border-left:1px solid #ccc;margin-top: -44px" v-loading="managerLoading">
+          <comFileManage ref="createComFile" :selectCompId="selectedId" :selectCompName="selectdName"></comFileManage>
+        </div>
       </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">{{$t('table.cancel')}}</el-button>
-        <el-button type="primary" @click="createData">{{$t('table.confirm')}}</el-button>
-      </div>
     </el-dialog>
 
     <!-- 修改 -->
@@ -159,7 +151,7 @@
                v-else
     >
 
-        <el-form :rules="rules" ref="dataForm" :model="temp" label-position="left" label-width="70px"
+        <el-form :rules="componentRules" ref="dataForm" :model="temp" label-width="100px"
                  style='width: 100%;height: 100%'>
           <div style="height: 90%;overflow-y: auto;width: 40%;float: left;padding-right: 16px;position: relative;">
             <el-form-item :label="$t('table.compName')" prop="name">
@@ -168,8 +160,8 @@
             <el-form-item :label="$t('table.compVersion')" prop="version">
               <el-input v-model="temp.version"></el-input>
             </el-form-item>
-            <el-form-item :label="$t('table.compPath')" prop="path">
-              <el-input v-model="temp.deployPath"></el-input>
+            <el-form-item :label="$t('table.compPath')" prop="deployPath">
+              <el-input v-model="temp.deployPath" placeholder="/test/，必须以斜杠开头，斜杠结尾"></el-input>
             </el-form-item>
             <el-form-item :label="$t('table.compDesc')" prop="desc">
               <el-input v-model="temp.description"></el-input>
@@ -211,12 +203,12 @@
 </template>
 
 <script>
+  /* eslint-disable */
   import { compList, createComp, updateComp, copyComp, importComp, deleteComp, compListHistory, compSingle } from '@/api/component'
   import waves from '@/directive/waves' // 水波纹指令
   import { Loading } from 'element-ui'
   import comFileManage from '@/views/fileManager/filecomp'
 
-  /* eslint-disable */
   export default {
     name: 'components',
     directives: {
@@ -287,6 +279,7 @@
           deployPath: [{ required: true, trigger: 'blur', validator: validatePath }]
         },
         downloadLoading: false,
+        managerLoading: false,
         options: {
           // 可通过 https://github.com/simple-uploader/Uploader/tree/develop/samples/Node.js 示例启动服务
           //target: '//localhost:3000/upload',
@@ -377,10 +370,17 @@
         }
       },
       handleCreate() {
+        this.managerLoading = true
         this.resetTemp();
+        this.selectedId = ''
+        this.selectdName = ''
         this.dialogStatus = 'create'
         this.dialogFormVisible = true
         this.$nextTick(() => {
+          if(this.$refs.createComFile.list) {
+            this.$refs.createComFile.list = []
+            this.$refs.createComFile.breadcrumbList = []
+          }
           this.$refs['dataForm'].clearValidate()
 
           /*console.log("文件信息");
@@ -419,7 +419,10 @@
             createComp(this.projectId, formData).then((res) => {
               createloading.close()
               // this.list.unshift(this.temp)
-              this.dialogFormVisible = false
+              // this.dialogFormVisible = false
+              this.selectedId = res.data.data.id
+              this.selectdName = res.data.data.name
+              this.managerLoading = false
               this.$notify({
                 title: '成功',
                 message: '创建成功',

@@ -302,7 +302,12 @@
           folder: true
         })
         // console.log(this.breadcrumbList)
-        this.getList();
+
+        if(this.componentId){
+          this.getList();
+        } else {
+          this.listLoading = false
+        }
         this.autoStart = false; //取消自动上传
       },
       getList() {
@@ -712,12 +717,16 @@
       selectCompId(newValue, oldValue) {
         this.componentId = this.selectCompId,
         this.parentNodeId = ''
-        this.initData()
+        if(this.componentId) {
+          this.initData()
+        }
       },
       selectCompName(newValue, oldValue) {
         this.componentId = this.selectCompId,
-          this.parentNodeId = ''
-        this.initData()
+        this.parentNodeId = ''
+        if(this.componentId) {
+          this.initData()
+        }
       }
     }
   }
