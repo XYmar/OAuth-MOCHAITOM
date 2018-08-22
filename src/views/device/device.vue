@@ -89,6 +89,9 @@
               <el-dropdown-item divided>
                 <span style="display:inline-block;padding:0 10px;" @click="deleteDevice(scope.row)">删除</span>
               </el-dropdown-item>
+              <el-dropdown-item divided>
+                <span style="display:inline-block;padding:0 10px;" @click="handleLineData(scope.row)">详情</span>
+              </el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
           <el-button type="primary" size="mini" v-if="scope.row.virtual" @click="handleReport(scope.row)">{{$t('table.report')}}</el-button>
@@ -224,6 +227,7 @@
 
     <p id="callback"></p>
     <p id="onlineheartbeatmessages"></p>
+    <lineMarker :countTime="countTime" :cpuData="cpuData" :ramData="ramData"></lineMarker>
   </div>
 </template>
 
@@ -234,6 +238,7 @@
   import service from '@/utils/request'
   import Stomp from 'stompjs'
   import SockJS from 'sockjs-client'
+  import lineMarker from './lineMarker'
   import Vue from 'vue'
 
   /* eslint-disable */
@@ -241,6 +246,9 @@
     name: 'add-device',
     directives: {
       waves
+    },
+    components: {
+      lineMarker
     },
     data() {
       const validateIP = (rule, value, callback) => {
@@ -274,6 +282,10 @@
         webResBody: [],
         checkedProcess: [],           //checkbox, 进程id
         processIds: [],             //进程id
+        cpuData: 0,
+        ramData: 0,
+        upSpeed: 0,
+        countTime: null,
         listLoading: true,
         searchQuery: '',
         userData:{
@@ -412,7 +424,27 @@
                         that.list[j].freeRAMSize = that.webResBody[i].freeRAMSize;
                         that.list[j].ifChangeColor = (that.webResBody[i].ramsize - that.webResBody[i].freeRAMSize)/that.webResBody[i].ramsize*100;
                         that.list[j].virtual = false;
+                        that.countTime = that.webResBody[i].createTime
+                        // that.list[j].cpuData = Math.round((that.webResBody[i].ramsize - that.webResBody[i].freeRAMSize)/that.webResBody[i].ramsize*10000)/100;
+                        that.cpuData = parseInt(that.webResBody[i].cpuutilization)
+                        that.ramData = Math.round((that.webResBody[i].ramsize - that.webResBody[i].freeRAMSize)/that.webResBody[i].ramsize*10000)/100
+
                         listIfExist = true;
+                        /*if(!that.list[j].cpuData) {
+                          that.list[j].cpuData = [(that.webResBody[i].ramsize - that.webResBody[i].freeRAMSize)/that.webResBody[i].ramsize*100]
+                          // that.list[j].cpuData.push((that.webResBody[i].ramsize - that.webResBody[i].freeRAMSize)/that.webResBody[i].ramsize*100)
+                        }*/
+                        /*if(that.list[j].cpuData.length < 13) {
+                          that.list[j].cpuData.push((that.webResBody[i].ramsize - that.webResBody[i].freeRAMSize)/that.webResBody[i].ramsize*100)
+                        } else {
+                          that.list[j].cpuData = that.cpuData.splice(0,1)
+                        }*/
+                        /*if(that.list[j].cpuData.length >= 12){
+                          that.list[j].cpuData = that.cpuData.splice(0,1)
+                        } else if(that.list[j].cpuData) {
+                          that.list[j].cpuData.push((that.webResBody[i].ramsize - that.webResBody[i].freeRAMSize)/that.webResBody[i].ramsize*100)
+                        }*/
+                        console.log(that.list[j].cpuData)
                         break;
                       }
                     }
@@ -444,7 +476,9 @@
             }
           });
         });
-
+      },
+      handleLineData(row) {
+        // this.cpuData = row.cpuData
       },
       handleSizeChange(val) {
         this.listQuery.size = val
@@ -863,12 +897,19 @@
       },
       listenProjectId () {
         return this.$store.state.app.projectId
+      },
+      listenCpuData() {
+        return this.countTime
       }
     },
     watch: {
       listenProjectId: function () {
         this.proId = this.getCookie('projectId')
         this.getList()
+      },
+      listenCpuData: function() {
+        // this.cpuData = this.cpuData
+        console.log(this.cpuData)
       }
     }
   }
