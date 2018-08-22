@@ -9,7 +9,7 @@ export function scanDevice(planId, deviceId) {
 
 export function scanComp(planId, deviceId, compId) {
   return request({
-    url: '/deploymentdesigns/' + planId + '/device/' + deviceId + '/component/' + compId + 'scan',
+    url: '/deploymentdesigns/' + planId + '/device/' + deviceId + '/component/' + compId + '/scan',
     method: 'get'
   })
 }
@@ -26,7 +26,7 @@ export function scanQucikByDev(planId, deviceId, extensions) {
 
 export function scanQucikByComp(planId, deviceId, compId, extensions) {
   return request({
-    url: '/deploymentdesigns/' + planId + '/device/' + deviceId + '/component/' + compId + 'scan',
+    url: '/deploymentdesigns/' + planId + '/device/' + deviceId + '/component/' + compId + '/scan',
     method: 'get',
     params: {
       extensions: extensions

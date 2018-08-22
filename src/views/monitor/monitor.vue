@@ -117,7 +117,7 @@
         </el-table-column>
         <el-table-column align="left" label="状态" width="100">
           <template slot-scope="scope">
-            <span class="el-tag el-tag--danger" v-if="scope.row.online == false">离线</span>
+            <span class="el-tag el-tag--danger" v-if="!scope.row.online">离线</span>
             <span class="el-tag el-tag--primary" v-else>在线</span>
           </template>
         </el-table-column>
