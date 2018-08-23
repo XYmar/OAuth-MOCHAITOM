@@ -229,6 +229,14 @@ code {
     overflow-y: scroll;
   }
 }
+.modDeviceDialog .el-dialog{
+  max-height: 70%;
+  overflow-y: scroll;
+  .el-dialog__body {
+    // overflow-y: scroll;
+    // overflow: hidden;
+  }
+}
 .manage-uploader .uploader-file{
   .uploader-file-name {
     width:40%;

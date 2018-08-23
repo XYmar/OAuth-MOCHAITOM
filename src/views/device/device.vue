@@ -11,7 +11,7 @@
 
       <el-table-column align="center" :label="$t('table.deviceName')" width="130">
         <template slot-scope="scope">
-          <span class="link-type" @click="handleUpdate(scope.row)">{{scope.row.name}}</span>
+          <span class="link-type" @click="handleUpdate(scope.row, scope.$index)">{{scope.row.name}}</span>
         </template>
       </el-table-column>
       <el-table-column width="140px" align="center" :label="$t('table.deviceIP')">
@@ -24,24 +24,38 @@
           <span>{{scope.row.deployPath}}</span>
         </template>
       </el-table-column>
-      <el-table-column min-width="80px" label="CPU">
+      <el-table-column min-width="80px" align="center" label="CPU">
         <template slot-scope="scope">
           <span v-if="!scope.row.online">--</span>
           <span v-else>{{Math.round(scope.row.cpuclock/1000*100)/100}}GHz</span>
         </template>
       </el-table-column>
-      <el-table-column min-width="100px" label="CPU利用率">
+      <el-table-column min-width="100px" align="center" label="CPU利用率">
         <template slot-scope="scope">
           <span v-if="!scope.row.online">--</span>
           <span v-else>{{scope.row.cpuutilization}}%</span>
         </template>
       </el-table-column>
-      <el-table-column min-width="100px" label="内存利用率">
+      <el-table-column min-width="100px" align="center" label="内存利用率">
         <template slot-scope="scope">
           <span v-if="!scope.row.online">--</span>
           <span v-else-if="scope.row.ifChangeColor < 70">{{Math.round((scope.row.ramsize - scope.row.freeRAMSize)/scope.row.ramsize*10000)/100}}%</span>
           <span v-else-if="scope.row.ifChangeColor >= 70 && scope.row.ifChangeColor < 85" style="color: #FF8C00;">{{Math.round((scope.row.ramsize - scope.row.freeRAMSize)/scope.row.ramsize*10000)/100}}%</span>
           <span v-else-if="scope.row.ifChangeColor >= 85" style="color: #FF0000;">{{Math.round((scope.row.ramsize - scope.row.freeRAMSize)/scope.row.ramsize*10000)/100}}%</span>
+        </template>
+      </el-table-column>
+      <el-table-column min-width="100px" align="center" label="上行速度">
+        <template slot-scope="scope">
+          <span v-if="!scope.row.online">--</span>
+          <!--<span v-else>{{scope.row.upstreamSpeed}}</span>-->
+          <span v-else>{{computedUpStream(scope.row.upstreamSpeed)}}</span>
+        </template>
+      </el-table-column>
+      <el-table-column min-width="100px" align="center" label="下行速度">
+        <template slot-scope="scope">
+          <span v-if="!scope.row.online">--</span>
+          <!--<span v-else>{{scope.row.downstreamSpeed}}</span>-->
+          <span v-else>{{computedDownStream(scope.row.downstreamSpeed)}}</span>
         </template>
       </el-table-column>
       <el-table-column align="center" :label="$t('table.deviceState')">
@@ -81,7 +95,7 @@
             </span>
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item>
-                <span style="display:inline-block;padding:0 10px;" @click="handleUpdate(scope.row)">编辑</span>
+                <span style="display:inline-block;padding:0 10px;" @click="handleUpdate(scope.row, scope.$index)">编辑</span>
               </el-dropdown-item>
               <el-dropdown-item divided>
                 <span style="display:inline-block;padding:0 10px;" @click="copyDevice(scope.row)">复制</span>
@@ -118,8 +132,8 @@
       </el-pagination>
     </div>-->
 
-
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" width="40%">
+    <!--修改对话窗口：包含动态图-->
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" width="40%" class="modDeviceDialog">
       <el-form :rules="deviceRules" ref="dataForm" :model="temp" label-width="100px" style='width: 80%; margin:0 auto;'>
         <el-form-item :label="$t('table.deviceName')" prop="name">
           <el-input v-model="temp.name"></el-input>
@@ -134,6 +148,17 @@
           <el-input v-model="temp.description"></el-input>
         </el-form-item>
       </el-form>
+      <!--<lineMarker v-if="dialogStatus === 'update'" :countTime="countTime" :cpuData="cpuData" :ramData="ramData"></lineMarker>-->
+      <lineMarker ref="lineMarker"
+                  v-if="dialogStatus === 'update' && list[currentDeviceIndex].online == true"
+                  :countTime="list[currentDeviceIndex].countTime"
+                  :cpuData="list[currentDeviceIndex].cpuData"
+                  :ramData="list[currentDeviceIndex].ramData"
+                  :upSpeed="list[currentDeviceIndex].upstreamSpeed"
+                  :downSpeed="list[currentDeviceIndex].downstreamSpeed"
+                  style="margin-bottom: 10px;"
+      >
+      </lineMarker>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">{{$t('table.cancel')}}</el-button>
         <el-button v-if="dialogStatus=='create'" type="primary" @click="createData">{{$t('table.confirm')}}</el-button>
@@ -227,7 +252,6 @@
 
     <p id="callback"></p>
     <p id="onlineheartbeatmessages"></p>
-    <lineMarker :countTime="countTime" :cpuData="cpuData" :ramData="ramData"></lineMarker>
   </div>
 </template>
 
@@ -287,6 +311,7 @@
         upSpeed: 0,
         countTime: null,
         listLoading: true,
+        currentDeviceIndex: 0,
         searchQuery: '',
         userData:{
           username: '',
@@ -424,27 +449,15 @@
                         that.list[j].freeRAMSize = that.webResBody[i].freeRAMSize;
                         that.list[j].ifChangeColor = (that.webResBody[i].ramsize - that.webResBody[i].freeRAMSize)/that.webResBody[i].ramsize*100;
                         that.list[j].virtual = false;
-                        that.countTime = that.webResBody[i].createTime
-                        // that.list[j].cpuData = Math.round((that.webResBody[i].ramsize - that.webResBody[i].freeRAMSize)/that.webResBody[i].ramsize*10000)/100;
-                        that.cpuData = parseInt(that.webResBody[i].cpuutilization)
-                        that.ramData = Math.round((that.webResBody[i].ramsize - that.webResBody[i].freeRAMSize)/that.webResBody[i].ramsize*10000)/100
-
+                        // that.countTime = that.webResBody[i].createTime
+                        // that.cpuData = parseInt(that.webResBody[i].cpuutilization)
+                        // that.ramData = Math.round((that.webResBody[i].ramsize - that.webResBody[i].freeRAMSize)/that.webResBody[i].ramsize*10000)/100
+                        that.list[j].countTime = that.webResBody[i].createTime;
+                        that.list[j].cpuData = parseInt(that.webResBody[i].cpuutilization);
+                        that.list[j].ramData = Math.round((that.webResBody[i].ramsize - that.webResBody[i].freeRAMSize)/that.webResBody[i].ramsize*10000)/100;
+                        that.list[j].upstreamSpeed = that.webResBody[i].upstreamSpeed;
+                        that.list[j].downstreamSpeed = that.webResBody[i].downstreamSpeed;
                         listIfExist = true;
-                        /*if(!that.list[j].cpuData) {
-                          that.list[j].cpuData = [(that.webResBody[i].ramsize - that.webResBody[i].freeRAMSize)/that.webResBody[i].ramsize*100]
-                          // that.list[j].cpuData.push((that.webResBody[i].ramsize - that.webResBody[i].freeRAMSize)/that.webResBody[i].ramsize*100)
-                        }*/
-                        /*if(that.list[j].cpuData.length < 13) {
-                          that.list[j].cpuData.push((that.webResBody[i].ramsize - that.webResBody[i].freeRAMSize)/that.webResBody[i].ramsize*100)
-                        } else {
-                          that.list[j].cpuData = that.cpuData.splice(0,1)
-                        }*/
-                        /*if(that.list[j].cpuData.length >= 12){
-                          that.list[j].cpuData = that.cpuData.splice(0,1)
-                        } else if(that.list[j].cpuData) {
-                          that.list[j].cpuData.push((that.webResBody[i].ramsize - that.webResBody[i].freeRAMSize)/that.webResBody[i].ramsize*100)
-                        }*/
-                        console.log(that.list[j].cpuData)
                         break;
                       }
                     }
@@ -462,6 +475,11 @@
                   tempList.ifChangeColor = (that.webResBody[i].ramsize - that.webResBody[i].freeRAMSize)/that.webResBody[i].ramsize*100;
                   tempList.virtual = true;
                   tempList.online = true;
+                  tempList.countTime = that.webResBody[i].createTime;
+                  tempList.cpuData = parseInt(that.webResBody[i].cpuutilization);
+                  tempList.ramData = Math.round((that.webResBody[i].ramsize - that.webResBody[i].freeRAMSize)/that.webResBody[i].ramsize*10000)/100;
+                  tempList.upstreamSpeed = that.webResBody[i].upstreamSpeed;
+                  tempList.downstreamSpeed = that.webResBody[i].downstreamSpeed;
                   that.list.push(tempList);
                 }
               }
@@ -546,14 +564,32 @@
           }
         })
       },
-      handleUpdate(row) {
+      handleUpdate(row, index) {
         this.temp = Object.assign({}, row) // copy obj
         /*this.temp.timestamp = new Date(this.temp.timestamp)*/
         this.dialogStatus = 'update'
         this.deviceId = row.id
         this.dialogFormVisible = true
+        this.currentDeviceIndex = index
         this.$nextTick(() => {
+          if(!row.online) {
+            return
+          }
+          // 销毁图表
+          // this.$refs.lineMarker.chart.clear() // 直接销毁无需清空
+          this.$refs.lineMarker.chart.dispose()
+          this.$refs.lineMarker.chartSpeed.dispose()
+          this.$refs.lineMarker.chart = null
+          this.$refs.lineMarker.chartSpeed = null
+          // 重置数据
+          this.$refs.lineMarker.cpuArr = []
+          this.$refs.lineMarker.upstreamSpeedArr = []
+          this.$refs.lineMarker.downstreamSpeedArr = []
+          this.$refs.lineMarker.ramArr = []
+          this.$refs.lineMarker.initChart()
+          this.$refs.lineMarker.initSpeedChart()
           this.$refs['dataForm'].clearValidate()
+
         })
       },
       updateData() {
@@ -898,19 +934,39 @@
       listenProjectId () {
         return this.$store.state.app.projectId
       },
-      listenCpuData() {
-        return this.countTime
+      computedUpStream () {
+        return function(speed) {
+          if(speed >= 0 && speed <= 1000) {
+            return Math.round(speed*10)/10 + 'KB/S'
+          }
+          if(speed > 1000) {
+            return Math.round(speed/10)/100 + 'MB/S'
+          }
+        }
+      },
+      computedDownStream () {
+        return function(speed) {
+          if(speed >= 0 && speed <= 1000) {
+            return Math.round(speed*10)/10 + 'KB/S'
+          }
+          if(speed > 1000) {
+            return Math.round(speed/10)/100 + 'MB/S'
+          }
+        }
       }
+      /*listenCpuData() {
+        return this.countTime
+      }*/
     },
     watch: {
       listenProjectId: function () {
         this.proId = this.getCookie('projectId')
         this.getList()
       },
-      listenCpuData: function() {
+      /*listenCpuData: function() {
         // this.cpuData = this.cpuData
         console.log(this.cpuData)
-      }
+      }*/
     }
   }
 </script>
