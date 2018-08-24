@@ -4,6 +4,12 @@
       <el-input @keyup.enter.native="handleFilter" style="width: 200px;" class="filter-item" placeholder="名称" v-model="searchQuery">
       </el-input>
       <el-button class="filter-item" style="margin-left: 10px;float:right;" @click="handleCreate" type="primary" icon="el-icon-edit">{{$t('table.add')}}</el-button>
+      <el-button type="danger" @click="showHistory" style="float: right;" icon="el-icon-delete" v-show="!isHistory">
+        回收站
+      </el-button>
+      <el-button type="success" @click="showNow" style="float: right;" icon="el-icon-back" v-show="isHistory">
+        退出回收站
+      </el-button>
     </div>
 
     <el-table :key='tableKey' :data="listA" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row
@@ -14,28 +20,28 @@
           <span class="link-type" @click="handleUpdate(scope.row)">{{scope.row.name}}</span>
         </template>
       </el-table-column>
-      <el-table-column min-width="80px" align="center" :label="$t('table.deployPlanDesc')">
+      <el-table-column min-width="80" align="center" :label="$t('table.deployPlanDesc')">
         <template slot-scope="scope">
           <span>{{scope.row.description}}</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" width="200px" label="部署操作">
+      <el-table-column align="center" width="200" label="部署操作" v-if="!isHistory">
         <template slot-scope="scope">
           <!--<router-link class="pan-btn tiffany-btn" :to='{name:"deployPlanDetail",params:{id:scope.row.id}}'>查看</router-link>
           <router-link class="pan-btn light-blue-btn" :to='{name:"deploy",params:{id:scope.row.id}}'>部署</router-link>
           <router-link class="pan-btn green-btn" :to='{name:"deployBind",params:{id:scope.row.id}}'>设计</router-link>-->
           <!--<router-link :to='{name:"deployPlanDetail",params:{id:scope.row.id}}'><el-button size="mini" type="primary">查看</el-button></router-link>-->
-          <router-link :to='{name:"deployBind",params:{id:scope.row.id}}'><el-button size="mini" type="primary">设计</el-button></router-link>
-          <router-link :to='{name:"deploy",params:{id:scope.row.id}}'><el-button size="mini" type="success">部署</el-button></router-link>
+          <router-link :to='{name:"deployBind",params:{id:scope.row.id}}' v-if="!scope.row.deleted"><el-button size="mini" type="primary">设计</el-button></router-link>
+          <router-link :to='{name:"deploy",params:{id:scope.row.id}}' v-if="!scope.row.deleted"><el-button size="mini" type="success">部署</el-button></router-link>
         </template>
       </el-table-column>
-      <el-table-column align="center" :label="$t('table.actions')" width="200" class-name="small-padding fixed-width">
+      <el-table-column align="center" :label="$t('table.actions')" width="200">
         <template slot-scope="scope">
           <!--<el-button size="mini" type="success">设计</el-button>-->
           <!--<el-button type="primary" size="mini" @click="handleUpdate(scope.row)">{{$t('table.edit')}}</el-button>
           <el-button size="mini" type="danger" @click="handleDelete(scope.row)">{{$t('table.delete')}}</el-button>
           <el-button size="mini" type="info">基线</el-button>-->
-          <el-dropdown trigger="click">
+          <el-dropdown trigger="click" v-if="!scope.row.deleted">
             <span class="el-dropdown-link" v-if="!scope.row.virtual">
               <el-button type="success" plain>更多操作</el-button>
             </span>
@@ -98,13 +104,25 @@
                 <!--<span style="display:inline-block;padding:0 10px;" @click="handleMonitor(scope.row)">在线监控</span>-->
               <!--</el-dropdown-item>-->
               <el-dropdown-item divided>
-                <span style="display:inline-block;padding:0 10px;" @click="handleMonitor1(scope.row)">在线监控</span>
+                <span style="display:inline-block;padding:0 10px;" @click="handleMonitor(scope.row)">在线监控</span>
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+          <el-dropdown trigger="click" v-else>
+            <span class="el-dropdown-link">
+              <el-button type="success" plain>更多操作</el-button>
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item>
+                <span style="display:inline-block;padding:0 10px;" @click="handleClean(scope.row)">清除</span>
+              </el-dropdown-item>
+              <el-dropdown-item divided>
+                <span style="display:inline-block;padding:0 10px;" @click="handleRestore(scope.row)">恢复</span>
               </el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
         </template>
       </el-table-column>
-
     </el-table>
     <el-pagination
       @size-change="handleSizeChange"
@@ -122,7 +140,7 @@
       <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="listQuery.page" :page-sizes="[10,20,30, 50]" :page-size="listQuery.limit" layout="total, sizes, prev, pager, next, jumper" :total="total">
       </el-pagination>
     </div>-->
-
+    <!--部署设计对话框-->
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" width="40%">
       <el-form :rules="deployRules" ref="dataForm" :model="temp" label-width="100px" style='width: 80%; margin:0 auto;'>
         <el-form-item :label="$t('table.deployPlanName')" prop="name">
@@ -198,7 +216,7 @@
 </template>
 
 <script>
-  import { deployplanList, createDeployplan, updateDeployplan, deleteDeployplan } from '@/api/deployplan'
+  import { deployplanList, createDeployplan, updateDeployplan, deleteDeployplan, hisDeployplan, cleanDeployplan, restoreDeployplan } from '@/api/deployplan'
   import { saveDeploymentDesignSnapshots, getDeploymentDesignSnapshots, deleteDeploymentDesignSnapshots, modifySnapshots } from '@/api/baseline'
   import waves from '@/directive/waves' // 水波纹指令
   import Sortable from 'sortablejs'
@@ -211,6 +229,7 @@
     },
     data() {
       return {
+        isHistory: false,
         selectedId: '',
         deployName: '',
         tableKey: 0,
@@ -272,6 +291,7 @@
       }
     },
     created() {
+      this.isHistory = false
       this.getList()
     },
     methods: {
@@ -280,12 +300,25 @@
         let projectId = this.getCookie('projectId');
 
         deployplanList(projectId, this.listQuery).then(response => {
+          this.isHistory = false
           this.list = response.data.data.content
           this.total = response.data.total
           this.listLoading = false
           this.listLength = response.data.data.length
           this.total = response.data.data.totalElements
-          console.log(this.list);
+        })
+      },
+      getHis() {
+        this.listLoading = true;
+        let projectId = this.getCookie('projectId');
+
+        hisDeployplan(projectId, this.listQuery).then(response => {
+          this.isHistory = true
+          this.list = response.data.data.content
+          this.total = response.data.total
+          this.listLoading = false
+          this.listLength = response.data.data.length
+          this.total = response.data.data.totalElements
         })
       },
       getBaslines(id) {
@@ -457,7 +490,6 @@
               duration: 2000
             })
             this.getList()
-            this.setProjectNum(this.listLength)
           }).catch(() => {
             this.$notify({
               title: '失败',
@@ -575,13 +607,74 @@
           }
         })
       },
-      handleMonitor1(row) {
-        this.$router.push({
-          name: 'monitor',
-          params: {
-            name: row.name,
-            id: row.id
-          }
+      showHistory() {
+        this.getHis()
+      },
+      showNow() {
+        this.getList()
+      },
+      handleClean(row) {
+        this.$confirm('确认彻底删除此部署设计吗？', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.listLoading = true
+          cleanDeployplan(row.id).then(() => {
+            this.listLoading = false
+            this.showHistory()
+            this.$notify({
+              title: '成功',
+              message: '清除成功！',
+              type: 'success',
+              duration: 2000
+            })
+          }).catch(() => {
+            this.listLoading = false
+            this.$notify({
+              title: '失败',
+              message: '清除失败！',
+              type: 'error',
+              duration: 2000
+            })
+          })
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消清除'
+          })
+        })
+      },
+      handleRestore(row) {
+        this.$confirm('确认恢复此部署设计吗？', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.listLoading = true
+          restoreDeployplan(row.id).then(() => {
+            this.listLoading = false
+            this.showHistory()
+            this.$notify({
+              title: '成功',
+              message: '恢复成功！',
+              type: 'success',
+              duration: 2000
+            })
+          }).catch(() => {
+            this.listLoading = false
+            this.$notify({
+              title: '失败',
+              message: '恢复失败！',
+              type: 'error',
+              duration: 2000
+            })
+          })
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消恢复'
+          })
         })
       }
     },

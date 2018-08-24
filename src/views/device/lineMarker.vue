@@ -84,7 +84,7 @@ export default {
         // backgroundColor: 'rgba(0, 0, 0, 0.1)',
         title: {
           top: 20,
-          text: 'cpu、内存详情',
+          text: 'CPU、内存详情',
           textStyle: {
             fontWeight: 'normal',
             fontSize: 16,
@@ -133,7 +133,7 @@ export default {
         yAxis: [{
           // type: 'category',
           type: 'value',
-          name: '(%)',
+          name: '(占用率：%)',
           axisTick: {
             show: false
           },
@@ -291,7 +291,7 @@ export default {
         yAxis: [{
           // type: 'category',
           type: 'value',
-          name: 'speed',
+          name: '（KB/S）',
           axisTick: {
             show: false
           },

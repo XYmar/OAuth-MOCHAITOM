@@ -4,7 +4,10 @@
       <el-input @keyup.enter.native="handleFilter" style="width: 240px;" class="filter-item" placeholder="标题" v-model="searchQuery">
       </el-input>
 
-      <el-button class="filter-item pull-right" style="float: right;margin-left: 10px;" @click="handleCreate" type="primary"
+      <el-button id="addComBtn"
+                 class="filter-item pull-right"
+                 style="float: right;margin-left: 10px;"
+                 @click="handleCreate" type="primary"
                  icon="el-icon-edit">{{$t('table.add')}}
       </el-button>
 
@@ -25,15 +28,12 @@
         <!--<el-button class="filter-item" type="primary" style="margin-left: 10px;" v-waves icon="el-icon-download">导入</el-button>-->
 
       </el-upload>
-
-      <span class="pull-right hitoryClass" id="history" type="danger" @click="showHistory">
-        <svg-icon icon-class="history" style="margin-right: 0;"></svg-icon>
-            <span style="margin-left: 5px;">历史组件</span>
-      </span>
-      <span class="pull-right nowClass" id="now" type="warning" @click="showNow">
-        <svg-icon icon-class="time" style="margin-right: 0;"></svg-icon>
-            <span style="margin-left: 5px;">现有组件</span>
-      </span>
+      <el-button type="danger" @click="showHistory" style="float: right;" icon="el-icon-delete" v-show="!isHistory">
+        回收站
+      </el-button>
+      <el-button type="success" @click="showNow" style="float: right;" icon="el-icon-back" v-show="isHistory">
+        退出回收站
+      </el-button>
     </div>
 
     <el-table :key='tableKey' :data="listA" v-loading="listLoading" element-loading-text="给我一点时间" border fit
@@ -42,7 +42,8 @@
 
       <el-table-column :label="$t('table.compName')" min-width="100">
         <template slot-scope="scope">
-          <span class="link-type" @click="handleUpdate(scope.row)">{{scope.row.name}}</span>
+          <span v-if="!scope.row.deleted" class="link-type" @click="handleUpdate(scope.row)">{{scope.row.name}}</span>
+          <span v-else>{{scope.row.name}}</span>
         </template>
       </el-table-column>
       <el-table-column width="150px" :label="$t('table.compVersion')">
@@ -68,7 +69,7 @@
       <el-table-column :label="$t('table.actions')" width="140" class-name="small-padding fixed-width" align="center">
         <template slot-scope="scope">
           <!--<el-button type="primary" size="mini" @click="handleUpdate(scope.row)" style="margin-left: 10px;">{{$t('table.edit')}}</el-button>-->
-          <el-dropdown trigger="click">
+          <el-dropdown trigger="click" v-if="!scope.row.deleted">
             <!--<el-tooltip class="item" effect="dark" content="更多操作" placement="top">
               <span class="el-dropdown-link">
               <svg-icon icon-class="ellipsis"></svg-icon>
@@ -89,6 +90,24 @@
               </el-dropdown-item>
               <el-dropdown-item divided>
                 <span style="display:inline-block;padding:0 10px;" @click="handleDelete(scope.row)">删除</span>
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+          <el-dropdown trigger="click" v-else>
+            <!--<el-tooltip class="item" effect="dark" content="更多操作" placement="top">
+              <span class="el-dropdown-link">
+              <svg-icon icon-class="ellipsis"></svg-icon>
+            </span>
+            </el-tooltip>-->
+            <span class="el-dropdown-link">
+              <el-button type="success" plain>更多操作</el-button>
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item>
+                <span style="display:inline-block;padding:0 10px;" @click="handleDelHisCom(scope.row)">删除</span>
+              </el-dropdown-item>
+              <el-dropdown-item divided>
+                <span style="display:inline-block;padding:0 10px;" @click="handleResHisCom(scope.row)">恢复</span>
               </el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
@@ -137,7 +156,10 @@
             <el-button type="primary" @click="createData">{{$t('table.confirm')}}</el-button>
           </div>
         </div>
-        <div style="height: 100%;overflow: auto;width: 60%;float: right;padding:5px 0 10px 10px;border-left:1px solid #ccc;margin-top: -44px" v-loading="managerLoading">
+        <div style="height: 100%;overflow: auto;width: 60%;float: right;padding:5px 0 10px 10px;border-left:1px solid #ccc;margin-top: -44px"
+             v-loading="managerLoading"
+             element-loading-text="请先填写组件的基本信息并创建"
+        >
           <comFileManage ref="createComFile" :selectCompId="selectedId" :selectCompName="selectdName"></comFileManage>
         </div>
       </el-form>
@@ -204,7 +226,7 @@
 
 <script>
   /* eslint-disable */
-  import { compList, createComp, updateComp, copyComp, importComp, deleteComp, compListHistory, compSingle } from '@/api/component'
+  import { compList, createComp, updateComp, copyComp, importComp, deleteComp, compListHistory, compSingle, restoreCom, cleanCom } from '@/api/component'
   import waves from '@/directive/waves' // 水波纹指令
   import { Loading } from 'element-ui'
   import comFileManage from '@/views/fileManager/filecomp'
@@ -228,6 +250,7 @@
       }
 
       return {
+        isHistory: false,
         projectId: '',
         selectedId: '',
         selectdName: '',
@@ -318,6 +341,7 @@
       comFileManage
     },
     created() {
+      this.isHistory = false
       this.projectId = this.$store.getters.projectId
       this.userData.username = this.getCookie('username')
       this.userData.password = this.getCookie('password')
@@ -330,6 +354,7 @@
       getList() {
         this.listLoading = true
         compList(this.projectId,this.listQuery).then(response => {
+          this.isHistory = false
           this.list = response.data.data.content
           this.total = response.data.data.totalElements
           this.listLoading = false
@@ -806,39 +831,19 @@
 
       showHistory: function(){
         compListHistory(this.projectId, this.listQuery).then(response => {
+          this.isHistory = true
           this.list = response.data.data.content
           this.total = response.data.total
           this.listLoading = false
-          //隐藏历史按钮
-          $("#history").attr("style","display:none;");
-
-          $("#now").attr("style","display:block;");
+        }).catch(() => {
+          this.listLoading = false
+          this.$notify({
+            title: '失败',
+            message: '操作失败！',
+            type: 'error',
+            duration: '2000'
+          })
         })
-        /*this.$axios.get(this.getIP() + 'components',
-
-          {
-            params: {  //get请求在第二个位置，post在第三个位置
-              isShowHistory: true
-            },
-            //设置头
-            headers: {
-              'content-type': 'application/x-www-form-urlencoded'
-            },
-            auth: {
-              username: username,
-              password: password
-            }
-          }).then(res => {
-          this.components = res.data.data;
-
-          //隐藏历史按钮
-          $("#history").attr("style","display:none;");
-
-          $("#now").attr("style","display:block;");
-        })
-          .catch(err => {
-            console.log(err);
-          })*/
       },
 
       showNow: function(){
@@ -847,38 +852,81 @@
           this.list = response.data.data.content
           this.total = response.data.total
           this.listLoading = false
-          //隐藏历史按钮
-          $("#now").attr("style","display:none;");
-
-          $("#history").attr("style","display:block;");
+          this.isHistory = false
+        }).catch(() => {
+          this.listLoading = false
+          this.$notify({
+            title: '失败',
+            message: '操作失败！',
+            type: 'error',
+            duration: '2000'
+          })
         })
-
-        /*this.$axios.get(this.getIP() + 'components',
-
-          {
-            params: {  //get请求在第二个位置，post在第三个位置
-              isShowHistory: false
-            },
-            //设置头
-            headers: {
-              'content-type': 'application/x-www-form-urlencoded'
-            },
-            auth: {
-              username: username,
-              password: password
-            }
-          }).then(res => {
-          this.components = res.data.data;
-
-          //隐藏历史按钮
-          $("#now").attr("style","display:none;");
-
-          $("#history").attr("style","display:block;");
-        })
-          .catch(err => {
-            console.log(err);
-          })*/
       },
+      handleDelHisCom(row) {
+        this.$confirm('确认彻底删除此组件吗？', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.listLoading = true
+          cleanCom(row.id).then(() => {
+            this.listLoading = false
+            this.showHistory()
+            this.$notify({
+              title: '成功',
+              message: '清除成功！',
+              type: 'success',
+              duration: 2000
+            })
+          }).catch(() => {
+            this.listLoading = false
+            this.$notify({
+              title: '失败',
+              message: '清除失败！',
+              type: 'error',
+              duration: 2000
+            })
+          })
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消清除'
+          })
+        })
+      },
+      handleResHisCom(row) {
+        this.$confirm('确认恢复此组件吗？', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.listLoading = true
+          restoreCom(row.id).then(() => {
+            this.listLoading = false
+            this.showHistory()
+            this.$notify({
+              title: '成功',
+              message: '恢复成功！',
+              type: 'success',
+              duration: 2000
+            })
+          }).catch(() => {
+            this.listLoading = false
+            this.$notify({
+              title: '失败',
+              message: '恢复失败！',
+              type: 'error',
+              duration: 2000
+            })
+          })
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消恢复'
+          })
+        })
+      }
     },
     computed: {
       listA: function () {
@@ -887,48 +935,11 @@
           return item.name.toLowerCase().indexOf(self.searchQuery.toLowerCase()) !== -1;
         })
       }
-    },
-    mounted () {
-      this.$nextTick(() => {
-        //隐藏现有按钮
-        $("#now").attr("style","display:none;");
-      })
     }
   }
 </script>
 
 <style scoped>
-  #components #now{
-    float: right;
-    margin-right: 10px;
-    font-size: 14px;
-    height: 33.5px;
-    padding: 9px 15px;
-    background-color:#e6a23c;
-    cursor:pointer;
-    box-sizing:border-box;
-    color:#fff;
-    border-radius:4px;
-  }
-  #components #history{
-    float: right;
-    margin-right: 10px;
-    font-size: 14px;
-    height: 33.5px;
-    padding: 9px 15px;
-    background-color:#f56c6c;
-    cursor:pointer;
-    box-sizing:border-box;
-    color:#fff;
-    border-radius:4px;
-  }
-  #components span#now:hover{
-    background-color:#ebb563;
-  }
-  #components span#history:hover{
-    background-color:#f78989;
-  }
-
   .el-button+.el-button {
     margin-left: 0;
   }

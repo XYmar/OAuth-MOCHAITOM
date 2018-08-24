@@ -217,3 +217,20 @@ export function renameFile(FileId, data) {
     data
   })
 }
+
+// 回收站
+// 恢复已删除组件
+export function restoreCom(comId) {
+  return request({
+    url: '/components/' + comId + '/restore',
+    method: 'patch'
+  })
+}
+
+// 清除已删除组件
+export function cleanCom(comId) {
+  return request({
+    url: '/components/' + comId + '/clean',
+    method: 'delete'
+  })
+}
