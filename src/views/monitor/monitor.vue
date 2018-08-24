@@ -26,7 +26,7 @@
               </span>
             </el-dropdown-item>
             <el-dropdown-item divided>
-              <span  @click="scanAllByComp" style="padding:0 13px;">
+              <span @click="scanAllByComp" style="padding:0 13px;">
                 扫描组件
               </span>
             </el-dropdown-item>
@@ -44,7 +44,7 @@
               </span>
             </el-dropdown-item>
             <el-dropdown-item divided>
-              <span  @click="handleScanQuickByComp" style="padding:0 13px;">
+              <span @click="handleScanQuickByComp" style="padding:0 13px;">
                 扫描组件
               </span>
             </el-dropdown-item>
@@ -78,7 +78,8 @@
               </el-table-column>
               <el-table-column label="组件名" align="left" width="160">
                 <template slot-scope="scope">
-                  <span class="link-type" @dblclick="handleSelectComp(scope.row)">{{scope.row.componentEntity.name}}</span>
+                  <span class="link-type"
+                        @dblclick="handleSelectComp(scope.row)">{{scope.row.componentEntity.name}}</span>
                 </template>
               </el-table-column>
               <el-table-column label="路径" align="left">
@@ -128,12 +129,13 @@
                 style="width: 100%;height:100%;overflow-y: scroll"
                 :row-key="getRowKeys"
                 :expand-row-keys="expands"
+                class="scanResTable"
       >
-        <el-table-column align="center" width="40" type="expand">
+        <el-table-column align="center" type="expand">
           <template slot-scope="props">
             <el-tabs>
               <el-tab-pane label="正确">
-                <el-table :data="props.row.correctFiles" stripe fit width="100%">
+                <el-table :data="props.row.correctFiles" stripe fit width="100%" :show-header="false">
                   <el-table-column label="文件名称" prop="name" min-width="240">
                   </el-table-column>
                   <el-table-column label="路径" prop="deployPath" min-width="240">
@@ -146,7 +148,7 @@
                 </el-table>
               </el-tab-pane>
               <el-tab-pane label="已修改">
-                <el-table :data="props.row.modifyedFiles" fit width="100%">
+                <el-table :data="props.row.modifyedFiles" fit width="100%" :show-header="false">
                   <el-table-column label="文件名称" prop="name" min-width="240">
                     <!--<template props="fileName">
                       &lt;!&ndash;<span>{{scope.row.deployPath}}</span>&ndash;&gt;
@@ -162,7 +164,7 @@
                 </el-table>
               </el-tab-pane>
               <el-tab-pane label="已删除">
-                <el-table :data="props.row.missingFiles" fit width="100%">
+                <el-table :data="props.row.missingFiles" fit width="100%" :show-header="false">
                   <el-table-column label="文件名称" prop="name" min-width="240">
                     <!--<template props="fileName">
                       &lt;!&ndash;<span>{{scope.row.deployPath}}</span>&ndash;&gt;
@@ -178,7 +180,7 @@
                 </el-table>
               </el-tab-pane>
               <el-tab-pane label="未知">
-                <el-table :data="props.row.unknownFiles" fit width="100%">
+                <el-table :data="props.row.unknownFiles" fit width="100%" :show-header="false">
                   <el-table-column label="文件名称" prop="name" min-width="240">
                     <!--<template props="fileName">
                       &lt;!&ndash;<span>{{scope.row.deployPath}}</span>&ndash;&gt;
@@ -203,17 +205,18 @@
         </el-table-column>
         <el-table-column align="center" label="组件名" min-width="130">
           <template slot-scope="scope">
-            <span class="link-type">{{scope.row.componentEntity.name}}</span>
+            <span class="link-type" :class="computedClass(scope.row)">{{scope.row.componentEntity.name}}</span>
+            <!--<span class="link-type" v-else>{{scope.row.componentEntity.name}}</span>-->
           </template>
         </el-table-column>
         <el-table-column align="center" label="版本" width="130">
           <template slot-scope="scope">
-            <span class="link-type">{{scope.row.componentEntity.version}}</span>
+            <span class="link-type" :class="computedClass(scope.row)">{{scope.row.componentEntity.version}}</span>
           </template>
         </el-table-column>
         <el-table-column align="center" label="路径" min-width="130">
           <template slot-scope="scope">
-            <span class="link-type">{{scope.row.componentEntity.deployPath}}</span>
+            <span class="link-type" :class="computedClass(scope.row)">{{scope.row.componentEntity.deployPath}}</span>
           </template>
         </el-table-column>
         <!--<el-table-column align="center" label="文件" min-width="130">
@@ -245,7 +248,9 @@
 
       <div slot="footer" class="dialog-footer">
         <el-button @click="formReset">取 消</el-button>
-        <el-button v-if="dialogStatus=='scanByDevice'" type="primary" @click="scanQuickByDevice">{{$t('table.confirm')}}</el-button>
+        <el-button v-if="dialogStatus=='scanByDevice'" type="primary" @click="scanQuickByDevice">
+          {{$t('table.confirm')}}
+        </el-button>
         <el-button v-else type="primary" @click="scanQuickByComp">{{$t('table.confirm')}}</el-button>
       </div>
     </el-dialog>
@@ -281,21 +286,21 @@
         fileInfo: [],
         fileResult: [],
         getRowKeys(row) {
-          return row.componentEntity.id;
+          return row.componentEntity.id
         },
         getRowKeysComp(row) {
-          return row.id;
+          return row.id
         },
         // 要展开的行，数值的元素是row的key值
         expands: [],
         deviceExpands: [],
         type1: '',
-        typeSuggest: [{value: 'pdf'}, {value: 'txt'}, {value: 'sig'}],
+        typeSuggest: [{ value: 'pdf' }, { value: 'txt' }, { value: 'sig' }],
         dialogStatus: '',
         textMap: {
           scanByDevice: '快速扫描设备',
           scanByComp: '快速扫描组件'
-        },
+        }
       }
     },
     created() {
@@ -306,9 +311,9 @@
     },
     methods: {
       querySearch(queryString, cb) {
-        cb(this.typeSuggest);
+        cb(this.typeSuggest)
       },
-      formReset: function () {
+      formReset: function() {
         this.type1 = ''
         this.dialogFormVisible = false
       },
@@ -319,45 +324,45 @@
         })
       },
       getList2() {
-        let url = service.defaults.baseURL + '/OMS';
-        let socket = new SockJS(url);
-        let stompClient = Stomp.over(socket);
-        let that = this;
-        stompClient.connect({}, function (frame) {
-          stompClient.subscribe('/topic/onlineheartbeatmessages', function (response) {
-            let resBody = response.body;
-            let resBody2 = resBody.replace(/[\\]/g, '');
-            that.webResBody = JSON.parse(resBody2);
+        let url = service.defaults.baseURL + '/OMS'
+        let socket = new SockJS(url)
+        let stompClient = Stomp.over(socket)
+        let that = this
+        stompClient.connect({}, function(frame) {
+          stompClient.subscribe('/topic/onlineheartbeatmessages', function(response) {
+            let resBody = response.body
+            let resBody2 = resBody.replace(/[\\]/g, '')
+            that.webResBody = JSON.parse(resBody2)
 
-            if(that.deviceList.length > 0){
-              for(let i=0;i<that.deviceList.length;i++){
-                that.deviceList[i].online = false;
+            if (that.deviceList.length > 0) {
+              for (let i = 0; i < that.deviceList.length; i++) {
+                that.deviceList[i].online = false
               }
             }
-            if(that.webResBody.length > 0){
-              for(let i=0;i<that.webResBody.length;i++){
-                let listIfExist = false;
-                let tempList = [];
-                if(that.deviceList.length > 0){
-                  for(let j=0;j<that.deviceList.length;j++){
-                    if(that.webResBody[i].inetAddress === that.deviceList[j].ip){      //查找在线设备
-                      that.deviceList[j].online = true;
-                      break;
+            if (that.webResBody.length > 0) {
+              for (let i = 0; i < that.webResBody.length; i++) {
+                let listIfExist = false
+                let tempList = []
+                if (that.deviceList.length > 0) {
+                  for (let j = 0; j < that.deviceList.length; j++) {
+                    if (that.webResBody[i].inetAddress === that.deviceList[j].ip) {      //查找在线设备
+                      that.deviceList[j].online = true
+                      break
                     }
                   }
                 }
               }
             }
 
-            if(that.deviceList.length > 0) {
+            if (that.deviceList.length > 0) {
               for (let i = 0; i < that.deviceList.length; i++) {
-                Vue.set(that.deviceList, i, that.deviceList[i]);
+                Vue.set(that.deviceList, i, that.deviceList[i])
               }
-              console.log("设备----------");
-              console.log(that.deviceList);
+              console.log('设备----------')
+              console.log(that.deviceList)
             }
-          });
-        });
+          })
+        })
 
       },
       getDetailByDevice(row, index) {
@@ -375,16 +380,16 @@
         this.selectedCompName = row.componentEntity.name
       },
       scanAllByDevice() {
-        if(this.selectedDeviceId == '') {
+        if (this.selectedDeviceId == '') {
           this.$message({
             message: '请先双击选择设备！',
             type: 'warning'
           })
           return
         }
-        for(var i = 0; i < this.deviceList.length; i++) {
-          if(this.selectedDeviceId == this.deviceList[i].id) {
-            if(this.deviceList[i].online === true) {
+        for (var i = 0; i < this.deviceList.length; i++) {
+          if (this.selectedDeviceId == this.deviceList[i].id) {
+            if (this.deviceList[i].online === true) {
               this.$notify({
                 title: '扫描开始',
                 message: '设备完整扫描',
@@ -398,7 +403,7 @@
                 const compResult = res.data.data
                 this.expands = []
                 this.deviceDetail = compResult
-                for(var i = 0; i < this.deviceDetail.length; i++) {
+                for (var i = 0; i < this.deviceDetail.length; i++) {
                   this.expands.push(this.deviceDetail[i].componentEntity.id)
                 }
                 /*for (var i = 0; i < compResult.length; i++) {
@@ -535,23 +540,23 @@
         })*/
       },
       scanAllByComp() {
-        if(this.selectedDeviceId == '') {
+        if (this.selectedDeviceId == '') {
           this.$message({
             message: '请先双击选择设备！',
             type: 'warning'
           })
           return
         }
-        if(this.selectedCompId == '') {
+        if (this.selectedCompId == '') {
           this.$message({
             message: '请先双击选择组件！',
             type: 'warning'
           })
           return
         }
-        for(var i = 0; i < this.deviceList.length; i++) {
-          if(this.selectedDeviceId == this.deviceList[i].id) {
-            if(this.deviceList[i].online === true){
+        for (var i = 0; i < this.deviceList.length; i++) {
+          if (this.selectedDeviceId == this.deviceList[i].id) {
+            if (this.deviceList[i].online === true) {
               this.scanLoading = true
               scanComp(this.deployPlanId, this.selectedDeviceId, this.selectedCompId).then((res) => {
                 this.scanLoading = false
@@ -580,7 +585,7 @@
                   duration: 2000
                 })
               })
-            }else {
+            } else {
               this.$message({
                 message: '设备离线！',
                 type: 'warning'
@@ -591,7 +596,7 @@
 
       },
       handleScanQuickByDevice() {
-        if(this.selectedDeviceId == '') {
+        if (this.selectedDeviceId == '') {
           this.$message({
             message: '请先双击选择设备！',
             type: 'warning'
@@ -614,14 +619,14 @@
             }
           }
         }*/
-        if(this.selectedDeviceId == '') {
+        if (this.selectedDeviceId == '') {
           this.$message({
             message: '请先双击选择设备！',
             type: 'warning'
           })
           return
         }
-        if(this.selectedCompId == '') {
+        if (this.selectedCompId == '') {
           this.$message({
             message: '请先双击选择组件！',
             type: 'warning'
@@ -633,7 +638,7 @@
         this.dialogFormVisible = true
       },
       scanQuickByDevice() {
-        for(var i = 0; i < this.deviceList.length; i++) {
+        for (var i = 0; i < this.deviceList.length; i++) {
           if (this.selectedDeviceId == this.deviceList[i].id) {
             if (this.deviceList[i].online === true) {
               this.$notify({
@@ -649,7 +654,7 @@
                 // this.deviceDetail.push(res.data.data)
                 this.deviceDetail = res.data.data
                 this.expands = []
-                for(var k = 0; k < res.data.data.length; k++) {
+                for (var k = 0; k < res.data.data.length; k++) {
                   this.expands.push(res.data.data[k].componentEntity.id)
                 }
                 this.dialogFormVisible = false
@@ -679,7 +684,7 @@
         }
       },
       scanQuickByComp() {
-        for(var i = 0; i < this.deviceList.length; i++) {
+        for (var i = 0; i < this.deviceList.length; i++) {
           if (this.selectedDeviceId == this.deviceList[i].id) {
             if (this.deviceList[i].online === true) {
               this.$notify({
@@ -739,12 +744,25 @@
           }
           return ''
         }
+      },
+      computedClass() {
+        return function(row) {
+          if (row.correctFiles) {
+            if (row.missingFiles.length > 0 || row.unknownFiles.length > 0) {
+              return 'abNormal'
+            } else {
+              return ''
+            }
+          }
+        }
       }
     }
   }
 </script>
 
 <style scoped>
-
+  .abNormal {
+    color: orangered;
+  }
 </style>
 
