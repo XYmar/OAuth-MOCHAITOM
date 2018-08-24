@@ -1,15 +1,20 @@
 <template>
-  <div class="app-container calendar-list-container">
+  <div class="app-container calendar-list-container deploy">
     <div class="filter-container">
       <el-input style="width: 200px;" class="filter-item" :placeholder="$t('table.deviceName')" v-model="searchQuery">
       </el-input>
-
     </div>
-
-    <el-table :key='tableKey' :data="listA" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row style="width: 100%">>
-      <!-- <el-table :data="list" row-key="id"  v-loading.body="listLoading" border fit highlight-current-row style="width: 100%">-->
-
-      <el-table-column align="center" :label="$t('table.deviceName')" min-width="140">
+    <el-table :key="tableKey"
+              :data="listA"
+              v-loading="listLoading"
+              element-loading-text="给我一点时间"
+              border
+              fit
+              highlight-current-row
+              class="delpoyTable"
+              style="width: 100%"
+    >
+      <el-table-column min-width="140" align="center" :label="$t('table.deviceName')">
         <template slot-scope="scope">
           <span>{{scope.row.name}}</span>
         </template>
@@ -24,20 +29,20 @@
           <span>{{scope.row.deployPath}}</span>
         </template>
       </el-table-column>
-      <el-table-column width="110" align="center" :label="$t('table.deviceState')">
+      <el-table-column min-width="110" align="center" :label="$t('table.deviceState')">
         <template slot-scope="scope">
           <span class="el-tag el-tag--danger" v-if="scope.row.online === false">离线</span>
           <span class="el-tag el-tag--primary" v-else>在线</span>
         </template>
       </el-table-column>
-      <el-table-column width="180" align="center" :label="$t('table.deployProgress')">
+      <el-table-column min-width="180" align="center" :label="$t('table.deployProgress')">
         <template slot-scope="scope">
           <el-progress :percentage="computedProgress(scope.row.progress)"></el-progress>
         </template>
       </el-table-column>
-      <el-table-column width="100" align="center" label="部署速度">
+      <el-table-column min-width="100" align="center" label="部署速度">
         <template slot-scope="scope">
-          <span>{{scope.row.speed}}kb/s</span>
+          <span>{{computedDeploySpeed(scope.row.speed)}}</span>
         </template>
       </el-table-column>
       <el-table-column min-width="140" align="center" label="文件详情">
@@ -47,19 +52,12 @@
           <span v-else>{{scope.row.descript}}</span>
         </template>
       </el-table-column>
-      <!--<el-table-column width="145px" align="center" :label="$t('table.deployDetail')">
-        <template slot-scope="scope">
-          <el-button size="mini" type="primary">查看</el-button>
-          <el-button type="text"  @click="deployDetails(scope.row)">查看</el-button>
-        </template>
-      </el-table-column>-->
-      <el-table-column align="center" :label="$t('table.actions')" width="130" class-name="small-padding fixed-width">
+      <el-table-column min-width="130" align="center" :label="$t('table.actions')">
         <template slot-scope="scope">
           <el-button size="mini" type="success" :id="scope.row.online" :state="scope.row.state" class="deployBtn" :disabled="!scope.row.online"
                      @click="deployDevice(scope.row)">部署</el-button>
         </template>
       </el-table-column>
-
     </el-table>
 
     <el-dialog title="部署详情" :visible.sync="dialogTableVisible">
@@ -284,8 +282,8 @@
                 this.setProjectNum(this.listLength)
 
               }).catch(err => {
-                console.log("提示---------");
-                console.log(err.response.data.data);
+                // console.log("提示---------");
+                // console.log(err.response.data.data);
                 if(err.response.data.data.length != 0){
                   this.$notify({
                     title: '失败',
@@ -506,6 +504,19 @@
             return 0
           } else {
             return Math.round(num)
+          }
+        }
+      },
+      computedDeploySpeed() {
+        return function(speed) {
+          if(speed >= 0 && speed <= 1000) {
+            return Math.round(speed*10)/10 + 'KB/S'
+          }
+          if(speed > 1000) {
+            return Math.round(speed/10)/100 + 'MB/S'
+          }
+          if(!speed) {
+            return 0 + 'KB/S'
           }
         }
       }
