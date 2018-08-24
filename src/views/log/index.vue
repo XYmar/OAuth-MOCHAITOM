@@ -1,6 +1,6 @@
 <template>
   <div class="app-container calendar-list-container">
-    <div class="filter-container">
+    <!--<div class="filter-container">
       <el-input style="width: 33%" @keyup.enter.native="handleFilter" id="search-deviceIP" class="filter-item" :placeholder="$t('table.deviceIP')" v-model="listQuery.deviceIP">
       </el-input>
       <el-input style="width: 33%" @keyup.enter.native="handleFilter" id="search-compName" class="filter-item" :placeholder="$t('table.componentsName')" v-model="listQuery.componentsName">
@@ -24,9 +24,13 @@
       >
       </el-date-picker>
       <el-button style="margin-top: 8px;float:right;" class="filter-item" type="primary" v-waves icon="el-icon-search" @click="searchAll">{{$t('table.search')}}</el-button>
+    </div>-->
+    <div class="filter-container">
+      <el-input style="width: 240px;" class="filter-item" placeholder="输入部署设计名称" v-model="searchQuery">
+      </el-input>
     </div>
 
-    <el-table :key='tableKey' :data="list" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row
+    <el-table :key='tableKey' :data="listA" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row
               style="width: 100%">
       <el-table-column width="220px" align="center" label="部署设计名称">
         <template slot-scope="scope">
@@ -129,6 +133,7 @@
     },
     data() {
       return {
+        searchQuery: '',
         tableKey: 0,
         list: [],
         deployDetail: [],
@@ -379,6 +384,14 @@
           }
         }))
       }
+    },
+    computed: {
+      listA: function () {
+        let self = this;
+        return self.list.filter(function (item) {
+          return item.name.toLowerCase().indexOf(self.searchQuery.toLowerCase()) !== -1;
+        })
+      },
     }
   }
 /*  const this.prototype.startTime = function () {
