@@ -281,16 +281,11 @@ export const asyncRouterMap = [
     component: Layout,
     children: [{ path: 'device', component: _import('device/device'), name: 'device', meta: { title: 'device', icon: 'computer' }}]
   },
-  {
+  /* {
     path: '/scan',
     component: Layout,
     children: [{ path: 'index', component: _import('scan/index'), name: 'scan', meta: { title: 'scan', icon: 'scan2' }}]
-  },
-  {
-    path: '/log',
-    component: Layout,
-    children: [{ path: 'index', component: _import('log/index'), name: 'log', meta: { title: 'log', icon: 'log' }}]
-  },
+  },*/
   {
     path: '/softPackage',
     component: Layout,
@@ -301,6 +296,11 @@ export const asyncRouterMap = [
     path: '/deployPlan',
     component: Layout,
     children: [{ path: 'deployPlan', component: _import('deployPlan/deployPlan'), name: 'deployPlan', meta: { title: 'deployPlan', icon: 'example' }}]
+  },
+  {
+    path: '/log',
+    component: Layout,
+    children: [{ path: 'index', component: _import('log/index'), name: 'log', meta: { title: 'log', icon: 'log' }}]
   },
   {
     path: '/deployPlanDetail',
@@ -332,6 +332,7 @@ export const asyncRouterMap = [
   {
     path: '/deploy',
     component: Layout,
+    hidden:true,
     children: [{ path: 'deploy/:id', component: _import('deploy/deploy'), name: 'deploy', meta: { title: 'deploy', icon: 'excel' }}]
   },
   {
@@ -358,8 +359,14 @@ export const asyncRouterMap = [
     hidden: true,
     children: [{ path: 'newfiles/:id', component: _import('fileManager/index'), name: 'files', meta: { title: 'files', icon: 'table' }}]
   },
+  // {
+  //   path: '/monitor',
+  //   component: Layout,
+  //   hidden: true,
+  //   children: [{ path: 'monitor/:id', component: _import('monitor/monitor'), name: 'monitor', meta: { title: 'monitor', icon: 'table' }}]
+  // },
   {
-    path: '/monitor',
+    path: '/monitor1',
     component: Layout,
     hidden: true,
     children: [{ path: 'monitor/:id', component: _import('monitor/monitor'), name: 'monitor', meta: { title: 'monitor', icon: 'table' }}]

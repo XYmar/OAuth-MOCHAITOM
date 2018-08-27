@@ -185,3 +185,52 @@ export function exportCompFiles(id) {
     method: 'get'
   })
 }
+// uploadFoldder
+export function uploadFolder(id, data) {
+  return request({
+    url: '/components/' + id + '/componentfiles/uploadfolder',
+    method: 'post',
+    data
+  })
+}
+// moveFileTo
+export function movefileTo(FileId, targetId, data) {
+  return request({
+    url: '/componentfiles/' + FileId + '/moveto',
+    method: 'patch',
+    data
+  })
+}
+// copyFileTo
+export function copyFileTo(FileId, targetId, data) {
+  return request({
+    url: '/componentfiles/' + FileId + '/copyto',
+    method: 'patch',
+    data
+  })
+}
+// renameFile
+export function renameFile(FileId, data) {
+  return request({
+    url: '/componentfiles/' + FileId + '/rename',
+    method: 'patch',
+    data
+  })
+}
+
+// 回收站
+// 恢复已删除组件
+export function restoreCom(comId) {
+  return request({
+    url: '/components/' + comId + '/restore',
+    method: 'patch'
+  })
+}
+
+// 清除已删除组件
+export function cleanCom(comId) {
+  return request({
+    url: '/components/' + comId + '/clean',
+    method: 'delete'
+  })
+}

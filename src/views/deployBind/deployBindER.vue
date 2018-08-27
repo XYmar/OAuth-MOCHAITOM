@@ -24,11 +24,11 @@
       },
       width: {
         type: String,
-        default: '500px'
+        default: '100%'
       },
       height: {
         type: String,
-        default: '500px'
+        default: '100%'
       },
       top: {
         type: String,

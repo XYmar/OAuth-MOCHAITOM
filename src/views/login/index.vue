@@ -12,7 +12,7 @@
           </span>
           <el-input name="ipConfig" type="text" v-model="loginForm.ipConfig" autoComplete="on" placeholder="IP地址" />
         </el-form-item>
-        <span class="colon">:</span>
+        <!--<span class="colon">:</span>-->
         <el-form-item prop="port" class="portform">
           <span class="svg-container">
             <svg-icon icon-class="port" />
@@ -158,10 +158,10 @@ export default {
 
           this.$store.dispatch('LoginByUsername', formData).then(() => {
             this.loading = false
-            getUserId().then((res) => {
+            /*getUserId().then((res) => {
               this.setCookie('userId', res.data.data.id)
-              this.$router.push({ path: '/projectManage' })
-            })
+            })*/
+            this.$router.push({ path: '/projectManage' })
           }).catch(() => {
             this.loading = false
             this.$notify({
@@ -334,7 +334,8 @@ $light_gray:#eee;
     border: 1px solid rgba(255, 255, 255, 0.1);
     background: rgba(0, 0, 0, 0.1);
     border-radius: 5px;
-    color: #454545;
+    // color: #454545;
+    color: $light_gray;
   }
   .ipContainer {
     .el-form-item.ipform{
@@ -353,6 +354,7 @@ $light_gray:#eee;
     .el-form-item.portform{
       width:40%;
       display: inline-block;
+      float: right;
     }
     .portform .el-input{
       width:40%

@@ -6,7 +6,8 @@ export function deployplanList(projectId, listQuery) {
     method: 'get',
     params: {
       size: listQuery.size,
-      page: listQuery.page
+      page: listQuery.page,
+      deleted: false
     }
   })
 }
@@ -55,5 +56,32 @@ export function getDeployDetailByDevice(deploymentDesignId, deviceid) {
     params: {
       deviceId: deviceid
     }
+  })
+}
+// 回收站
+// 获取历史部署设计
+export function hisDeployplan(projectId, listQuery) {
+  return request({
+    url: 'projects/' + projectId + '/deploymentdesign',
+    method: 'get',
+    params: {
+      size: listQuery.size,
+      page: listQuery.page,
+      deleted: true
+    }
+  })
+}
+// 清除已删除部署设计
+export function cleanDeployplan(id) {
+  return request({
+    url: '/deploymentdesigns/' + id + '/clean',
+    method: 'delete'
+  })
+}
+// 恢复已删除部署设计
+export function restoreDeployplan(id) {
+  return request({
+    url: '/deploymentdesigns/' + id + '/restore',
+    method: 'patch'
   })
 }

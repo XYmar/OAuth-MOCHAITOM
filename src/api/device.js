@@ -6,7 +6,8 @@ export function getDevices(proId, listQuery) {
     method: 'get',
     params: {
       size: listQuery.size,
-      page: listQuery.page
+      page: listQuery.page,
+      deleted: false
     }
   })
 }
@@ -74,5 +75,34 @@ export function reportDevices(proId, data) {
     url: '/projects/' + proId + '/device',
     method: 'post',
     data
+  })
+}
+
+// 回收站
+// 获取历史设备
+export function getHisDevices(proId, listQuery) {
+  return request({
+    url: '/projects/' + proId + '/devices',
+    method: 'get',
+    params: {
+      size: listQuery.size,
+      page: listQuery.page,
+      deleted: true
+    }
+  })
+}
+// 清空已删除设备
+export function cleanDevice(id) {
+  return request({
+    url: '/devices/' + id + '/clean',
+    method: 'delete'
+  })
+}
+
+// 恢复已删除设备
+export function restoreDev(id) {
+  return request({
+    url: '/devices/' + id + '/restore',
+    method: 'patch'
   })
 }
