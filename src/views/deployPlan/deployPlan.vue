@@ -3,7 +3,7 @@
     <div class="filter-container">
       <el-input @keyup.enter.native="handleFilter" style="width: 200px;" class="filter-item" placeholder="名称" v-model="searchQuery">
       </el-input>
-      <el-button class="filter-item" style="margin-left: 10px;float:right;" @click="handleCreate" type="primary" icon="el-icon-edit">{{$t('table.add')}}</el-button>
+      <el-button class="filter-item" style="margin-left: 10px;float:right;" @click="handleCreate" type="primary" icon="el-icon-edit" v-show="!isHistory">{{$t('table.add')}}</el-button>
       <el-button type="danger" @click="showHistory" style="float: right;" icon="el-icon-delete" v-show="!isHistory">
         回收站
       </el-button>
@@ -152,8 +152,8 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">{{$t('table.cancel')}}</el-button>
-        <el-button v-if="dialogStatus=='create'" type="primary" @click="createData">{{$t('table.confirm')}}</el-button>
-        <el-button v-else type="primary" @click="updateData">{{$t('table.confirm')}}</el-button>
+        <el-button v-if="dialogStatus=='create'" type="primary" @click="createData" :loading="creDepLoading">{{$t('table.confirm')}}</el-button>
+        <el-button v-else type="primary" @click="updateData" :loading="upDepLoading">{{$t('table.confirm')}}</el-button>
       </div>
     </el-dialog>
     <!--基线新建对话框-->
@@ -168,7 +168,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="baselineVisible = false">{{$t('table.cancel')}}</el-button>
-        <el-button type="primary" @click="createBaseline">{{$t('table.confirm')}}</el-button>
+        <el-button type="primary" @click="createBaseline" :loading="creBasLoading">{{$t('table.confirm')}}</el-button>
       </div>
     </el-dialog>
     <!--基线详情对话框-->
@@ -209,7 +209,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="modifyBaselineVisible = false">{{$t('table.cancel')}}</el-button>
-        <el-button type="primary" @click="modifyBaseline">{{$t('table.confirm')}}</el-button>
+        <el-button type="primary" @click="modifyBaseline" :loading="upBasLoading">{{$t('table.confirm')}}</el-button>
       </div>
     </el-dialog>
   </div>
@@ -286,6 +286,10 @@
           name: [{ required: true, message: '请输入基线名', trigger: 'blur' }]
         },
         downloadLoading: false,
+        creDepLoading: false,
+        upDepLoading: false,
+        creBasLoading: false,
+        upBasLoading: false,
         searchQuery: '',
         errorMessage: '操作失败！'
       }
@@ -377,6 +381,7 @@
       createData() {
         this.$refs['dataForm'].validate((valid) => {
           if (valid) {
+            this.creDepLoading = true
             let projectId = this.getCookie('projectId');
             let formData = new FormData();
 
@@ -385,6 +390,7 @@
 
             createDeployplan(formData, projectId).then(() => {
               this.list.unshift(this.temp)
+              this.creDepLoading = false
               this.dialogFormVisible = false
               this.$notify({
                 title: '成功',
@@ -395,6 +401,7 @@
               this.getList()
             }).catch((error) => {
               this.errorMessage = '操作失败！'
+              this.creDepLoading = false
               if(error.response.data.message){
                 this.errorMessage = error.response.data.message
               }
@@ -422,6 +429,7 @@
       updateData() {
         let qs = require('qs');
         this.$refs['dataForm'].validate((valid) => {
+          this.upDepLoading = true
           if (valid) {
             let data = {
               'name': this.temp.name,
@@ -432,6 +440,7 @@
 
             let deployplanData = qs.stringify(data);
             updateDeployplan(deployplanData, id).then(() => {
+              this.upDepLoading = false
               this.dialogFormVisible = false
               this.$notify({
                 title: '成功',
@@ -441,6 +450,7 @@
               })
               this.getList()
             }).catch((error) =>{
+              this.upDepLoading = false
               this.errorMessage = '操作失败！'
               if(error.response.data.message){
                 this.errorMessage = error.response.data.message
@@ -516,11 +526,13 @@
       createBaseline() {
         this.$refs['baselineForm'].validate((valid) => {
           if(valid) {
+            this.creBasLoading = true
             let formData = new FormData();
 
             formData.append('name', this.baselineTemp.name);
             formData.append('description', this.baselineTemp.description);
             saveDeploymentDesignSnapshots(this.selectedId,formData).then(() => {
+              this.creBasLoading = false
               this.baselineVisible = false
               this.$notify({
                 title: '成功',
@@ -529,6 +541,7 @@
                 duration: 2000
               })
             }).catch((error) => {
+              this.creBasLoading = false
               this.errorMessage = '操作失败！'
               if(error.response.data.message){
                 this.errorMessage = error.response.data.message
@@ -570,6 +583,7 @@
         }
       },
       modifyBaseline() {
+        this.upBasLoading = true
         let data = {
           'name': this.modifyBaselineTemp.name,
           'description': this.modifyBaselineTemp.description,
@@ -577,6 +591,7 @@
         var qs = require('qs');
         let datapost = qs.stringify(data)
         modifySnapshots(this.modifyBaselineTemp.id, datapost).then(() => {
+          this.upBasLoading = false
           this.modifyBaselineVisible = false
           this.getBaslines(this.selectedId)
           this.$notify({
@@ -586,6 +601,7 @@
             duration: 2000
           })
         }).catch((error) => {
+          this.upBasLoading = false
           this.errorMessage = '操作失败！'
           if(error.response.data.message){
             this.errorMessage = error.response.data.message

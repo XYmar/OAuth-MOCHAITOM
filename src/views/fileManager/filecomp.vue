@@ -126,7 +126,7 @@
         </uploader>
       <span slot="footer" class="dialog-footer">
         <el-button @click="uploadDialog = false">取 消</el-button>
-        <el-button type="primary" @click="uploadFile">确 定</el-button>
+        <el-button type="primary" @click="uploadFile" :loading="upFileLoading">确 定</el-button>
       </span>
     </el-dialog>
     <!--上传文件夹弹框-->
@@ -152,7 +152,7 @@
       </uploader>
       <span slot="footer" class="dialog-footer">
         <el-button @click="uploadFolderDialog = false">取 消</el-button>
-        <el-button type="primary" @click="upload_Folder">确 定</el-button>
+        <el-button type="primary" @click="upload_Folder" :loading="upFolderLoading">确 定</el-button>
       </span>
     </el-dialog>
     <!--文件夹移动、复制操作-->
@@ -236,6 +236,8 @@
         total: null,
         listLoading: true,
         uploading: false,
+        upFileLoading: false,
+        upFolderLoading: false,
         listQuery: {
           page: 1,
           limit: 10,
@@ -429,6 +431,7 @@
       uploadFile() {
         this.listLoading = true
         this.uploading = true
+        this.upFileLoading = true
         let formData = new FormData()
         formData.append('parentnodeid', this.parentNodeId)
         this.fileAll = this.$refs.uploader.uploader.files
@@ -438,6 +441,7 @@
         }
         saveFiles(this.componentId, formData).then((res) => {
           this.uploading = false
+          this.upFileLoading = false
           this.$refs.uploader.uploader.cancel()
           this.getList()
           this.listLoading = false
@@ -445,6 +449,7 @@
         }).catch((error) => {
           this.listLoading = false
           this.uploading = false
+          this.upFileLoading = false
           this.$notify({
             title: '失败',
             message: '上传失败',
@@ -456,6 +461,7 @@
       upload_Folder(){
         this.listLoading = true
         this.uploading = true
+        this.upFolderLoading = true
         let formData = new FormData()
         formData.append('parentnodeid', this.parentNodeId)
         this.fileAll = this.$refs.uploaderFolder.uploader.files
@@ -465,6 +471,7 @@
         }
         uploadFolder(this.componentId, formData).then(() => {
           this.$refs.uploaderFolder.uploader.cancel()
+          this.upFolderLoading = false
           this.getList()
           this.listLoading = false
           this.uploading = false
@@ -472,6 +479,7 @@
         }).catch((error) => {
           this.listLoading = false
           this.uploading = false
+          this.upFolderLoading = false
           this.uploadFolderDialog = false
           this.$notify({
             title: '失败',

@@ -3,7 +3,7 @@
     <div class="filter-container">
       <el-input @keyup.enter.native="handleFilter" style="width: 240px;" class="filter-item" :placeholder="$t('table.deviceName')" v-model="searchQuery">
       </el-input>
-      <el-button class="filter-item pull-right" style="margin-left: 10px;float: right;" @click="handleCreate" type="primary" icon="el-icon-edit">{{$t('table.add')}}</el-button>
+      <el-button class="filter-item pull-right" style="margin-left: 10px;float: right;" @click="handleCreate" type="primary" icon="el-icon-edit" v-show="!isHistory">{{$t('table.add')}}</el-button>
       <el-button type="danger" @click="showHistory" style="float: right;" icon="el-icon-delete" v-show="!isHistory">
         回收站
       </el-button>
@@ -202,8 +202,8 @@
         </el-form-item>
       </el-form>
       <div class="mydialogFooter">
-        <el-button v-if="dialogStatus=='create'" type="primary" @click="createData" style="float: right;">{{$t('table.confirm')}}</el-button>
-        <el-button v-else type="primary" @click="updateData" :disabled="temp.virtual" style="float: right;">{{$t('table.confirm')}}</el-button>
+        <el-button v-if="dialogStatus=='create'" type="primary" @click="createData" style="float: right;" :loading="creDevLoading">{{$t('table.confirm')}}</el-button>
+        <el-button v-else type="primary" @click="updateData" :disabled="temp.virtual" style="float: right;" :loading="upDevLoading">{{$t('table.confirm')}}</el-button>
         <el-button @click="dialogFormVisible = false" style="float: right;margin-right: 10px">{{$t('table.cancel')}}</el-button>
       </div>
       <lineMarker ref="lineMarker"
@@ -416,6 +416,9 @@
         processDialogVisible: false,
         compProcessDialogVisible: false,
         reportDialogVisible: false,
+        creDevLoading: false,
+        upDevLoading: false,
+        delLoading: false,
         dialogStatus: '',
         textMap: {
           update: '编辑',
@@ -614,12 +617,14 @@
       createData() {
         this.$refs['dataForm'].validate((valid) => {
           if (valid) {
+            this.creDevLoading = true
             let formData = new FormData();
             formData.append('name', this.temp.name);
             formData.append('ip', this.temp.ip);
             formData.append('deployPath', this.temp.deployPath);
             formData.append('description', this.temp.description);
             saveDevices(this.proId, formData).then((res) => {
+              this.creDevLoading = false
               console.log(res.data, 'createDeviceSuccess')
               this.dialogFormVisible = false
               this.$notify({
@@ -630,6 +635,7 @@
               })
               this.getList()
             }).catch((error) =>{
+              this.creDevLoading = false
               this.errorMessage = '操作失败！'
               if(error.response.data.message){
                 this.errorMessage = error.response.data.message
@@ -675,6 +681,7 @@
       updateData() {
         this.$refs['dataForm'].validate((valid) => {
           if (valid) {
+            this.upDevLoading = true
             let qs = require('qs');
             let data = qs.stringify({
               'name': this.temp.name,
@@ -689,6 +696,7 @@
             deviceData.append('description',this.temp.description)
             deviceData.append('enctype', "multipart/form-data")
             updateDevice(this.deviceId, data).then((res) => {
+              this.upDevLoading = false
               this.dialogFormVisible = false
               this.$notify({
                 title: '成功',
@@ -702,6 +710,7 @@
               if(error.response.data.message){
                 this.errorMessage = error.response.data.message
               }
+              this.upDevLoading = false
               this.$notify({
                 title: '修改设备失败',
                 message: this.errorMessage,
@@ -715,6 +724,7 @@
       deleteDevice(row) {
         /*console.log(event.target.tagName)
         const target_btn = event.target*/
+        this.delLoading = true
         this.$confirm('确认删除吗？', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
@@ -722,6 +732,7 @@
         }).then(() => {
           let deleteId = row.id
           deleteDevice(deleteId).then(() => {
+            this.delLoading = false
             this.$notify({
               title: '成功',
               message: '删除成功',
@@ -730,6 +741,7 @@
             })
             this.getList()
           }).catch(() =>{
+            this.delLoading = false
             this.$notify({
               title: '失败',
               message: '删除失败',
@@ -745,6 +757,7 @@
             target_tr.parentNode.style.display = 'none'
           }*/
         }).catch(() => {
+          this.delLoading = false
           this.$message({
             type: 'info',
             message: '已取消删除'
