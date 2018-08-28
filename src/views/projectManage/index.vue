@@ -298,6 +298,8 @@
         this.resetTemp()
         this.dialogStatus = 'create'
         this.dialogFormVisible = true
+        console.log(event.target)
+        event.target.loading = true
         this.$nextTick(() => {
           this.$refs['dataForm'].clearValidate()
         })

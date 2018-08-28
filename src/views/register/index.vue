@@ -186,6 +186,7 @@
       registerUser: function () {
         this.$refs['loginForm'].validate((valid) => {
           if(valid) {
+            this.loading = true
             let qs = require('qs');
             let data = {
               'username': this.loginForm.username,
@@ -200,8 +201,10 @@
                 type: 'success',
                 duration: 2000
               })
+              this.loading = false
               this.$router.replace('/login')
             }).catch(() => {
+              this.loading = false
               this.$notify({
                 title: '失败',
                 message: '注册失败',

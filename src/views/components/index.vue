@@ -5,6 +5,7 @@
       </el-input>
 
       <el-button id="addComBtn"
+                 v-show="!isHistory"
                  class="filter-item pull-right"
                  style="float: right;margin-left: 10px;"
                  @click="handleCreate" type="primary"
@@ -28,10 +29,10 @@
         <!--<el-button class="filter-item" type="primary" style="margin-left: 10px;" v-waves icon="el-icon-download">导入</el-button>-->
 
       </el-upload>
-      <el-button type="danger" @click="showHistory" style="float: right;" icon="el-icon-delete" v-show="!isHistory">
+      <el-button type="danger" @click="showHistory" style="float: right;" icon="el-icon-delete" v-show="!isHistory" :loading="hisBtnLoading">
         回收站
       </el-button>
-      <el-button type="success" @click="showNow" style="float: right;" icon="el-icon-back" v-show="isHistory">
+      <el-button type="success" @click="showNow" style="float: right;" icon="el-icon-back" v-show="isHistory" :loading="hisBtnLoading">
         退出回收站
       </el-button>
     </div>
@@ -153,7 +154,7 @@
           </el-form-item>
           <div class="button-container">
             <el-button @click="dialogFormVisible = false">{{$t('table.cancel')}}</el-button>
-            <el-button type="primary" @click="createData">{{$t('table.confirm')}}</el-button>
+            <el-button type="primary" @click="createData" :loading="creComLoading">{{$t('table.confirm')}}</el-button>
           </div>
         </div>
         <div style="height: 100%;overflow: auto;width: 60%;float: right;padding:5px 0 10px 10px;border-left:1px solid #ccc;margin-top: -44px"
@@ -190,7 +191,7 @@
             </el-form-item>
             <div class="button-container">
               <el-button @click="dialogFormVisible = false" style="margin-right: 10px">{{$t('table.cancel')}}</el-button>
-              <el-button type="primary" @click="updateData">{{$t('table.confirm')}}</el-button>
+              <el-button type="primary" @click="updateData" :loading="upComLoading">{{$t('table.confirm')}}</el-button>
             </div>
             <!--去除修改组件时的文件上传模块-->
             <!--<el-form-item :label="$t('table.compUpload')" prop="fileAll">
@@ -303,6 +304,9 @@
         },
         downloadLoading: false,
         managerLoading: false,
+        creComLoading: false,
+        upComLoading: false,
+        hisBtnLoading: false,
         options: {
           // 可通过 https://github.com/simple-uploader/Uploader/tree/develop/samples/Node.js 示例启动服务
           //target: '//localhost:3000/upload',
@@ -424,6 +428,7 @@
               text: 'Loading',
               spinner: 'el-icon-loading'
             })
+            this.creComLoading = true
             let formData = new FormData();
             /*this.fileAll = this.$refs.uploader.uploader.files;
             console.log(this.fileAll,'所有文件')*/
@@ -442,6 +447,7 @@
             }*/
             // debugger
             createComp(this.projectId, formData).then((res) => {
+              this.creComLoading = false
               createloading.close()
               // this.list.unshift(this.temp)
               // this.dialogFormVisible = false
@@ -456,6 +462,7 @@
               })
               this.getList()
             }).catch((error) => {
+              this.creComLoading = false
               createloading.close()
               this.errorMessage = '操作失败！'
               if(error.response.data.message){
@@ -478,6 +485,13 @@
         this.temp.timestamp = new Date(this.temp.timestamp)
         this.dialogStatus = 'update'
         this.dialogFormVisible = true
+        this.$nextTick(() => {
+          /*if(this.$refs.createComFile.list) {
+            this.$refs.createComFile.list = []
+            this.$refs.createComFile.breadcrumbList = []
+          }*/
+          this.$refs['dataForm'].clearValidate()
+        })
         /*this.$nextTick(() => {
           this.$refs['dataForm'].clearValidate();
 
@@ -634,6 +648,7 @@
               spinner: 'el-icon-loading',
               fullscreen: true
             })*/
+            this.upComLoading = true
             let id = this.selectedId;
 
             let formData = new FormData();
@@ -675,6 +690,7 @@
                 }
               }*/
               // updateloading.close()
+              this.upComLoading = false
               this.dialogFormVisible = false
               this.$notify({
                 title: '成功',
@@ -685,6 +701,7 @@
               this.getList()
             }).catch((error) => {
               this.errorMessage = '操作失败！'
+              this.upComLoading = false
               if(error.response.data.message){
                 this.errorMessage = error.response.data.message
               }
@@ -830,13 +847,17 @@
       },
 
       showHistory: function(){
+        this.listLoading = true
+        this.hisBtnLoading = true
         compListHistory(this.projectId, this.listQuery).then(response => {
           this.isHistory = true
           this.list = response.data.data.content
           this.total = response.data.total
           this.listLoading = false
+          this.hisBtnLoading = false
         }).catch(() => {
           this.listLoading = false
+          this.hisBtnLoading = false
           this.$notify({
             title: '失败',
             message: '操作失败！',
@@ -848,13 +869,16 @@
 
       showNow: function(){
         this.listLoading = true
+        this.hisBtnLoading = true
         compList(this.projectId,this.listQuery).then(response => {
           this.list = response.data.data.content
           this.total = response.data.total
           this.listLoading = false
+          this.hisBtnLoading = false
           this.isHistory = false
         }).catch(() => {
           this.listLoading = false
+          this.hisBtnLoading = false
           this.$notify({
             title: '失败',
             message: '操作失败！',
