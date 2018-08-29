@@ -49,7 +49,7 @@
                     </div>
 
                     <div style="height: 425px;overflow-y: auto;margin-top: 0;" id="compTab">
-                      <el-table :key='tableKey' :data="listB" v-loading="listLoading" element-loading-text="给我一点时间" border fit
+                      <el-table :key='tableKey' :data="listB" v-loading="complistLoading" element-loading-text="给我一点时间" border fit
                                 highlight-current-row
                                 style="width: 100%;"
                                 @selection-change="handleCheckedCompsChange" id="compTable">
@@ -100,7 +100,7 @@
                     >
                     </el-pagination>
                     <div style="margin-top: 20px;">
-                      <el-button size="mini" type="success" style="float:right;" @click="submit()">绑定</el-button>
+                      <el-button size="mini" type="success" style="float:right;" @click="submit()" :loading="bindLoading">绑定</el-button>
                     </div>
                     <el-button type="primary" size="mini" icon="el-icon-arrow-right" slot="reference" @click="showPop"></el-button>
                   </el-popover>
@@ -186,13 +186,14 @@
           tagname: ''
         },
         total: null,
+        bindLoading: false,
         pagesize:10,//每页的数据条数
         currentPage:1,//默认开始页面
         total2: null,
         pagesize2:10,//每页的数据条数
         currentPage2:1,//默认开始页面
         listLoading: true,
-
+        complistLoading: true,
         deployPlanId: '',       //所选部署设计的id
         deviceCHId: '',         //左侧表格中点击的设备的id
         compCHId: '',           //右侧表格中点击的组件的id
@@ -371,6 +372,7 @@
         // 绑定前获取设备的id，获取所选部署设计的id
 
         this.deviceCHId = row.id;
+        this.complistLoading = true
 
         console.log("所选设备的id--------");
         console.log(this.deviceCHId);
@@ -384,12 +386,11 @@
         getDeployComLists(this.deployPlanId, this.deviceCHId).then(response => {
           this.listBind = response.data.data
           // this.total = response.data.total
-          this.listLoading = false
-
          /* console.log(this.listBind.length);
           console.log(this.listBind);*/
 
           compList(this.proId,this.listQuery2).then(response => {
+            this.complistLoading = false
             this.listComp = response.data.data.content
             this.total2 = response.data.data.totalElements
             this.listLoading = false
@@ -413,6 +414,14 @@
                 }
               }
             }
+          }).catch(() => {
+            this.complistLoading = false
+            this.$notify({
+              title: '失败',
+              message: '获取信息失败',
+              type: 'error',
+              duration: 2000
+            })
           })
         })
       },
@@ -433,7 +442,7 @@
 
       submit: function () {
         //alert("hh");
-
+        this.bindLoading = true
         this.repeatCompsId.splice(0,this.repeatCompsId.length);
 
         console.log(this.componentIds.length);
@@ -453,7 +462,7 @@
                type: 'warning',
                message: '有' + this.repeatCompsId.length + '个组件已绑定过！'
              })
-
+             this.bindLoading = false
              return;
            }
 
@@ -466,6 +475,7 @@
            let qs = require('qs')
            let dataBind = qs.stringify(data)
            doDeployBind(this.deployPlanId, dataBind).then(() => {
+             this.bindLoading = false
              document.getElementById('clicktag').click()
              this.$notify({
                title: '成功',
@@ -479,6 +489,7 @@
              })
 
            }).catch(() =>{
+             this.bindLoading = false
              this.$notify({
                title: '失败',
                message: '绑定失败',
@@ -491,6 +502,7 @@
              type: 'warning',
              message: '无绑定信息!'
            })
+           this.bindLoading = false
          }
 
       },
