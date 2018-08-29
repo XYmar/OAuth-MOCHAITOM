@@ -432,7 +432,7 @@
           title: [{ required: true, message: 'title is required', trigger: 'blur' }]
         },
         deviceRules: {
-          name: [{ required: true, message: '请输入组件名', trigger: 'blur' }],
+          name: [{ required: true, message: '请输入设备名', trigger: 'blur' }],
           ip: [{ required: true, trigger: 'blur', validator: validateIP }],
           deployPath: [{ required: true, trigger: 'blur', validator: validatePath }]
         },
@@ -657,6 +657,9 @@
         this.deviceId = row.id
         this.dialogFormVisible = true
         this.currentDeviceIndex = index
+        this.$nextTick(() => {
+          this.$refs['dataForm'].clearValidate()
+        })
         this.$nextTick(() => {
           if(!row.online) {
             return
