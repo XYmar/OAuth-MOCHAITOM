@@ -30,7 +30,7 @@
         <span class="svg-container">
           <svg-icon icon-class="password" />
         </span>
-        <el-input name="password" :type="passwordType" @keyup.enter.native="handleLogin" v-model="loginForm.password" autoComplete="on" placeholder="请输入密码" />
+        <el-input name="password" :type="passwordType" @keyup.enter.native="registerUser" v-model="loginForm.password" autoComplete="on" placeholder="请输入密码" />
         <span class="show-pwd" @click="showPwd">
           <svg-icon icon-class="eye" />
         </span>
@@ -39,7 +39,7 @@
         <span class="svg-container">
           <svg-icon icon-class="password" />
         </span>
-        <el-input name="password" :type="passwordTypeAgin" @keyup.enter.native="handleLogin" v-model="loginForm.againPassword" autoComplete="on" placeholder="再次输入密码" />
+        <el-input name="password" :type="passwordTypeAgin" @keyup.enter.native="registerUser" v-model="loginForm.againPassword" autoComplete="on" placeholder="再次输入密码" />
         <span class="show-pwd" @click="showPwdAgin">
           <svg-icon icon-class="eye" />
         </span>
@@ -92,6 +92,7 @@
         if (!isvalidUsername(value)) {
           callback(new Error('账号必须是5-15位的英文字母或数字！'))
         } else {
+          service.defaults.baseURL = 'http://' + this.loginForm.ipConfig + ':' + this.loginForm.port
           UserIfExist(this.loginForm.username).then((res) => {
             if(res.data.data) {
               callback(new Error('用户已存在'))
@@ -184,6 +185,7 @@
         })
       },
       registerUser: function () {
+        service.defaults.baseURL = 'http://' + this.loginForm.ipConfig + ':' + this.loginForm.port
         this.$refs['loginForm'].validate((valid) => {
           if(valid) {
             this.loading = true
@@ -192,7 +194,6 @@
               'username': this.loginForm.username,
               'password': this.loginForm.password
             }
-            service.defaults.baseURL = 'http://' + this.loginForm.ipConfig + ':' + this.loginForm.port
             let datapost = qs.stringify(data)
             addUser(datapost).then(() => {
               this.$notify({

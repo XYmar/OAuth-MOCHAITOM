@@ -59,7 +59,7 @@
         <el-table-column align="center" :label="$t('table.actions')" width="230" class-name="small-padding fixed-width">
           <template slot-scope="scope">
             <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">{{$t('table.edit')}}</el-button>
-            <el-button size="mini" type="danger" @click="handleDelete(scope.row)">{{$t('table.delete')}}
+            <el-button size="mini" type="danger" @click="handleDelete(scope.row)" :loading="scope.row.delLoading" v-if="scope.row.authorities.length === 1">{{$t('table.delete')}}
             </el-button>
           </template>
         </el-table-column>
@@ -95,7 +95,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">{{$t('table.cancel')}}</el-button>
-        <el-button :disabled="this.btnConfirm" type="primary" @click="updateUser">{{$t('table.confirm')}}</el-button>
+        <el-button :disabled="this.btnConfirm" type="primary" @click="updateUser" :loading="modLoading">{{$t('table.confirm')}}</el-button>
       </div>
     </el-dialog>
     <!--创建用户-->
@@ -119,7 +119,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="createUserFormVisible = false">{{$t('table.cancel')}}</el-button>
-        <el-button :disabled="this.btnConfirm" type="primary" @click="createUser">{{$t('table.confirm')}}</el-button>
+        <el-button :disabled="this.btnConfirm" type="primary" @click="createUser" :loading="addLoading">{{$t('table.confirm')}}</el-button>
       </div>
     </el-dialog>
   </div>
@@ -212,6 +212,9 @@
         dialogFormVisible: false,
         createUserFormVisible: false,
         modifyPasswordVisible: false,
+        addLoading: false,
+        modLoading: false,
+        delLoading: false,
         passwordType: 'password',
         passwordTypeAgain: 'password',
         btnConfirm: false,
@@ -312,6 +315,7 @@
       createUser() {
         this.$refs.createDataForm.validate(valid => {
           if(valid) {
+            this.addLoading = true
             var qs = require('qs');
             let data = {
               'username': this.createForm.username,
@@ -319,6 +323,7 @@
             }
             let datapost = qs.stringify(data)
             addUser(datapost).then(() => {
+              this.addLoading = false
               this.$notify({
                 title: '成功',
                 message: '创建成功',
@@ -328,6 +333,7 @@
               this.getList()
               this.createUserFormVisible = false
             }).catch(() => {
+              this.addLoading = false
               this.$notify({
                 title: '失败',
                 message: '创建失败',
@@ -351,6 +357,7 @@
       updateUser() {
         this.$refs['modifyDataForm'].validate((valid) => {
           if (valid) {
+            this.modLoading = true
             let data = {
               password: this.form.passwordNew
             }
@@ -360,6 +367,7 @@
 
             let userData = qs.stringify(data);
             updateUser(userData, id).then(() => {
+              this.modLoading = false
               this.dialogFormVisible = false
               this.$notify({
                 title: '成功',
@@ -368,6 +376,7 @@
                 duration: 2000
               })
             }).catch(() => {
+              this.modLoading = false
               this.dialogFormVisible = false
               this.$notify({
                 title: '失败',
@@ -381,12 +390,14 @@
       },
       handleDelete(row) {
         let id = row.id;
+        row.delLoading = true
         this.$confirm('确认删除吗？', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
           deleteUser(id).then(() => {
+            row.delLoading = false
             this.$notify({
               title: '成功',
               message: '删除成功',
@@ -395,6 +406,7 @@
             })
             this.getList()
           }).catch(() => {
+            row.delLoading = false
             this.$notify({
               title: '失败',
               message: '删除失败',
@@ -403,6 +415,7 @@
             })
           })
         }).catch(() => {
+          row.delLoading = false
           this.$message({
             type: 'info',
             message: '已取消删除'
