@@ -378,6 +378,7 @@
       handleSelectComp(row) {
         this.selectedCompId = row.componentEntity.id
         this.selectedCompName = row.componentEntity.name
+        this.deviceDetail = [row]
       },
       scanAllByDevice() {
         if (this.selectedDeviceId == '') {
@@ -748,7 +749,7 @@
       computedClass() {
         return function(row) {
           if (row.correctFiles) {
-            if (row.missingFiles.length > 0 || row.unknownFiles.length > 0) {
+            if (row.missingFiles.length > 0 || row.modifyedFiles.length > 0) {
               return 'abNormal'
             } else {
               return ''
