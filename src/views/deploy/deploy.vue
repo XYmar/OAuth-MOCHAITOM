@@ -82,9 +82,6 @@
         </el-table-column>
       </el-table>
     </el-dialog>
-
-    <p id="callback"></p>
-    <p id="onlineheartbeatmessages2"></p>
   </div>
 </template>
 

@@ -92,10 +92,6 @@
       </el-table-column>
       <el-table-column align="center" :label="$t('table.actions')" width="140" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <!--<el-button type="primary" v-if="!scope.row.virtual" size="mini" @click="handleUpdate(scope.row)">{{$t('table.edit')}}</el-button>
-          <el-button size="mini" v-if="!scope.row.virtual" type="success" @click="copyDevice(scope.row)">{{$t('table.copy')}}</el-button>
-          <el-button size="mini" v-if="!scope.row.virtual" type="danger" @click="deleteDevice(scope.row)">{{$t('table.delete')}}</el-button>
-          <el-button type="primary" size="mini" v-if="scope.row.virtual" @click="handleReport(scope.row)">{{$t('table.report')}}</el-button>-->
           <el-dropdown trigger="click" v-if="!scope.row.virtual">
             <span class="el-dropdown-link">
               <el-button type="success" plain>更多操作</el-button>
@@ -117,9 +113,6 @@
           </el-dropdown>
           <el-button type="primary" size="mini" v-if="scope.row.virtual" @click="handleReport(scope.row)">{{$t('table.report')}}</el-button>
         </template>
-        <!--<template v-else slot-scope="scope">
-          <el-button type="primary" size="mini" @click="handleReport(scope.row)">{{$t('table.report')}}</el-button>
-        </template>-->
       </el-table-column>
     </el-table>
     <el-table :key='tableKey'
@@ -303,7 +296,7 @@
     <el-dialog title="请填写路径" :visible.sync="reportDialogVisible" width="40%">
       <el-form :rules="pathRules" ref="reportForm" :model="pathTemp"  label-width="100px" style='width: 80%; margin:0 auto;'>
         <el-form-item label="部署路径" prop="reportPath">
-          <el-input v-model="pathTemp.reportPath"></el-input>
+          <el-input v-model="pathTemp.reportPath" @keyup.enter.native="reportDevice"/>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -311,9 +304,6 @@
         <el-button type="primary" @click="reportDevice">{{$t('table.confirm')}}</el-button>
       </div>
     </el-dialog>
-
-    <p id="callback"></p>
-    <p id="onlineheartbeatmessages"></p>
   </div>
 </template>
 
@@ -432,7 +422,7 @@
           title: [{ required: true, message: 'title is required', trigger: 'blur' }]
         },
         deviceRules: {
-          name: [{ required: true, message: '请输入组件名', trigger: 'blur' }],
+          name: [{ required: true, message: '请输入设备名', trigger: 'blur' }],
           ip: [{ required: true, trigger: 'blur', validator: validateIP }],
           deployPath: [{ required: true, trigger: 'blur', validator: validatePath }]
         },
@@ -657,6 +647,9 @@
         this.deviceId = row.id
         this.dialogFormVisible = true
         this.currentDeviceIndex = index
+        this.$nextTick(() => {
+          this.$refs['dataForm'].clearValidate()
+        })
         this.$nextTick(() => {
           if(!row.online) {
             return
