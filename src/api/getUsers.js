@@ -19,8 +19,8 @@ export function getUserId() {
 export function updateUser(data, id) {
   return request({
     url: '/users/' + id + '/password',
-    data,
-    method: 'patch'
+    method: 'put',
+    data
   })
 }
 export function deleteUser(id) {

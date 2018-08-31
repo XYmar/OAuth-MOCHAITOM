@@ -63,7 +63,7 @@
         <el-table-column align="center" :label="$t('table.actions')" width="230" class-name="small-padding fixed-width">
           <template slot-scope="scope">
             <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">{{$t('table.edit')}}</el-button>
-            <el-button size="mini" type="danger" @click="handleDelete(scope.row)" :loading="delLoading">{{$t('table.delete')}}
+            <el-button size="mini" type="danger" @click="handleDelete(scope.row)" :loading="scope.row.delLoading">{{$t('table.delete')}}
             </el-button>
           </template>
         </el-table-column>
@@ -119,7 +119,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="modifyPasswordVisible = false">取 消</el-button>
-        <el-button :disabled="this.btnConfirm" type="primary" @click="modifyPassword">确 定</el-button>
+        <el-button :disabled="this.btnConfirm" type="primary" @click="modifyPassword" :loading="modPasLoading">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -189,6 +189,7 @@
         searchQuery: '',
         dialogFormVisible: false,
         modifyPasswordVisible: false,
+        modPasLoading: false,
         passwordType: 'password',
         passwordTypeAgain: 'password',
         btnConfirm: false,
@@ -412,14 +413,16 @@
       },
       handleDelete(row) {
         let id = row.id;
-        this.delLoading = true
+        // this.delLoading = true
+        row.delLoading = true
         this.$confirm('确认删除吗？', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
           deleteProject(id).then(() => {
-            this.delLoading = false
+            // this.delLoading = false
+            row.delLoading = false
             this.$notify({
               title: '成功',
               message: '删除成功',
@@ -428,7 +431,8 @@
             })
             this.getList()
           }).catch(() => {
-            this.delLoading = false
+            // this.delLoading = false
+            row.delLoading = false
             this.$notify({
               title: '失败',
               message: '删除失败',
@@ -437,7 +441,8 @@
             })
           })
         }).catch(() => {
-          this.delLoading = false
+          // this.delLoading = false
+          row.delLoading = false
           this.$message({
             type: 'info',
             message: '已取消删除'
@@ -447,6 +452,7 @@
       handleModifyPassword() {
         this.resetModify()
         this.modifyPasswordVisible = true
+        this.modPasLoading = false
         this.$nextTick(() => {
           this.$refs['modifyPassForm'].clearValidate()
         })
@@ -460,13 +466,15 @@
       modifyPassword() {
         this.$refs['modifyPassForm'].validate((valid) => {
           if(valid) {
+            this.modPasLoading = true
             let data = {
               'password': this.form.passwordNew
             }
             var qs = require('qs');
             let datapost = qs.stringify(data)
-            console.log(this.userId)
+            // console.log(this.userId)
             updateUser(datapost,this.userId).then(() => {
+              this.modPasLoading = false
               this.modifyPasswordVisible = false
               this.$notify({
                 title: '成功',
@@ -478,6 +486,7 @@
                 location.reload()// In order to re-instantiate the vue-router object to avoid bugs
               })
             }).catch(() => {
+              this.modPasLoading = false
               this.$notify({
                 title: '失败',
                 message: '修改失败',

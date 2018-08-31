@@ -55,7 +55,7 @@
       <el-table-column min-width="130" align="center" :label="$t('table.actions')">
         <template slot-scope="scope">
           <el-button size="mini" type="success" :id="scope.row.online" :state="scope.row.state" class="deployBtn" :disabled="!scope.row.online"
-                     @click="deployDevice(scope.row)" :loading="deployLoading">部署</el-button>
+                     @click="deployDevice(scope.row)" :loading="scope.row.deployLoading">部署</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -268,9 +268,11 @@
               }
               let qs = require('qs')
               let deployData = qs.stringify(data);
-              this.deployLoading = true
+              // this.deployLoading = true
+              row.deployLoading = true
               doDeploy(this.deployPlanId, id, deployData).then(() => {
-                this.deployLoading = false
+                // this.deployLoading = false
+                row.deployLoading = false
                 this.dialogFormVisible = false
                 this.$notify({
                   title: '成功',
@@ -287,7 +289,8 @@
               }).catch(err => {
                 // console.log("提示---------");
                 // console.log(err.response.data.data);
-                this.deployLoading = false
+                // this.deployLoading = false
+                row.deployLoading = false
                 if(err.response.data.data.length != 0){
                   this.$notify({
                     title: '失败',
@@ -304,7 +307,8 @@
               })
             })
           }else{
-            this.deployLoading = true
+            // this.deployLoading = true
+            row.deployLoading = false
             this.$message({
               message: '此设备正在部署!',
               type: 'warning'
