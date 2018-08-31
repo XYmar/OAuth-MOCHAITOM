@@ -304,9 +304,6 @@
         <el-button type="primary" @click="reportDevice">{{$t('table.confirm')}}</el-button>
       </div>
     </el-dialog>
-
-    <p id="callback"></p>
-    <p id="onlineheartbeatmessages"></p>
   </div>
 </template>
 
