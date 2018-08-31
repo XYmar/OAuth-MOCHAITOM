@@ -59,18 +59,12 @@
         </template>
       </el-table-column>
     </el-table>
-    <el-pagination
-      @size-change="handleSizeChange"
-      @current-change="handleCurrentChange"
-      :current-page="currentPage"
-      :page-sizes="[20,50,100]"
-      :page-size="10"
-      layout="total, sizes, prev, pager, next, jumper"
-      :total="this.total"
-      background
-      style="text-align: center;margin-top:20px"
-    >
-    </el-pagination>
+    <div class="pagination-container" style="text-align: center;">
+      <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange"
+                     :current-page="currentPage" :page-sizes="[10,20,30, 50]" :page-size="listQuery.limit"
+                     layout="total, sizes, prev, pager, next, jumper" :total="total">
+      </el-pagination>
+    </div>
     <el-dialog title="部署详情" :visible.sync="dialogTableVisible" width="60%">
 
       <el-table :key='tableKey' :data="deployDetail" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row
@@ -103,18 +97,13 @@
         </el-table-column>
       </el-table>
 
-      <el-pagination
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-        :current-page="currentPage"
-        :page-sizes="[20,50,100]"
-        :page-size="10"
-        layout="total, sizes, prev, pager, next, jumper"
-        :total="this.total"
-        background
-        style="text-align: center;margin-top:20px"
-      >
-      </el-pagination>
+      <div class="pagination-container" style="text-align: center;">
+        <el-pagination background @size-change="handleSizeChange2" @current-change="handleCurrentChange2"
+                       :current-page="currentPage2" :page-sizes="[10,20,30, 50]" :page-size="listQuery2.limit"
+                       layout="total, sizes, prev, pager, next, jumper" :total="total2">
+        </el-pagination>
+      </div>
+
     </el-dialog>
 
   </div>
@@ -140,15 +129,21 @@
         listLoading: true,
         dialogTableVisible: false,
         proId: '',
+        id: '',
         listQuery: {
           page: 0,
-          size:20,
-          limit: 5,
-          tagname: ''
+          limit: 10
         },
-        total: null,
+        listQuery2: {
+          page: 0,
+          limit: 20
+        },
+        total: 0,
         pagesize:10,//每页的数据条数
         currentPage:1,//默认开始页面
+        total2: 0,
+        pagesize2:20,//每页的数据条数
+        currentPage2:1,//默认开始页面
         importanceOptions: [1, 2, 3],
         depolyStatusOptions: ['部署成功', '进行中', '部署异常'],
         sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
@@ -265,7 +260,7 @@
         })
       },
       handleSizeChange(val) {
-        this.listQuery.size = val
+        this.listQuery.limit = val
         this.pagesize = val
         this.getList()
       },
@@ -274,18 +269,29 @@
         this.currentPage = val
         this.getList()
       },
+      handleSizeChange2(val) {
+        this.listQuery2.limit = val
+        this.pagesize2 = val
+        this.deployDetails()
+      },
+      handleCurrentChange2(val) {
+        this.listQuery2.page = val - 1
+        this.currentPage2 = val
+        this.deployDetails()
+      },
       deployDetails: function (row) {
         let ifexist = false;      //设备是否部署，false为未部署*/
-
-        let id = row.id;
+        if(row !== undefined){
+          this.id = row.id;
+        }
         let i = 0;
         this.dialogTableVisible = true;
         this.listLoading = true
-        logDetail(id, this.listQuery).then(response => {
+        logDetail(this.id, this.listQuery2).then(response => {
           this.deployDetail = response.data.data.content
           this.listLoading = false
           this.listLength = response.data.data.length
-          this.total = response.data.data.totalElements
+          this.total2 = response.data.data.totalElements
         })
       },
       searchAll: function() {

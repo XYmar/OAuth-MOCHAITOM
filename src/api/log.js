@@ -5,7 +5,7 @@ export function logList(proId, listQuery) {
     url: '/projects/' + proId + '/deploylog',
     method: 'get',
     params: {
-      size: listQuery.size,
+      size: listQuery.limit,
       page: listQuery.page
     }
   })
@@ -15,7 +15,7 @@ export function logDetail(deployLogId, listQuery) {
     url: '/deploylogs/' + deployLogId + '/deploylogdetails',
     method: 'get',
     params: {
-      size: listQuery.size,
+      size: listQuery.limit,
       page: listQuery.page
     }
   })
