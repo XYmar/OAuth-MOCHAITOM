@@ -295,8 +295,8 @@
     </el-dialog>
     <el-dialog title="请填写路径" :visible.sync="reportDialogVisible" width="40%">
       <el-form :rules="pathRules" ref="reportForm" :model="pathTemp"  label-width="100px" style='width: 80%; margin:0 auto;'>
-        <el-form-item label="部署路径" prop="reportPath">
-          <el-input v-model="pathTemp.reportPath" @keyup.enter.native="reportDevice"/>
+        <el-form-item label="部署路径：" prop="reportPath">
+          <el-input v-model="pathTemp.reportPath" @keyup.enter.native="reportDevice" placeholder="例如：D:/test/"/>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -427,7 +427,7 @@
           deployPath: [{ required: true, trigger: 'blur', validator: validatePath }]
         },
         pathRules: {
-          reportPath: [{ required: true, message: '请填写部署路径', trigger: 'blur' }]
+          reportPath: [{ required: true, trigger: 'blur', validator: validatePath }]
         },
         downloadLoading: false,
         errorMessage: '操作失败！'
