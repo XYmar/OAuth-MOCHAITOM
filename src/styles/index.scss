@@ -222,13 +222,20 @@ code {
     height: 95%;
   }
 }
-.processDialog .el-dialog {
+/*.processDialog .el-dialog {
   height: 70%;
   .el-dialog__body {
     height: 85%;
+    // margin-bottom: 6px;
     overflow-y: scroll;
   }
-}
+  .el-dialog__footer {
+    margin-top: 6px;
+    position: absolute;
+    bottom: 4px;
+    right:20px;
+  }
+}*/
 .modDeviceDialog .el-dialog{
   max-height: 70%;
   overflow-y: scroll;
