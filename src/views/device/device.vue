@@ -248,7 +248,8 @@
     <el-dialog title="进程" :visible.sync="processDialogVisible" class="processDialog">
       <el-table :key='tableKey' :data="taskprocess" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row
                 stripe
-                style="width: 100%"
+                height="500"
+                style="width: 100%;"
                 @selection-change="handleCheckedProcess">
         <!-- <el-table :data="list" row-key="id"  v-loading.body="listLoading" border fit highlight-current-row style="width: 100%">-->
 
@@ -296,7 +297,8 @@
     <el-dialog title="请填写路径" :visible.sync="reportDialogVisible" width="40%">
       <el-form :rules="pathRules" ref="reportForm" :model="pathTemp"  label-width="100px" style='width: 80%; margin:0 auto;'>
         <el-form-item label="部署路径：" prop="reportPath">
-          <el-input v-model="pathTemp.reportPath" @keyup.enter.native="reportDevice" placeholder="例如：D:/test/"/>
+          <el-input style="display: none;"></el-input>
+          <el-input v-model="pathTemp.reportPath" @keyup.enter.native.prevent="reportDevice" placeholder="例如：D:/test/"/>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
