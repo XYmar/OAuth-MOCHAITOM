@@ -296,7 +296,7 @@
     <el-dialog title="请填写路径" :visible.sync="reportDialogVisible" width="40%">
       <el-form :rules="pathRules" ref="reportForm" :model="pathTemp"  label-width="100px" style='width: 80%; margin:0 auto;'>
         <el-form-item label="部署路径" prop="reportPath">
-          <el-input v-model="pathTemp.reportPath" @keyup.enter.native="reportDevice"/>
+          <el-input v-model="pathTemp.reportPath" type="text" @keyup.enter.native.prevent="reportDevice"/>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
