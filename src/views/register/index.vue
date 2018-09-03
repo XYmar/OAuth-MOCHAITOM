@@ -93,7 +93,7 @@
           callback(new Error('账号必须是5-15位的英文字母或数字！'))
         } else {
           service.defaults.baseURL = 'http://' + this.loginForm.ipConfig + ':' + this.loginForm.port
-          UserIfExist(this.loginForm.username).then((res) => {
+          /*UserIfExist(this.loginForm.username).then((res) => {
             if(res.data.data) {
               callback(new Error('用户已存在'))
             }else {
@@ -101,7 +101,8 @@
             }
           }).catch(() => {
             callback()
-          })
+          })*/
+          callback()
         }
       }
       const validatePassword = (rule, value, callback) => {
@@ -139,7 +140,8 @@
         passwordType: 'password',
         passwordTypeAgin: 'password',
         loading: false,
-        showDialog: false
+        showDialog: false,
+        errorMessage: '操作失败！'
       }
     },
     methods: {
@@ -186,6 +188,8 @@
       },
       registerUser: function () {
         service.defaults.baseURL = 'http://' + this.loginForm.ipConfig + ':' + this.loginForm.port
+        this.setCookie('ip', this.loginForm.ipConfig)
+        this.setCookie('port', this.loginForm.port)
         this.$refs['loginForm'].validate((valid) => {
           if(valid) {
             this.loading = true
@@ -196,6 +200,7 @@
             }
             let datapost = qs.stringify(data)
             addUser(datapost).then(() => {
+              this.setCookie('username',this.loginForm.username)
               this.$notify({
                 title: '成功',
                 message: '注册成功',
@@ -204,11 +209,15 @@
               })
               this.loading = false
               this.$router.replace('/login')
-            }).catch(() => {
+            }).catch((error) => {
               this.loading = false
+              this.errorMessage = '注册失败，请检查信息填写是否正确！'
+              if(error.response.data.message){
+                this.errorMessage = error.response.data.message
+              }
               this.$notify({
                 title: '失败',
-                message: '注册失败',
+                message: this.errorMessage,
                 type: 'error',
                 duration: 2000
               })
